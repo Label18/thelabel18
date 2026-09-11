@@ -723,6 +723,150 @@
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* ============================================================ */
+/* HERO — MOBILE RESPONSIVE (max-width: 767px)                  */
+/* ============================================================ */
+@media (max-width: 767px) {
+
+    /* Stronger gradient overlay on mobile so text is always readable */
+    .hero-gradient-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.80) 0%,
+            rgba(0, 0, 0, 0.45) 40%,
+            rgba(0, 0, 0, 0.15) 100%
+        );
+    }
+
+    /* All hero text overlays → pin to bottom, full width, centered */
+    .hero-text-overlay {
+        bottom: 10% !important;
+        top: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 1.25rem !important;
+        text-align: center !important;
+        transform: none !important;
+    }
+
+    /* text-first — slightly higher so it doesn't clash with scroll indicator */
+    .text-first {
+        bottom: 12% !important;
+    }
+
+    /* pos-top-right — on mobile we bring it down to bottom */
+    .pos-top-right {
+        top: auto !important;
+        right: 0 !important;
+        left: 0 !important;
+        bottom: 10% !important;
+    }
+
+    .pos-top-left {
+        top: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 10% !important;
+    }
+
+    /* hero-text-right — override desktop left-anchored positioning */
+    .hero-text-right {
+        bottom: 10% !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-width: 100% !important;
+        padding: 0 1.25rem !important;
+        text-align: center !important;
+    }
+
+    /* Main title — allow wrapping, bigger min size */
+    .hero-title-bold {
+        font-size: clamp(1.6rem, 8vw, 2.4rem) !important;
+        white-space: normal !important;
+        line-height: 1.15 !important;
+        margin-bottom: 0.6rem !important;
+    }
+
+    /* Intermediate + last section titles */
+    .hero-title-md {
+        font-size: clamp(1.3rem, 6.5vw, 2rem) !important;
+        white-space: normal !important;
+    }
+
+    /* Description — larger, better line-height */
+    .hero-desc {
+        font-size: clamp(0.8rem, 3.2vw, 0.92rem) !important;
+        max-width: 100% !important;
+        margin-bottom: 0.75rem !important;
+        line-height: 1.65 !important;
+    }
+
+    /* Accent line centered */
+    .hero-accent-line {
+        justify-content: center !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .hero-text-right .hero-accent-line {
+        justify-content: center !important;
+    }
+
+    /* Accent label bigger on mobile */
+    .accent-label {
+        font-size: 0.58rem !important;
+        letter-spacing: 0.3em !important;
+    }
+
+    /* Hero CTA pill — centered + full-width feel */
+    .hero-cta-pill {
+        display: block !important;
+        width: fit-content !important;
+        margin: 0 auto !important;
+        padding: 0.85rem 2rem !important;
+        font-size: 0.62rem !important;
+    }
+
+    /* Counter — hide on very small screens to avoid clutter */
+    .hero-counter {
+        display: none !important;
+    }
+
+    /* Scroll indicator — move up slightly */
+    .scroll-indicator {
+        bottom: 1.25rem !important;
+    }
+
+    /* Inline .hero-text-right overrides for last slide */
+    .text-last,
+    #hero2 .hero-text-overlay.text-last {
+        bottom: 10% !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-width: 100% !important;
+        padding: 0 1.25rem !important;
+        text-align: center !important;
+    }
+
+    .text-last .hero-title-bold,
+    #hero2 .hero-text-overlay.text-last .hero-title-bold {
+        font-size: clamp(1.3rem, 6.5vw, 2rem) !important;
+        white-space: normal !important;
+    }
+
+    .text-last .hero-desc,
+    #hero2 .hero-text-overlay.text-last .hero-desc {
+        max-width: 100% !important;
+        font-size: clamp(0.8rem, 3.2vw, 0.92rem) !important;
+    }
+
+    .text-last .hero-accent-line,
+    #hero2 .hero-text-overlay.text-last .hero-accent-line {
+        justify-content: center !important;
+    }
+}
+
 /* === 3D FLYING HANDBAG TRANSITION === */
 .flying-handbag {
     position: fixed;

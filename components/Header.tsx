@@ -81,9 +81,8 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500 bg-black/60 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.1)] ${
-        scrolled ? "py-3 md:py-4" : "py-3 md:py-4"
-      }`}
+      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500 bg-black/80 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.4)] ${scrolled ? "py-1.5 md:py-2" : "py-1.5 md:py-2"
+        }`}
     >
       <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center">
@@ -199,9 +198,8 @@ export default function Header() {
                 </button>
 
                 <div
-                  className={`absolute right-0 top-[calc(100%+0.75rem)] w-48 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 origin-top-right ${
-                    isUserMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-                  }`}
+                  className={`absolute right-0 top-[calc(100%+0.75rem)] w-48 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 origin-top-right ${isUserMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+                    }`}
                 >
                   <Link
                     href="/orders"
@@ -253,16 +251,14 @@ export default function Header() {
       <div
         onClick={() => setIsMenuOpen(false)}
         aria-hidden="true"
-        className={`md:hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
-          isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`md:hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       ></div>
 
       {/* Sliding panel */}
       <aside
-        className={`md:hidden fixed top-0 right-0 z-[120] h-[100dvh] w-[86%] max-w-[360px] bg-[#0a0a0a] border-l border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col transition-transform duration-500 ease-out ${
-          isMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`md:hidden fixed top-0 right-0 z-[120] h-[100dvh] w-[86%] max-w-[360px] bg-[#0a0a0a] border-l border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col transition-transform duration-500 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Sidebar header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-[#141414]">
@@ -324,7 +320,7 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
               className="text-white/80 hover:text-[#d4af37] transition-colors font-outfit font-light text-[13px] tracking-[0.2em] uppercase py-3.5 border-b border-white/5"
             >
-             Video
+              Video
             </Link>
             {/* Categories accordion (mobile) */}
             <div className="border-b border-white/5">

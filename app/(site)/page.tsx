@@ -241,7 +241,7 @@ export default function Home() {
                         className="hero-canvas"
                         bgColor="black"
                         focalPointY="top"
-                        offsetY={120}
+                        offsetY={60}
                     />
 
                     <div className="hero-gradient-overlay"></div>
