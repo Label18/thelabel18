@@ -1,0 +1,820 @@
+'use client'
+
+import { useEffect, useMemo, useState, useTransition } from 'react'
+import {
+  Plus,
+  Trash2,
+  ImageOff,
+  X,
+  RotateCcw,
+  Info,
+  Layers,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
+} from 'lucide-react'
+import { createProduct } from './actions'
+
+type Category = { id: string; name: string }
+type SubCategory = { id: string; name: string; category_id: string }
+type SubSubCategory = { id: string; name: string; sub_category_id: string }
+
+type Variation = {
+  key: string
+  size: string
+  color: string
+  color_hex: string
+  color_family: string
+  stock: string
+  price: string
+  compare_at_price: string
+  image: File | null
+}
+
+function emptyVariation(): Variation {
+  return {
+    key: crypto.randomUUID(),
+    size: '',
+    color: '',
+    color_hex: '',
+    color_family: '',
+    stock: '0',
+    price: '',
+    compare_at_price: '',
+    image: null,
+  }
+}
+
+// ---- Color palette --------------------------------------------------------
+// Every shade belongs to a "family". Storing color_family alongside the
+// specific shade lets a storefront search for "Pink" and match every
+// variation whose family is Pink, regardless of which exact shade it is.
+
+const COLOR_PALETTE: { family: string; hex: string; shades: { name: string; hex: string }[] }[] = [
+  {
+    family: 'Pink',
+    hex: '#FF66CC',
+    shades: [
+      { name: 'Baby Pink', hex: '#F4C2C2' },
+      { name: 'Blush Pink', hex: '#DE5D83' },
+      { name: 'Rose Pink', hex: '#FF66CC' },
+      { name: 'Hot Pink', hex: '#FF69B4' },
+      { name: 'Fuchsia', hex: '#FF00FF' },
+      { name: 'Salmon Pink', hex: '#FF91A4' },
+      { name: 'Magenta', hex: '#D6336C' },
+    ],
+  },
+  {
+    family: 'Red',
+    hex: '#E53935',
+    shades: [
+      { name: 'Crimson', hex: '#DC143C' },
+      { name: 'Scarlet', hex: '#FF2400' },
+      { name: 'Maroon', hex: '#800000' },
+      { name: 'Brick Red', hex: '#B22222' },
+      { name: 'Cherry Red', hex: '#D2042D' },
+    ],
+  },
+  {
+    family: 'Orange',
+    hex: '#FB8C00',
+    shades: [
+      { name: 'Burnt Orange', hex: '#CC5500' },
+      { name: 'Tangerine', hex: '#F28500' },
+      { name: 'Peach', hex: '#FFCBA4' },
+      { name: 'Amber', hex: '#FFBF00' },
+    ],
+  },
+  {
+    family: 'Yellow',
+    hex: '#FDD835',
+    shades: [
+      { name: 'Mustard', hex: '#E1AD01' },
+      { name: 'Lemon Yellow', hex: '#FFF44F' },
+      { name: 'Gold', hex: '#D4AF37' },
+      { name: 'Cream', hex: '#FFFDD0' },
+    ],
+  },
+  {
+    family: 'Green',
+    hex: '#43A047',
+    shades: [
+      { name: 'Olive', hex: '#808000' },
+      { name: 'Sage Green', hex: '#9CAF88' },
+      { name: 'Emerald', hex: '#50C878' },
+      { name: 'Forest Green', hex: '#228B22' },
+      { name: 'Mint', hex: '#98FF98' },
+      { name: 'Khaki', hex: '#C3B091' },
+    ],
+  },
+  {
+    family: 'Blue',
+    hex: '#1E88E5',
+    shades: [
+      { name: 'Navy Blue', hex: '#001F54' },
+      { name: 'Sky Blue', hex: '#87CEEB' },
+      { name: 'Royal Blue', hex: '#4169E1' },
+      { name: 'Denim Blue', hex: '#1560BD' },
+      { name: 'Teal', hex: '#008080' },
+      { name: 'Turquoise', hex: '#40E0D0' },
+    ],
+  },
+  {
+    family: 'Purple',
+    hex: '#8E24AA',
+    shades: [
+      { name: 'Lavender', hex: '#B57EDC' },
+      { name: 'Lilac', hex: '#C8A2C8' },
+      { name: 'Violet', hex: '#7F00FF' },
+      { name: 'Plum', hex: '#8E4585' },
+    ],
+  },
+  {
+    family: 'Brown',
+    hex: '#6D4C41',
+    shades: [
+      { name: 'Tan', hex: '#D2B48C' },
+      { name: 'Camel', hex: '#C19A6B' },
+      { name: 'Chocolate Brown', hex: '#7B3F00' },
+      { name: 'Chestnut', hex: '#954535' },
+      { name: 'Beige', hex: '#F5F5DC' },
+    ],
+  },
+  {
+    family: 'Neutral',
+    hex: '#9E9E9E',
+    shades: [
+      { name: 'Black', hex: '#000000' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Ivory', hex: '#FFFFF0' },
+      { name: 'Charcoal Grey', hex: '#36454F' },
+      { name: 'Light Grey', hex: '#D3D3D3' },
+      { name: 'Silver', hex: '#C0C0C0' },
+    ],
+  },
+]
+
+function findShade(colorFamily: string, colorName: string) {
+  const fam = COLOR_PALETTE.find((f) => f.family === colorFamily)
+  return fam?.shades.find((s) => s.name === colorName) ?? null
+}
+
+// ---- SKU auto-numbering helpers ----------------------------------------
+// Counters are kept in localStorage, one per label, so numbering continues
+// from wherever it last left off for that label (e.g. "TL18-BAG" -> 0007
+// next time even after a page refresh). Swap this for a server-driven
+// counter (e.g. a DB sequence per label) if you want it shared across users.
+
+const SKU_COUNTER_PREFIX = 'sku_counter:'
+
+function normalizeLabel(label: string) {
+  return label.trim().toUpperCase().replace(/\s+/g, '-')
+}
+
+function getNextSkuNumber(label: string): number {
+  if (typeof window === 'undefined' || !label) return 1
+  const key = SKU_COUNTER_PREFIX + label
+  const raw = window.localStorage.getItem(key)
+  const next = raw ? parseInt(raw, 10) + 1 : 1
+  return Number.isFinite(next) ? next : 1
+}
+
+function commitSkuNumber(label: string, usedNumber: number) {
+  if (typeof window === 'undefined' || !label) return
+  const key = SKU_COUNTER_PREFIX + label
+  window.localStorage.setItem(key, String(usedNumber))
+}
+
+function buildSku(label: string, num: number) {
+  const padded = String(num).padStart(4, '0')
+  return label ? `${label}-${padded}` : ''
+}
+// -------------------------------------------------------------------------
+
+// ---- "No color" swatch -----------------------------------------------
+// A blank white circle looks like "white was picked" or like a loading
+// state. This renders the classic Illustrator/Figma "no color" swatch:
+// a circle with a single diagonal line through it, so an unset color is
+// visually unambiguous wherever a swatch is shown.
+function NoColorSwatch({ size = 20 }: { size?: number }) {
+  return (
+    <span
+      className="relative shrink-0 rounded-full border border-stone-300 bg-white overflow-hidden"
+      style={{ width: size, height: size }}
+    >
+      <span
+        className="absolute left-1/2 top-1/2 h-[140%] w-px -translate-x-1/2 -translate-y-1/2 bg-rose-300"
+        style={{ transform: 'translate(-50%, -50%) rotate(45deg)' }}
+      />
+    </span>
+  )
+}
+
+function ImagePicker({
+  file,
+  onChange,
+  label,
+}: {
+  file: File | null
+  onChange: (f: File | null) => void
+  label: string
+}) {
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file])
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white">
+        {previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt={label} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-stone-300">
+            <ImageOff size={18} />
+          </div>
+        )}
+      </div>
+      <label className="cursor-pointer rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-stone-700 transition-colors hover:border-black hover:text-black">
+        {file ? 'Change image' : 'Upload image'}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        />
+      </label>
+      {file && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="text-stone-300 hover:text-rose-500"
+          aria-label="Remove image"
+        >
+          <X size={16} />
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ---- Color picker (Family -> Shade) ---------------------------------------
+// Search-friendly: picking "Pink" as the family, then a specific shade,
+// stores both the exact shade (color/color_hex) and the broader family
+// (color_family) so a storefront filter for "Pink" matches every shade.
+
+function ColorPicker({
+  colorFamily,
+  colorName,
+  colorHex,
+  onChange,
+}: {
+  colorFamily: string
+  colorName: string
+  colorHex: string
+  onChange: (patch: { color_family?: string; color?: string; color_hex?: string }) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const activeFamily = COLOR_PALETTE.find((f) => f.family === colorFamily)
+  const swatchHex = colorHex || activeFamily?.hex || '#E5E5E5'
+
+  // Lock body scroll while the modal is open so the page doesn't scroll
+  // behind it.
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
+  return (
+    <>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex w-full items-center justify-between gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-black outline-none transition-colors focus:border-black"
+        >
+          <span className="flex items-center gap-2 truncate">
+            {colorName ? (
+              <span
+                className="h-5 w-5 shrink-0 rounded-full border border-stone-300"
+                style={{ backgroundColor: swatchHex }}
+              />
+            ) : (
+              <NoColorSwatch size={20} />
+            )}
+            <span className="truncate text-left">
+              {colorName ? (
+                <>
+                  {colorName}
+                  <span className="ml-1 text-stone-400">· {colorFamily}</span>
+                </>
+              ) : (
+                <span className="text-stone-400">No color / select</span>
+              )}
+            </span>
+          </span>
+          <ChevronDown size={14} className="shrink-0 text-stone-400" />
+        </button>
+        {colorName && (
+          <button
+            type="button"
+            onClick={() => onChange({ color_family: '', color: '', color_hex: '' })}
+            className="shrink-0 text-stone-300 hover:text-rose-500"
+            aria-label="Clear color"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+              <div>
+                <h3 className="text-sm font-bold text-black">Select Color</h3>
+                <p className="text-xs text-stone-400">Pick a family, then the exact shade</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-stone-400 hover:text-black"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange({ color_family: '', color: '', color_hex: '' })
+                  setOpen(false)
+                }}
+                className={`mb-5 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-colors ${!colorName
+                    ? 'border-black bg-stone-100 text-black'
+                    : 'border-dashed border-stone-300 text-stone-500 hover:border-stone-400'
+                  }`}
+              >
+                <NoColorSwatch size={16} />
+                No Color (this variation doesn't have one)
+              </button>
+
+              {COLOR_PALETTE.map((fam) => (
+                <div key={fam.family} className="mb-5 last:mb-0">
+                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+                    <span
+                      className="h-3 w-3 rounded-full border border-stone-300"
+                      style={{ backgroundColor: fam.hex }}
+                    />
+                    {fam.family}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {fam.shades.map((shade) => {
+                      const active = colorFamily === fam.family && colorName === shade.name
+                      return (
+                        <button
+                          key={shade.name}
+                          type="button"
+                          onClick={() => {
+                            onChange({
+                              color_family: fam.family,
+                              color: shade.name,
+                              color_hex: shade.hex,
+                            })
+                            setOpen(false)
+                          }}
+                          className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs font-medium transition-colors ${active
+                              ? 'border-black bg-stone-100 text-black'
+                              : 'border-stone-200 text-stone-600 hover:border-stone-400'
+                            }`}
+                        >
+                          <span
+                            className="h-4 w-4 shrink-0 rounded-full border border-stone-300"
+                            style={{ backgroundColor: shade.hex }}
+                          />
+                          <span className="truncate">{shade.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default function ProductForm({
+  categories,
+  subCategories,
+  subSubCategories,
+}: {
+  categories: Category[]
+  subCategories: SubCategory[]
+  subSubCategories: SubSubCategory[]
+}) {
+  const [pending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  const [categoryId, setCategoryId] = useState('')
+  const [subCategoryId, setSubCategoryId] = useState('')
+  const [mainImage, setMainImage] = useState<File | null>(null)
+  const [variations, setVariations] = useState<Variation[]>([emptyVariation()])
+
+  // Label the user types (e.g. "TL18-BAG") drives the auto-generated SKU.
+  const [skuLabel, setSkuLabel] = useState('')
+  const [skuNumber, setSkuNumber] = useState<number>(1)
+
+  const normalizedLabel = normalizeLabel(skuLabel)
+  const generatedSku = buildSku(normalizedLabel, skuNumber)
+
+  // Whenever the label changes, look up (or start) that label's next number.
+  useEffect(() => {
+    setSkuNumber(getNextSkuNumber(normalizedLabel))
+  }, [normalizedLabel])
+
+  const filteredSubCategories = useMemo(
+    () => subCategories.filter((s) => s.category_id === categoryId),
+    [subCategories, categoryId]
+  )
+  const filteredSubSubCategories = useMemo(
+    () => subSubCategories.filter((s) => s.sub_category_id === subCategoryId),
+    [subSubCategories, subCategoryId]
+  )
+
+  function updateVariation(key: string, patch: Partial<Variation>) {
+    setVariations((prev) => prev.map((v) => (v.key === key ? { ...v, ...patch } : v)))
+  }
+
+  function removeVariation(key: string) {
+    setVariations((prev) => prev.filter((v) => v.key !== key))
+  }
+
+  function resetAll() {
+    setVariations([emptyVariation()])
+    setMainImage(null)
+    setCategoryId('')
+    setSubCategoryId('')
+    setSkuLabel('')
+    setError(null)
+    setSuccess(false)
+      ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
+  }
+
+  function handleSubmit(formData: FormData) {
+    setError(null)
+    setSuccess(false)
+
+    if (!normalizedLabel) {
+      setError('Enter a label to generate the SKU.')
+      return
+    }
+
+    if (mainImage) formData.set('image', mainImage)
+
+    // Submit the auto-generated SKU (input is read-only, so set it explicitly).
+    formData.set('sku', generatedSku)
+    formData.set('sku_label', normalizedLabel)
+
+    formData.set('variation_count', String(variations.length))
+    variations.forEach((v, i) => {
+      formData.set(`variations[${i}][size]`, v.size)
+      formData.set(`variations[${i}][color]`, v.color)
+      formData.set(`variations[${i}][color_hex]`, v.color_hex)
+      formData.set(`variations[${i}][color_family]`, v.color_family)
+      formData.set(`variations[${i}][stock]`, v.stock)
+      formData.set(`variations[${i}][price]`, v.price)
+      formData.set(`variations[${i}][compare_at_price]`, v.compare_at_price)
+      if (v.image) formData.set(`variations[${i}][image]`, v.image)
+    })
+
+    startTransition(async () => {
+      try {
+        await createProduct(formData)
+        // Only persist the counter once the save actually succeeds, so a
+        // failed submit doesn't burn a SKU number.
+        commitSkuNumber(normalizedLabel, skuNumber)
+
+        setSuccess(true)
+        setVariations([emptyVariation()])
+        setMainImage(null)
+        setCategoryId('')
+        setSubCategoryId('')
+        // Keep the same label, but move straight to the next number so the
+        // next product for this label is ready to go.
+        setSkuNumber(skuNumber + 1)
+          ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      }
+    })
+  }
+
+  const inputClass =
+    'w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-black outline-none transition-colors focus:border-black'
+  const labelClass = 'block text-xs font-semibold uppercase tracking-wider text-stone-500'
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-black">Add Product</h1>
+          <p className="mt-1 text-sm font-medium text-stone-600">
+            {variations.length} variation{variations.length === 1 ? '' : 's'} · assign a category and add size/color options
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={resetAll}
+          className="flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 transition-colors hover:border-black hover:text-black active:scale-[0.99]"
+        >
+          <RotateCcw size={15} strokeWidth={2} />
+          Clear Form
+        </button>
+      </div>
+
+      <form id="add-product-form" action={handleSubmit} className="space-y-6">
+        {/* Basic info */}
+        <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 text-stone-600">
+              <Info size={15} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-black">Product Details</h2>
+              <p className="text-xs text-stone-400">Core info shown across the storefront</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className={labelClass}>Label</label>
+              <input
+                value={skuLabel}
+                onChange={(e) => setSkuLabel(e.target.value)}
+                required
+                placeholder="TL18-BAG"
+                className={inputClass}
+              />
+              <p className="text-[11px] text-stone-400">
+                A short prefix — the SKU number continues from wherever this label last left off.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>SKU Number (auto-generated)</label>
+              <input
+                name="sku"
+                value={generatedSku}
+                readOnly
+                placeholder="Enter a label first"
+                className={`${inputClass} cursor-not-allowed bg-stone-50 text-stone-500`}
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className={labelClass}>Product Name</label>
+              <input name="name" required placeholder="Signature Tote" className={inputClass} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>Category</label>
+              <select
+                name="category_id"
+                required
+                value={categoryId}
+                onChange={(e) => {
+                  setCategoryId(e.target.value)
+                  setSubCategoryId('')
+                }}
+                className={inputClass}
+              >
+                <option value="">Select category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>Sub Category</label>
+              <select
+                name="sub_category_id"
+                value={subCategoryId}
+                onChange={(e) => setSubCategoryId(e.target.value)}
+                disabled={!categoryId}
+                className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                <option value="">
+                  {categoryId ? 'Select sub category (optional)' : 'Choose a category first'}
+                </option>
+                {filteredSubCategories.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className={labelClass}>Sub Sub Category</label>
+              <select
+                name="sub_sub_category_id"
+                disabled={!subCategoryId}
+                className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50 sm:max-w-xs`}
+              >
+                <option value="">
+                  {subCategoryId ? 'Select sub sub category (optional)' : 'Choose a sub category first'}
+                </option>
+                {filteredSubSubCategories.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className={labelClass}>Description</label>
+              <textarea
+                name="description"
+                rows={4}
+                placeholder="A short, storefront-facing description of the product…"
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2 border-t border-stone-100 pt-5">
+              <label className={labelClass}>Overall Product Image</label>
+              <p className="mb-2 text-xs text-stone-400">
+                The single main image for this product (used when no specific variation image applies).
+              </p>
+              <ImagePicker file={mainImage} onChange={setMainImage} label="Product image" />
+            </div>
+          </div>
+        </div>
+
+        {/* Variations */}
+        <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 text-stone-600">
+                <Layers size={15} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-black">Variations</h2>
+                <p className="text-xs text-stone-400">
+                  One row per size/color combo — each can have its own stock, price, and image
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setVariations((prev) => [...prev, emptyVariation()])}
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-stone-300 px-3.5 py-2.5 text-xs font-semibold text-stone-700 transition-colors hover:border-black hover:text-black"
+            >
+              <Plus size={14} />
+              Add Variation
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {variations.map((v, i) => (
+              <div
+                key={v.key}
+                className="rounded-xl border border-stone-200 bg-stone-50 p-4 transition-colors hover:border-stone-300"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="inline-flex items-center rounded-md bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-500 ring-1 ring-stone-200">
+                    Variation {i + 1}
+                  </span>
+                  {variations.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVariation(v.key)}
+                      className="text-stone-400 hover:text-rose-500"
+                      aria-label="Remove variation"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-stone-500">Size</label>
+                    <input
+                      value={v.size}
+                      onChange={(e) => updateVariation(v.key, { size: e.target.value })}
+                      placeholder="M"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1 sm:col-span-2">
+                    <label className="text-[11px] font-medium text-stone-500">Color</label>
+                    <ColorPicker
+                      colorFamily={v.color_family}
+                      colorName={v.color}
+                      colorHex={v.color_hex}
+                      onChange={(patch) => updateVariation(v.key, patch)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-stone-500">Stock Amount</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={v.stock}
+                      onChange={(e) => updateVariation(v.key, { stock: e.target.value })}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-stone-500">Selling Price</label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      required
+                      value={v.price}
+                      onChange={(e) => updateVariation(v.key, { price: e.target.value })}
+                      placeholder="0.00"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-stone-500">
+                      Compare-at Price
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={v.compare_at_price}
+                      onChange={(e) =>
+                        updateVariation(v.key, { compare_at_price: e.target.value })
+                      }
+                      placeholder="Optional"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1 sm:col-span-2">
+                    <label className="text-[11px] font-medium text-stone-500">
+                      Image for this variation
+                    </label>
+                    <ImagePicker
+                      file={v.image}
+                      onChange={(f) => updateVariation(v.key, { image: f })}
+                      label={`${v.color || 'No Color'} image`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-600">
+            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-700">
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+            Product created successfully.
+          </div>
+        )}
+
+        {/* Sticky submit bar */}
+        <div className="sticky bottom-4 z-10 flex justify-end rounded-2xl border border-stone-200 bg-white/90 px-5 py-4 shadow-lg backdrop-blur">
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-xl bg-black px-10 py-3 text-sm font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {pending ? 'Saving…' : 'Save Product'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
