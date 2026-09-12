@@ -12,7 +12,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 const sequences: SequenceConfig[] = [
-    { path: "/new_client_video_frames/frame_", frameCount: 240, extension: "webp", digits: 6 },
+    { path: "/hero_frame/frame_", frameCount: 300, extension: "png", digits: 6, startFrame: 0 },
 ];
 
 const sequences2: SequenceConfig[] = [
@@ -74,16 +74,17 @@ export default function Home() {
                 trigger: scrollSectionRef.current,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 0.8,
+                scrub: true,
                 onUpdate: (self) => {
                     setScrollProgress(self.progress);
                 }
             }
         });
 
-        const textCount = textRefs.current.length;
+        const populated1 = textRefs.current.filter(Boolean);
+        const textCount = populated1.length;
         const slot1 = 1 / textCount;
-        textRefs.current.forEach((text, i) => {
+        populated1.forEach((text, i) => {
             if (!text) return;
 
             const isLast = i === textCount - 1;
@@ -130,16 +131,17 @@ export default function Home() {
                 trigger: scrollSectionRef2.current,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 0.8,
+                scrub: true,
                 onUpdate: (self) => {
                     setScrollProgress2(self.progress);
                 }
             }
         });
 
-        const textCount2 = textRefs2.current.length;
+        const populated2 = textRefs2.current.filter(Boolean);
+        const textCount2 = populated2.length;
         const slot2 = 1 / textCount2;
-        textRefs2.current.forEach((text, i) => {
+        populated2.forEach((text, i) => {
             if (!text) return;
 
             const isLast = i === textCount2 - 1;
@@ -228,12 +230,12 @@ export default function Home() {
 
     return (
         <main ref={containerRef} className="bg-black">
-            <link rel="preload" as="image" href="/new_client_video_frames/frame_000001.webp" type="image/webp" />
+            <link rel="preload" as="image" href="/hero_frame/frame_000000.png" type="image/png" />
 
             {/* ============================================================ */}
             {/* HERO SECTION 1 - ETHNIC WEAR / CLOTHING                     */}
             {/* ============================================================ */}
-            <section id="hero" ref={scrollSectionRef} className="hero-section" style={{ height: "1000vh" }}>
+            <section id="hero" ref={scrollSectionRef} className="hero-section" style={{ height: "600vh" }}>
                 <div className="hero-sticky">
                     <CanvasSequence
                         triggerRef={scrollSectionRef}

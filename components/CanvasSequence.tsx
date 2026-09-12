@@ -242,7 +242,7 @@ export default function CanvasSequence({
     sequences.forEach((seq) => {
       const ext = seq.extension || "jpg";
       const padLength = seq.digits ?? 3;
-      const start = seq.startFrame || 1;
+      const start = seq.startFrame ?? 1;
       for (let i = 0; i < seq.frameCount; i++) {
         const frameIndex = start + i;
         const img = new Image();
@@ -289,7 +289,7 @@ export default function CanvasSequence({
           trigger: triggerRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 1.5,
+          scrub: true,
         },
       });
 

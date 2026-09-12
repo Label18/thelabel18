@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
   PlusCircle,
@@ -16,6 +18,7 @@ import {
   History,
   Clapperboard,
   BarChart3,
+  ShieldCheck,
   LogOut,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -66,6 +69,12 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    title: 'Administration',
+    items: [
+      { href: '/admin/sub-admins', label: 'Sub Admin Management', icon: <ShieldCheck size={17} strokeWidth={1.75} /> },
+    ],
+  },
+  {
     items: [
       { href: '/admin/videos-reels', label: 'Videos & Reels', icon: <Clapperboard size={17} strokeWidth={1.75} /> },
       { href: '/admin/reports', label: 'Reports', icon: <BarChart3 size={17} strokeWidth={1.75} /> },
@@ -75,16 +84,71 @@ const NAV: NavGroup[] = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [allowedPaths, setAllowedPaths] = useState<string[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadPermissions() {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) return
+
+        // 1. Check if primary admin
+        if (user.email === 'admin@thelabel18.com') {
+          setIsAdmin(true)
+          setLoading(false)
+          return
+        }
+
+        // 2. Fetch permissions from the 'sub_admins' table based on user email
+        const { data: subAdmin, error } = await supabase
+          .from('sub_admins')
+          .select('permissions, role')
+          .eq('email', user.email)
+          .single()
+
+        if (subAdmin && !error) {
+          // If role is main admin or permissions array exists
+          if (subAdmin.role === 'admin') {
+            setIsAdmin(true)
+          } else {
+            // Ensure permissions is an array of strings (paths)
+            setAllowedPaths(subAdmin.permissions || [])
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching sub-admin permissions:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPermissions()
+  }, [])
 
   const isActive = (href: string) =>
     href === '/admin' ? pathname === href : pathname?.startsWith(href)
 
+  // Filter navigation items for sub-admins
+  const filteredNav = NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (isAdmin) return true
+
+      // Check if their allowed paths include this href or parent path
+      return allowedPaths.some(
+        (path) => item.href === path || item.href.startsWith(path + '/')
+      )
+    }),
+  })).filter((group) => group.items.length > 0)
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col border-r border-[#D4AF37]/10 bg-[#0a0a0a] font-outfit text-[#F5F2EB]">
-      {/* Brand header — sticky, stays put while the nav list below scrolls */}
+      {/* Brand header */}
       <div className="sticky top-0 z-10 shrink-0 bg-[#0a0a0a]">
         <div className="flex items-center gap-3.5 px-6 py-6">
-          {/* Increased size from h-11 w-11 to h-14 w-14 for a bigger logo display */}
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
             <Image src="/logo.jpg" alt="The Label 18 Logo" fill className="object-cover" priority />
           </div>
@@ -100,49 +164,53 @@ export default function Sidebar() {
         <div className="mx-6 h-px bg-gradient-to-r from-[#D4AF37]/25 via-[#D4AF37]/5 to-transparent" />
       </div>
 
-      {/* Navigation — this is the only part that scrolls */}
+      {/* Navigation list */}
       <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6 text-[13.5px]">
-        {NAV.map((group, i) => (
-          <div key={i} className="space-y-1">
-            {group.title && (
-              <div className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#8a8178]">
-                {group.title}
-              </div>
-            )}
-            {group.items.map((item) => {
-              const active = isActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? 'page' : undefined}
-                  className={[
-                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150',
-                    active
-                      ? 'bg-[#D4AF37]/[0.08] text-[#F5F2EB]'
-                      : 'text-[#a89f96] hover:bg-white/[0.04] hover:text-[#F5F2EB]',
-                  ].join(' ')}
-                >
-                  <span
+        {loading ? (
+          <div className="px-3 text-xs text-[#8a8178] animate-pulse">Loading menu...</div>
+        ) : (
+          filteredNav.map((group, i) => (
+            <div key={i} className="space-y-1">
+              {group.title && (
+                <div className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#8a8178]">
+                  {group.title}
+                </div>
+              )}
+              {group.items.map((item) => {
+                const active = isActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
                     className={[
-                      'absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[#D4AF37] transition-opacity duration-150',
-                      active ? 'opacity-100' : 'opacity-0',
+                      'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150',
+                      active
+                        ? 'bg-[#D4AF37]/[0.08] text-[#F5F2EB]'
+                        : 'text-[#a89f96] hover:bg-white/[0.04] hover:text-[#F5F2EB]',
                     ].join(' ')}
-                  />
-                  <span
-                    className={active ? 'text-[#D4AF37]' : 'text-[#8a8178] group-hover:text-[#D4AF37]/80'}
                   >
-                    {item.icon}
-                  </span>
-                  <span className={active ? 'font-medium' : 'font-normal'}>{item.label}</span>
-                </Link>
-              )
-            })}
-          </div>
-        ))}
+                    <span
+                      className={[
+                        'absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[#D4AF37] transition-opacity duration-150',
+                        active ? 'opacity-100' : 'opacity-0',
+                      ].join(' ')}
+                    />
+                    <span
+                      className={active ? 'text-[#D4AF37]' : 'text-[#8a8178] group-hover:text-[#D4AF37]/80'}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className={active ? 'font-medium' : 'font-normal'}>{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          ))
+        )}
       </nav>
 
-      {/* Footer & Sticky Logout Button */}
+      {/* Footer & Logout */}
       <div className="sticky bottom-0 z-10 bg-[#0a0a0a] border-t border-white/[0.06]">
         <div className="p-4">
           <Link
@@ -155,7 +223,6 @@ export default function Sidebar() {
             <span className="font-normal">Logout</span>
           </Link>
         </div>
-
       </div>
     </aside>
   )
