@@ -206,7 +206,7 @@ export default function Header() {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="block px-5 py-3 text-white/70 hover:text-[#d4af37] hover:bg-white/5 transition-colors font-outfit font-light text-[11px] tracking-[0.2em] uppercase"
                   >
-                    My Orders
+                    My Orders.
                   </Link>
                   <button
                     onClick={handleSignOut}
