@@ -254,7 +254,7 @@ export default function Home() {
                             <span className="accent-label">Label 18 Experience</span>
                         </div>
                         <h1 className="hero-title-bold">
-                            <span style={{ color: "var(--color-gold)" }}>BOUTIQUE</span> <span style={{ color: "#ffffff" }}>ELEGANCE</span>
+                            <span style={{ color: "var(--color-gold)" }}>BOUTIQUE</span> <span style={{ color: "#ffffff" }}>ELEGANCE.</span>
                         </h1>
                         <p className="hero-desc">Step into a world where timeless elegance meets contemporary grace in a curated setting.</p>
                     </div>
