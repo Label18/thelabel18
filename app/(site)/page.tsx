@@ -12,7 +12,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 const sequences: SequenceConfig[] = [
-    { path: "/frames-final-client/frame_", frameCount: 240, extension: "webp", digits: 6, startFrame: 1 },
+    { path: "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-", frameCount: 300, extension: "png", digits: 3, startFrame: 1 },
 ];
 
 const sequences2: SequenceConfig[] = [
@@ -54,10 +54,10 @@ export default function Home() {
     ) || categories[1];
 
     const fallbackClothingImages = [
-        "/new_client_video_frames/frame_000050.webp",
-        "/new_client_video_frames/frame_000100.webp",
-        "/new_client_video_frames/frame_000150.webp",
-        "/new_client_video_frames/frame_000200.webp",
+        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-050.png",
+        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-100.png",
+        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-150.png",
+        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-200.png",
     ];
 
     const fallbackJewelleryImages = [
