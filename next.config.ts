@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/frames-final-client/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/hero_frame/:path*",
         headers: [
           {

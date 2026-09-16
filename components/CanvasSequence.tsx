@@ -22,9 +22,17 @@ interface CanvasSequenceProps {
   bgColor?: string;
   fitMode?: "cover" | "contain-height" | "auto";
   lazy?: boolean;
+  priority?: boolean;
   focalPointY?: "top" | "center";
   offsetY?: number;
 }
+
+/** How many frames to load in the initial high-priority batch */
+const PRIORITY_BATCH = 5;
+/** How many frames to load per background batch */
+const BATCH_SIZE = 20;
+/** Delay between background batches (ms) */
+const BATCH_DELAY = 60;
 
 export default function CanvasSequence({
   sequences,
@@ -33,11 +41,15 @@ export default function CanvasSequence({
   bgColor = "black",
   fitMode = "auto",
   lazy = false,
+  priority = false,
   focalPointY = "center",
   offsetY = 0,
 }: CanvasSequenceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
+  // Stable ref for images — GSAP reads from this without re-binding
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  // Single boolean state to trigger initial GSAP bind (only fires once)
+  const [imagesReady, setImagesReady] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(!lazy);
   const frameRef = useRef({ frame: 0 });
   const lastRenderedIndexRef = useRef<number | null>(null);
@@ -132,7 +144,7 @@ export default function CanvasSequence({
         imgHeight * ratio
       );
     },
-    [fitMode]
+    [fitMode, focalPointY, offsetY]
   );
 
   // Finds closest loaded frame to avoid any blank/black screens during scroll
@@ -175,14 +187,13 @@ export default function CanvasSequence({
     []
   );
 
-  const renderFrameIndex = useCallback(
+  const renderFrame = useCallback(
     (
       targetIndex: number,
       ctx: CanvasRenderingContext2D,
-      canvas: HTMLCanvasElement,
-      imgList: HTMLImageElement[]
+      canvas: HTMLCanvasElement
     ) => {
-      const best = getBestAvailableImage(targetIndex, imgList);
+      const best = getBestAvailableImage(targetIndex, imagesRef.current);
       if (!best) return; // Keep current canvas content if no frame is ready yet
 
       lastRenderedIndexRef.current = best.index;
@@ -210,19 +221,10 @@ export default function CanvasSequence({
       canvasRef.current.width = window.innerWidth * dpr;
       canvasRef.current.height = window.innerHeight * dpr;
 
-      if (
-        canvasRef.current &&
-        lastRenderedIndexRef.current !== null &&
-        images[lastRenderedIndexRef.current]
-      ) {
+      if (canvasRef.current && lastRenderedIndexRef.current !== null) {
         const ctx = canvasRef.current.getContext("2d");
         if (ctx) {
-          renderFrameIndex(
-            lastRenderedIndexRef.current,
-            ctx,
-            canvasRef.current,
-            images
-          );
+          renderFrame(lastRenderedIndexRef.current, ctx, canvasRef.current);
         }
       }
     };
@@ -230,46 +232,108 @@ export default function CanvasSequence({
     updateCanvasSize();
     window.addEventListener("resize", updateCanvasSize);
     return () => window.removeEventListener("resize", updateCanvasSize);
-  }, [images, renderFrameIndex]);
+  }, [renderFrame]);
 
-  // Load image sequence when active
-  useEffect(() => {
-    if (!shouldLoad) return;
-
-    const loadedImages: HTMLImageElement[] = [];
-    let globalFrameIndex = 0;
-
+  // Build frame URLs once
+  const buildFrameUrls = useCallback(() => {
+    const urls: string[] = [];
     sequences.forEach((seq) => {
       const ext = seq.extension || "jpg";
       const padLength = seq.digits ?? 3;
       const start = seq.startFrame ?? 1;
       for (let i = 0; i < seq.frameCount; i++) {
         const frameIndex = start + i;
-        const img = new Image();
         const paddedIndex = frameIndex.toString().padStart(padLength, "0");
-        img.src = `${seq.path}${paddedIndex}.${ext}`;
-
-        const currentGlobalIndex = globalFrameIndex++;
-
-        img.onload = () => {
-          if (currentGlobalIndex === 0 && canvasRef.current) {
-            const ctx = canvasRef.current.getContext("2d");
-            if (ctx) {
-              renderFrameIndex(0, ctx, canvasRef.current, loadedImages);
-            }
-          }
-        };
-        loadedImages.push(img);
+        urls.push(`${seq.path}${paddedIndex}.${ext}`);
       }
     });
+    return urls;
+  }, [sequences]);
 
-    setImages(loadedImages);
-  }, [sequences, shouldLoad, renderFrameIndex]);
+  // Progressive image loading: load first PRIORITY_BATCH frames immediately,
+  // then load remaining in batches of BATCH_SIZE with delays.
+  // Images are stored in imagesRef (stable) — no state updates after initial bind.
+  useEffect(() => {
+    if (!shouldLoad) return;
 
-  // GSAP scroll-bound timeline
+    const urls = buildFrameUrls();
+    const imgArray: HTMLImageElement[] = new Array(urls.length);
+    imagesRef.current = imgArray;
+    let cancelled = false;
+
+    // Helper: load a single frame by index and return a promise
+    const loadFrame = (index: number): Promise<void> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        imgArray[index] = img;
+
+        img.onload = () => {
+          // Draw frame 0 to canvas immediately when it arrives
+          if (index === 0 && canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+              renderFrame(0, ctx, canvasRef.current);
+            }
+          }
+          resolve();
+        };
+        img.onerror = () => resolve(); // Don't block batch on a single failure
+        img.src = urls[index];
+      });
+    };
+
+    // Phase 1: Load priority batch (first N frames) immediately
+    const priorityEnd = Math.min(PRIORITY_BATCH, urls.length);
+    const priorityPromises: Promise<void>[] = [];
+    for (let i = 0; i < priorityEnd; i++) {
+      priorityPromises.push(loadFrame(i));
+    }
+
+    // Once priority frames are loaded, signal GSAP to bind (one-time)
+    Promise.all(priorityPromises).then(() => {
+      if (cancelled) return;
+      setImagesReady(true);
+
+      // Phase 2: Load remaining frames in background batches
+      // No state updates needed — GSAP reads directly from imagesRef
+      let batchStart = priorityEnd;
+
+      const loadNextBatch = () => {
+        if (cancelled || batchStart >= urls.length) return;
+
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, urls.length);
+        const batchPromises: Promise<void>[] = [];
+        for (let i = batchStart; i < batchEnd; i++) {
+          batchPromises.push(loadFrame(i));
+        }
+
+        batchStart = batchEnd;
+
+        Promise.all(batchPromises).then(() => {
+          if (cancelled) return;
+          if (batchStart < urls.length) {
+            if (typeof requestIdleCallback !== "undefined") {
+              requestIdleCallback(() => setTimeout(loadNextBatch, BATCH_DELAY));
+            } else {
+              setTimeout(loadNextBatch, BATCH_DELAY);
+            }
+          }
+        });
+      };
+
+      // Start background loading after a short pause to let the UI settle
+      setTimeout(loadNextBatch, 100);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldLoad, buildFrameUrls, renderFrame]);
+
+  // GSAP scroll-bound timeline — binds once when imagesReady becomes true
   useGSAP(
     () => {
-      if (!triggerRef.current || images.length === 0 || !canvasRef.current)
+      if (!triggerRef.current || !imagesReady || !canvasRef.current)
         return;
 
       const canvas = canvasRef.current;
@@ -277,11 +341,10 @@ export default function CanvasSequence({
       if (!ctx) return;
 
       // Render initial frame immediately once timeline binds
-      renderFrameIndex(
+      renderFrame(
         Math.round(frameRef.current.frame),
         ctx,
-        canvas,
-        images
+        canvas
       );
 
       const timeline = gsap.timeline({
@@ -299,7 +362,7 @@ export default function CanvasSequence({
         ease: "none",
         onUpdate: () => {
           const currentFrame = Math.round(frameRef.current.frame);
-          renderFrameIndex(currentFrame, ctx, canvas, images);
+          renderFrame(currentFrame, ctx, canvas);
         },
       });
 
@@ -307,13 +370,24 @@ export default function CanvasSequence({
         timeline.kill();
       };
     },
-    { dependencies: [images, triggerRef, renderFrameIndex], scope: triggerRef }
+    { dependencies: [imagesReady, triggerRef, renderFrame], scope: triggerRef }
   );
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={`w-full h-full object-cover ${className}`}
-    />
+    <>
+      {/* Preload hint for the very first frame when priority is set */}
+      {priority && sequences[0] && (
+        <link
+          rel="preload"
+          as="image"
+          href={`${sequences[0].path}${(sequences[0].startFrame ?? 1).toString().padStart(sequences[0].digits ?? 3, "0")}.${sequences[0].extension || "jpg"}`}
+        />
+      )}
+      <canvas
+        ref={canvasRef}
+        className={`w-full h-full object-cover ${className}`}
+      />
+    </>
   );
 }
+

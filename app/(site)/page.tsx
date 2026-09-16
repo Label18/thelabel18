@@ -12,7 +12,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 const sequences: SequenceConfig[] = [
-    { path: "/frames-final-client/frame_", frameCount: 240, extension: "png", digits: 6, startFrame: 1 },
+    { path: "/frames-final-client/frame_", frameCount: 240, extension: "webp", digits: 6, startFrame: 1 },
 ];
 
 const sequences2: SequenceConfig[] = [
@@ -230,7 +230,7 @@ export default function Home() {
 
     return (
         <main ref={containerRef} className="bg-black">
-            <link rel="preload" as="image" href="/frames-final-client/frame_000001.png" type="image/png" />
+
 
             {/* ============================================================ */}
             {/* HERO SECTION 1 - ETHNIC WEAR / CLOTHING                     */}
@@ -242,6 +242,7 @@ export default function Home() {
                         sequences={sequences}
                         className="hero-canvas"
                         bgColor="black"
+                        priority={true}
                         focalPointY="top"
                         offsetY={60}
                     />

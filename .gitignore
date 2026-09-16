@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# PNG backup (original frames before WebP conversion)
+/public/frames-final-client-png-backup
