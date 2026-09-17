@@ -25,14 +25,20 @@ interface CanvasSequenceProps {
   priority?: boolean;
   focalPointY?: "top" | "center";
   offsetY?: number;
+  /** Called on every scroll-driven frame change with the current progress (0-1) */
+  onProgressChange?: (progress: number) => void;
 }
 
 /** How many frames to load in the initial high-priority batch */
 const PRIORITY_BATCH = 5;
+/** How many frames ahead/behind the current scroll position to keep loaded */
+const LOAD_WINDOW = 30;
 /** How many frames to load per background batch */
-const BATCH_SIZE = 20;
+const BATCH_SIZE = 10;
 /** Delay between background batches (ms) */
-const BATCH_DELAY = 60;
+const BATCH_DELAY = 40;
+/** Maximum canvas DPR — prevents oversized canvas on Retina displays */
+const MAX_DPR = 1.5;
 
 export default function CanvasSequence({
   sequences,
@@ -44,6 +50,7 @@ export default function CanvasSequence({
   priority = false,
   focalPointY = "center",
   offsetY = 0,
+  onProgressChange,
 }: CanvasSequenceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Stable ref for images — GSAP reads from this without re-binding
@@ -53,6 +60,15 @@ export default function CanvasSequence({
   const [shouldLoad, setShouldLoad] = useState(!lazy);
   const frameRef = useRef({ frame: 0 });
   const lastRenderedIndexRef = useRef<number | null>(null);
+
+  // Track which frames are already loading/loaded to avoid duplicate requests
+  const loadedSetRef = useRef<Set<number>>(new Set());
+  // Track the current scroll frame for scroll-aware loading
+  const currentScrollFrameRef = useRef(0);
+  // Stable ref for frame URLs
+  const urlsRef = useRef<string[]>([]);
+  // Cancelled flag for cleanup
+  const cancelledRef = useRef(false);
 
   const totalFrames = sequences.reduce((acc, seq) => acc + seq.frameCount, 0);
 
@@ -214,10 +230,11 @@ export default function CanvasSequence({
   );
 
   // Set canvas dimensions immediately on mount and handle resize
+  // DPR is capped at MAX_DPR to avoid oversized canvases on Retina displays
   useEffect(() => {
     const updateCanvasSize = () => {
       if (!canvasRef.current) return;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
       canvasRef.current.width = window.innerWidth * dpr;
       canvasRef.current.height = window.innerHeight * dpr;
 
@@ -250,19 +267,16 @@ export default function CanvasSequence({
     return urls;
   }, [sequences]);
 
-  // Progressive image loading: load first PRIORITY_BATCH frames immediately,
-  // then load remaining in batches of BATCH_SIZE with delays.
-  // Images are stored in imagesRef (stable) — no state updates after initial bind.
-  useEffect(() => {
-    if (!shouldLoad) return;
+  // Load a single frame by index — skips if already loading/loaded
+  const loadFrame = useCallback(
+    (index: number): Promise<void> => {
+      const urls = urlsRef.current;
+      const imgArray = imagesRef.current;
+      if (index < 0 || index >= urls.length) return Promise.resolve();
+      if (loadedSetRef.current.has(index)) return Promise.resolve();
 
-    const urls = buildFrameUrls();
-    const imgArray: HTMLImageElement[] = new Array(urls.length);
-    imagesRef.current = imgArray;
-    let cancelled = false;
+      loadedSetRef.current.add(index);
 
-    // Helper: load a single frame by index and return a promise
-    const loadFrame = (index: number): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
         imgArray[index] = img;
@@ -280,7 +294,66 @@ export default function CanvasSequence({
         img.onerror = () => resolve(); // Don't block batch on a single failure
         img.src = urls[index];
       });
-    };
+    },
+    [renderFrame]
+  );
+
+  // Load frames within a window around a target frame index
+  const loadFrameWindow = useCallback(
+    (centerFrame: number) => {
+      if (cancelledRef.current) return;
+      const urls = urlsRef.current;
+      if (!urls.length) return;
+
+      const start = Math.max(0, centerFrame - LOAD_WINDOW);
+      const end = Math.min(urls.length - 1, centerFrame + LOAD_WINDOW);
+
+      // Collect frames that still need loading, prioritizing frames closest to center
+      const toLoad: number[] = [];
+      for (let offset = 0; offset <= LOAD_WINDOW; offset++) {
+        // Load ahead (forward) first, then behind
+        const ahead = centerFrame + offset;
+        const behind = centerFrame - offset;
+        if (ahead <= end && !loadedSetRef.current.has(ahead)) toLoad.push(ahead);
+        if (behind >= start && behind !== ahead && !loadedSetRef.current.has(behind)) toLoad.push(behind);
+      }
+
+      if (toLoad.length === 0) return;
+
+      // Load in small batches to avoid overwhelming the network
+      let batchStart = 0;
+      const loadNextBatch = () => {
+        if (cancelledRef.current || batchStart >= toLoad.length) return;
+
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, toLoad.length);
+        const batchPromises: Promise<void>[] = [];
+        for (let i = batchStart; i < batchEnd; i++) {
+          batchPromises.push(loadFrame(toLoad[i]));
+        }
+        batchStart = batchEnd;
+
+        Promise.all(batchPromises).then(() => {
+          if (!cancelledRef.current && batchStart < toLoad.length) {
+            setTimeout(loadNextBatch, BATCH_DELAY);
+          }
+        });
+      };
+
+      loadNextBatch();
+    },
+    [loadFrame]
+  );
+
+  // Initial loading: load priority batch then signal ready, then load window around frame 0
+  useEffect(() => {
+    if (!shouldLoad) return;
+
+    cancelledRef.current = false;
+    const urls = buildFrameUrls();
+    urlsRef.current = urls;
+    const imgArray: HTMLImageElement[] = new Array(urls.length);
+    imagesRef.current = imgArray;
+    loadedSetRef.current = new Set();
 
     // Phase 1: Load priority batch (first N frames) immediately
     const priorityEnd = Math.min(PRIORITY_BATCH, urls.length);
@@ -291,44 +364,17 @@ export default function CanvasSequence({
 
     // Once priority frames are loaded, signal GSAP to bind (one-time)
     Promise.all(priorityPromises).then(() => {
-      if (cancelled) return;
+      if (cancelledRef.current) return;
       setImagesReady(true);
 
-      // Phase 2: Load remaining frames in background batches
-      // No state updates needed — GSAP reads directly from imagesRef
-      let batchStart = priorityEnd;
-
-      const loadNextBatch = () => {
-        if (cancelled || batchStart >= urls.length) return;
-
-        const batchEnd = Math.min(batchStart + BATCH_SIZE, urls.length);
-        const batchPromises: Promise<void>[] = [];
-        for (let i = batchStart; i < batchEnd; i++) {
-          batchPromises.push(loadFrame(i));
-        }
-
-        batchStart = batchEnd;
-
-        Promise.all(batchPromises).then(() => {
-          if (cancelled) return;
-          if (batchStart < urls.length) {
-            if (typeof requestIdleCallback !== "undefined") {
-              requestIdleCallback(() => setTimeout(loadNextBatch, BATCH_DELAY));
-            } else {
-              setTimeout(loadNextBatch, BATCH_DELAY);
-            }
-          }
-        });
-      };
-
-      // Start background loading after a short pause to let the UI settle
-      setTimeout(loadNextBatch, 100);
+      // Phase 2: Load the window around frame 0
+      setTimeout(() => loadFrameWindow(0), 100);
     });
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
-  }, [shouldLoad, buildFrameUrls, renderFrame]);
+  }, [shouldLoad, buildFrameUrls, loadFrame, loadFrameWindow]);
 
   // GSAP scroll-bound timeline — binds once when imagesReady becomes true
   useGSAP(
@@ -353,6 +399,10 @@ export default function CanvasSequence({
           start: "top top",
           end: "bottom bottom",
           scrub: true,
+          onUpdate: (self) => {
+            // Notify parent of progress change (for counter updates via ref)
+            onProgressChange?.(self.progress);
+          },
         },
       });
 
@@ -363,6 +413,13 @@ export default function CanvasSequence({
         onUpdate: () => {
           const currentFrame = Math.round(frameRef.current.frame);
           renderFrame(currentFrame, ctx, canvas);
+
+          // Trigger scroll-aware loading when user scrolls to new region
+          const prevCenter = currentScrollFrameRef.current;
+          if (Math.abs(currentFrame - prevCenter) > LOAD_WINDOW * 0.5) {
+            currentScrollFrameRef.current = currentFrame;
+            loadFrameWindow(currentFrame);
+          }
         },
       });
 
@@ -370,7 +427,7 @@ export default function CanvasSequence({
         timeline.kill();
       };
     },
-    { dependencies: [imagesReady, triggerRef, renderFrame], scope: triggerRef }
+    { dependencies: [imagesReady, triggerRef, renderFrame, totalFrames, loadFrameWindow, onProgressChange], scope: triggerRef }
   );
 
   return (
@@ -390,4 +447,3 @@ export default function CanvasSequence({
     </>
   );
 }
-

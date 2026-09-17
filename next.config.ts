@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/ezgif-8e1957c3e1c78d6d-png-split/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/frames-final-client/:path*",
         headers: [
           {

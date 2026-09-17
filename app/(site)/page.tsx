@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import CanvasSequence, { SequenceConfig } from "@/components/CanvasSequence";
 import { getCategoriesTree, CategoryTree } from "@/lib/categories";
@@ -27,12 +27,14 @@ export default function Home() {
     // Section 1 refs
     const scrollSectionRef = useRef<HTMLDivElement>(null);
     const textRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [scrollProgress, setScrollProgress] = useState(0);
+    const counterRef1 = useRef<HTMLSpanElement>(null);
+    const scrollIndicatorRef1 = useRef<HTMLDivElement>(null);
 
     // Section 2 refs
     const scrollSectionRef2 = useRef<HTMLDivElement>(null);
     const textRefs2 = useRef<(HTMLDivElement | null)[]>([]);
-    const [scrollProgress2, setScrollProgress2] = useState(0);
+    const counterRef2 = useRef<HTMLSpanElement>(null);
+    const scrollIndicatorRef2 = useRef<HTMLDivElement>(null);
 
     // Dynamic Categories from Admin Panel
     const [categories, setCategories] = useState<CategoryTree[]>([]);
@@ -67,6 +69,28 @@ export default function Home() {
         "/sequence3/ezgif-frame-150.jpg",
     ];
 
+    // Callback for CanvasSequence section 1 progress — updates counter + scroll indicator via DOM
+    const onProgress1 = useCallback((progress: number) => {
+        const num = Math.min(10, Math.floor(progress * 10) + 1);
+        if (counterRef1.current) {
+            counterRef1.current.textContent = num < 10 ? `0${num}` : `${num}`;
+        }
+        if (scrollIndicatorRef1.current) {
+            scrollIndicatorRef1.current.classList.toggle('hidden', progress > 0.02);
+        }
+    }, []);
+
+    // Callback for CanvasSequence section 2 progress — updates counter + scroll indicator via DOM
+    const onProgress2 = useCallback((progress: number) => {
+        const num = Math.min(10, Math.floor(progress * 10) + 1);
+        if (counterRef2.current) {
+            counterRef2.current.textContent = num < 10 ? `0${num}` : `${num}`;
+        }
+        if (scrollIndicatorRef2.current) {
+            scrollIndicatorRef2.current.classList.toggle('hidden', progress > 0.02);
+        }
+    }, []);
+
     useGSAP(() => {
         // === SECTION 1 LOGIC ===
         const tlScroll = gsap.timeline({
@@ -75,9 +99,6 @@ export default function Home() {
                 start: "top top",
                 end: "bottom bottom",
                 scrub: true,
-                onUpdate: (self) => {
-                    setScrollProgress(self.progress);
-                }
             }
         });
 
@@ -132,9 +153,6 @@ export default function Home() {
                 start: "top top",
                 end: "bottom bottom",
                 scrub: true,
-                onUpdate: (self) => {
-                    setScrollProgress2(self.progress);
-                }
             }
         });
 
@@ -196,37 +214,7 @@ export default function Home() {
 
     }, { scope: containerRef });
 
-    // Calculate counters
-    const getCounter1 = (progress: number) => {
-        let num = 1;
-        if (progress >= 0.9) num = 10;
-        else if (progress >= 0.8) num = 9;
-        else if (progress >= 0.7) num = 8;
-        else if (progress >= 0.6) num = 7;
-        else if (progress >= 0.5) num = 6;
-        else if (progress >= 0.4) num = 5;
-        else if (progress >= 0.3) num = 4;
-        else if (progress >= 0.2) num = 3;
-        else if (progress >= 0.1) num = 2;
-        return num;
-    };
 
-    const getCounter2 = (progress: number) => {
-        let num = 1;
-        if (progress >= 0.9) num = 10;
-        else if (progress >= 0.8) num = 9;
-        else if (progress >= 0.7) num = 8;
-        else if (progress >= 0.6) num = 7;
-        else if (progress >= 0.5) num = 6;
-        else if (progress >= 0.4) num = 5;
-        else if (progress >= 0.3) num = 4;
-        else if (progress >= 0.2) num = 3;
-        else if (progress >= 0.1) num = 2;
-        return num;
-    };
-
-    const num1 = getCounter1(scrollProgress);
-    const num2 = getCounter2(scrollProgress2);
 
     return (
         <main ref={containerRef} className="bg-black">
@@ -245,6 +233,7 @@ export default function Home() {
                         priority={true}
                         focalPointY="top"
                         offsetY={60}
+                        onProgressChange={onProgress1}
                     />
 
                     <div className="hero-gradient-overlay"></div>
@@ -361,13 +350,13 @@ export default function Home() {
                         </Link>
                     </div>
 
-                    <div className={`scroll-indicator ${scrollProgress > 0.02 ? 'hidden' : ''}`}>
+                    <div ref={scrollIndicatorRef1} className="scroll-indicator">
                         <div className="scroll-line"></div>
                         <span className="scroll-text">Scroll to explore</span>
                     </div>
 
                     <div className="hero-counter">
-                        <span className="counter-current">{num1 < 10 ? `0${num1}` : num1}</span>
+                        <span ref={counterRef1} className="counter-current">01</span>
                         <div className="counter-divider"></div>
                         <span className="counter-total">10</span>
                     </div>
@@ -428,13 +417,14 @@ export default function Home() {
             {/* ============================================================ */}
             {/* HERO SECTION 2 - JEWELRY                                     */}
             {/* ============================================================ */}
-            <section id="hero2" ref={scrollSectionRef2} className="hero-section" style={{ height: "1800vh" }}>
+            <section id="hero2" ref={scrollSectionRef2} className="hero-section" style={{ height: "900vh" }}>
                 <div className="hero-sticky">
                     <CanvasSequence
                         triggerRef={scrollSectionRef2}
                         sequences={sequences2}
                         className="hero-canvas"
                         lazy={true}
+                        onProgressChange={onProgress2}
                     />
 
                     <div className="hero-gradient-overlay"></div>
@@ -551,13 +541,13 @@ export default function Home() {
                         </Link>
                     </div>
 
-                    <div className={`scroll-indicator ${scrollProgress2 > 0.02 ? 'hidden' : ''}`}>
+                    <div ref={scrollIndicatorRef2} className="scroll-indicator">
                         <div className="scroll-line"></div>
                         <span className="scroll-text">Scroll to explore</span>
                     </div>
 
                     <div className="hero-counter">
-                        <span className="counter-current">{num2.toString().padStart(2, '0')}</span>
+                        <span ref={counterRef2} className="counter-current">01</span>
                         <div className="counter-divider"></div>
                         <span className="counter-total">10</span>
                     </div>
