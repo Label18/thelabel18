@@ -38,9 +38,15 @@ export default function Home() {
 
     // Dynamic Categories from Admin Panel
     const [categories, setCategories] = useState<CategoryTree[]>([]);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         getCategoriesTree().then(setCategories).catch(console.error);
+
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     const clothingCat = categories.find(c =>
@@ -232,7 +238,9 @@ export default function Home() {
                         bgColor="black"
                         priority={true}
                         focalPointY="top"
-                        offsetY={60}
+                        scale={isMobile ? 1.45 : 1}
+                        offsetX={isMobile ? 120 : 0}
+                        offsetY={isMobile ? 0 : 60}
                         onProgressChange={onProgress1}
                     />
 

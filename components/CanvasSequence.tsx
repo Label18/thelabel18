@@ -24,7 +24,9 @@ interface CanvasSequenceProps {
   lazy?: boolean;
   priority?: boolean;
   focalPointY?: "top" | "center";
+  offsetX?: number;
   offsetY?: number;
+  scale?: number;
   /** Called on every scroll-driven frame change with the current progress (0-1) */
   onProgressChange?: (progress: number) => void;
 }
@@ -49,7 +51,9 @@ export default function CanvasSequence({
   lazy = false,
   priority = false,
   focalPointY = "center",
+  offsetX = 0,
   offsetY = 0,
+  scale = 1,
   onProgressChange,
 }: CanvasSequenceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -114,10 +118,10 @@ export default function CanvasSequence({
       let centerShift_y: number;
 
       if (fitMode === "cover") {
-        const hRatio = canvas.width / imgWidth;
-        const vRatio = canvas.height / imgHeight;
+        const hRatio = (canvas.width / imgWidth) * scale;
+        const vRatio = (canvas.height / imgHeight) * scale;
         ratio = Math.max(hRatio, vRatio);
-        centerShift_x = (canvas.width - imgWidth * ratio) / 2;
+        centerShift_x = (canvas.width - imgWidth * ratio) / 2 + offsetX;
         if (focalPointY === "top") {
           const scaledH = imgHeight * ratio;
           centerShift_y = scaledH > canvas.height
@@ -130,14 +134,14 @@ export default function CanvasSequence({
         fitMode === "contain-height" ||
         (fitMode === "auto" && imgAspect < 0.9 && canvasAspect > imgAspect)
       ) {
-        ratio = canvas.height / imgHeight;
-        centerShift_x = (canvas.width - imgWidth * ratio) / 2;
+        ratio = (canvas.height / imgHeight) * scale;
+        centerShift_x = (canvas.width - imgWidth * ratio) / 2 + offsetX;
         centerShift_y = offsetY;
       } else {
-        const hRatio = canvas.width / imgWidth;
-        const vRatio = canvas.height / imgHeight;
+        const hRatio = (canvas.width / imgWidth) * scale;
+        const vRatio = (canvas.height / imgHeight) * scale;
         ratio = Math.max(hRatio, vRatio);
-        centerShift_x = (canvas.width - imgWidth * ratio) / 2;
+        centerShift_x = (canvas.width - imgWidth * ratio) / 2 + offsetX;
         if (focalPointY === "top") {
           const scaledH = imgHeight * ratio;
           centerShift_y = scaledH > canvas.height
