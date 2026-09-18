@@ -312,6 +312,20 @@ export default function CanvasSequence({
       const start = Math.max(0, centerFrame - LOAD_WINDOW);
       const end = Math.min(urls.length - 1, centerFrame + LOAD_WINDOW);
 
+      // --- MEMORY MANAGEMENT ---
+      // Unload frames outside the current window to free RAM
+      for (let i = 0; i < urls.length; i++) {
+        if (i < start || i > end) {
+          const img = imagesRef.current[i];
+          if (img) {
+            img.src = ""; // Cancel load and free memory
+            delete imagesRef.current[i];
+            loadedSetRef.current.delete(i);
+          }
+        }
+      }
+      // -------------------------
+
       // Collect frames that still need loading, prioritizing frames closest to center
       const toLoad: number[] = [];
       for (let offset = 0; offset <= LOAD_WINDOW; offset++) {
