@@ -12,7 +12,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 const sequences: SequenceConfig[] = [
-    { path: "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-", frameCount: 300, extension: "png", digits: 3, startFrame: 1 },
+    { path: "/kling-webp/frame_", frameCount: 193, extension: "webp", digits: 6, startFrame: 1 },
 ];
 
 const sequences2: SequenceConfig[] = [
@@ -62,10 +62,10 @@ export default function Home() {
     ) || categories[1];
 
     const fallbackClothingImages = [
-        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-050.png",
-        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-100.png",
-        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-150.png",
-        "/ezgif-8e1957c3e1c78d6d-png-split/ezgif-frame-200.png",
+        "/kling-webp/frame_000050.webp",
+        "/kling-webp/frame_000100.webp",
+        "/kling-webp/frame_000150.webp",
+        "/kling-webp/frame_000190.webp",
     ];
 
     const fallbackJewelleryImages = [
@@ -238,9 +238,9 @@ export default function Home() {
                         bgColor="black"
                         priority={true}
                         focalPointY="top"
-                        scale={isMobile ? 1.45 : 1}
-                        offsetX={isMobile ? 120 : 0}
-                        offsetY={isMobile ? 0 : 60}
+                        scale={1}
+                        offsetX={isMobile ? 60 : 0}
+                        offsetY={isMobile ? 120 : 100}
                         onProgressChange={onProgress1}
                     />
 
