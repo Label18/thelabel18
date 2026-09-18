@@ -12,12 +12,9 @@ export default function AdminLayout({
           past a fixed element. That's why content was rendering underneath it. */}
       <Sidebar />
 
-      {/* pl-72 reserves exactly the sidebar's width (w-72 = 18rem) so content
-          sits beside it instead of behind it. No background or text color
-          here on purpose — each admin page (dashboard, categories, etc.) sets
-          its own theme, and a dark bg/text here would fight with light pages
-          like Categories and cause exactly the "invisible text" issue. */}
-      <main className="pl-72">
+      {/* md:pl-72 reserves exactly the sidebar's width (w-72 = 18rem) on desktop 
+          so content sits beside it instead of behind it. On mobile, it's full width. */}
+      <main className="md:pl-72">
         {children}
       </main>
     </div>

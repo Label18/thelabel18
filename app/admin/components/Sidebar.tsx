@@ -20,6 +20,8 @@ import {
   BarChart3,
   ShieldCheck,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -87,6 +89,7 @@ export default function Sidebar() {
   const [allowedPaths, setAllowedPaths] = useState<string[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     async function loadPermissions() {
@@ -145,85 +148,132 @@ export default function Sidebar() {
     }),
   })).filter((group) => group.items.length > 0)
   return (
-    <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col border-r border-[#D4AF37]/10 bg-[#0a0a0a] font-outfit text-[#F5F2EB]">
-      {/* Brand header */}
-      <div className="sticky top-0 z-10 shrink-0 bg-[#0a0a0a]">
-        <div className="flex items-center gap-3.5 px-6 py-6">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
+    <>
+      {/* Mobile Header */}
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#D4AF37]/10 bg-[#0a0a0a] p-4 md:hidden">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="-ml-2 rounded-lg p-2 text-[#F5F2EB] transition-colors hover:bg-white/5"
+            aria-label="Open menu"
+          >
+            <Menu size={22} strokeWidth={1.75} />
+          </button>
+          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
             <Image src="/logo.jpg" alt="The Label 18 Logo" fill className="object-cover" priority />
           </div>
-          <div className="min-w-0">
-            <h1 className="truncate text-[15px] font-medium tracking-[0.04em] text-[#F5F2EB]">
-              The Label 18
-            </h1>
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#D4AF37]/70">
-              Admin Panel
-            </p>
+          <span className="font-outfit text-[16px] font-medium tracking-[0.04em] text-[#F5F2EB]">
+            The Label 18
+          </span>
+        </div>
+        <Link
+          href="/login"
+          onClick={() => setIsOpen(false)}
+          className="rounded-lg p-2 text-[#a89f96] transition-colors hover:bg-red-500/[0.08] hover:text-red-400"
+          aria-label="Logout"
+        >
+          <LogOut size={20} strokeWidth={1.75} />
+        </Link>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-[#D4AF37]/10 bg-[#0a0a0a] font-outfit text-[#F5F2EB] transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Brand header */}
+        <div className="sticky top-0 z-10 shrink-0 bg-[#0a0a0a]">
+          <div className="flex items-center justify-between px-6 py-6">
+            <div className="flex items-center gap-3.5">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
+                <Image src="/logo.jpg" alt="The Label 18 Logo" fill className="object-cover" priority />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-[15px] font-medium tracking-[0.04em] text-[#F5F2EB]">
+                  The Label 18
+                </h1>
+                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#D4AF37]/70">
+                  Admin Panel
+                </p>
+              </div>
+            </div>
+            <button
+              className="rounded-lg p-2 text-[#8a8178] transition-colors hover:bg-white/5 hover:text-[#F5F2EB] md:hidden"
+              onClick={() => setIsOpen(false)}
+            >
+              <X size={20} strokeWidth={1.75} />
+            </button>
+          </div>
+          <div className="mx-6 h-px bg-gradient-to-r from-[#D4AF37]/25 via-[#D4AF37]/5 to-transparent" />
+        </div>
+
+        {/* Navigation list */}
+        <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6 text-[13.5px]">
+          {loading ? (
+            <div className="px-3 text-xs text-[#8a8178] animate-pulse">Loading menu...</div>
+          ) : (
+            filteredNav.map((group, i) => (
+              <div key={i} className="space-y-1">
+                {group.title && (
+                  <div className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#8a8178]">
+                    {group.title}
+                  </div>
+                )}
+                {group.items.map((item) => {
+                  const active = isActive(item.href)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={[
+                        'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150',
+                        active
+                          ? 'bg-[#D4AF37]/[0.08] text-[#F5F2EB]'
+                          : 'text-[#a89f96] hover:bg-white/[0.04] hover:text-[#F5F2EB]',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[#D4AF37] transition-opacity duration-150',
+                          active ? 'opacity-100' : 'opacity-0',
+                        ].join(' ')}
+                      />
+                      <span
+                        className={active ? 'text-[#D4AF37]' : 'text-[#8a8178] group-hover:text-[#D4AF37]/80'}
+                      >
+                        {item.icon}
+                      </span>
+                      <span className={active ? 'font-medium' : 'font-normal'}>{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            ))
+          )}
+        </nav>
+
+        {/* Footer & Logout */}
+        <div className="sticky bottom-0 z-10 border-t border-white/[0.06] bg-[#0a0a0a]">
+          <div className="p-4">
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] text-[#a89f96] transition-colors duration-150 hover:bg-red-500/[0.08] hover:text-red-400"
+            >
+              <span className="text-[#8a8178] group-hover:text-red-400">
+                <LogOut size={17} strokeWidth={1.75} />
+              </span>
+              <span className="font-normal">Logout</span>
+            </Link>
           </div>
         </div>
-        <div className="mx-6 h-px bg-gradient-to-r from-[#D4AF37]/25 via-[#D4AF37]/5 to-transparent" />
-      </div>
-
-      {/* Navigation list */}
-      <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6 text-[13.5px]">
-        {loading ? (
-          <div className="px-3 text-xs text-[#8a8178] animate-pulse">Loading menu...</div>
-        ) : (
-          filteredNav.map((group, i) => (
-            <div key={i} className="space-y-1">
-              {group.title && (
-                <div className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#8a8178]">
-                  {group.title}
-                </div>
-              )}
-              {group.items.map((item) => {
-                const active = isActive(item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={[
-                      'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150',
-                      active
-                        ? 'bg-[#D4AF37]/[0.08] text-[#F5F2EB]'
-                        : 'text-[#a89f96] hover:bg-white/[0.04] hover:text-[#F5F2EB]',
-                    ].join(' ')}
-                  >
-                    <span
-                      className={[
-                        'absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[#D4AF37] transition-opacity duration-150',
-                        active ? 'opacity-100' : 'opacity-0',
-                      ].join(' ')}
-                    />
-                    <span
-                      className={active ? 'text-[#D4AF37]' : 'text-[#8a8178] group-hover:text-[#D4AF37]/80'}
-                    >
-                      {item.icon}
-                    </span>
-                    <span className={active ? 'font-medium' : 'font-normal'}>{item.label}</span>
-                  </Link>
-                )
-              })}
-            </div>
-          ))
-        )}
-      </nav>
-
-      {/* Footer & Logout */}
-      <div className="sticky bottom-0 z-10 bg-[#0a0a0a] border-t border-white/[0.06]">
-        <div className="p-4">
-          <Link
-            href="/login"
-            className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] text-[#a89f96] transition-colors duration-150 hover:bg-red-500/[0.08] hover:text-red-400"
-          >
-            <span className="text-[#8a8178] group-hover:text-red-400">
-              <LogOut size={17} strokeWidth={1.75} />
-            </span>
-            <span className="font-normal">Logout</span>
-          </Link>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }
