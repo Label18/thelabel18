@@ -238,9 +238,9 @@ export default function Home() {
                         bgColor="black"
                         priority={true}
                         focalPointY="top"
-                        scale={isMobile ? 2.5 : 1.8}
-                        offsetX={isMobile ? 60 : 0}
-                        offsetY={0}
+                        scale={1}
+                        offsetX={isMobile ? 120 : 0}
+                        offsetY={isMobile ? 80 : 100}
                         onProgressChange={onProgress1}
                     />
 
