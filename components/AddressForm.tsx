@@ -79,7 +79,7 @@ export default function AddressForm({
         </button>
 
         <h2
-          className="text-xl uppercase tracking-[0.15em] mb-6"
+          className="text-xl uppercase tracking-[0.15em] mb-6 text-[#1A1A1A]"
         >
           Add Address
         </h2>

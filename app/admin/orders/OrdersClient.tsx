@@ -121,8 +121,8 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
     }
 
     return (
-        <div>
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
+        <div className="font-outfit text-[#141414]">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-[#9c7d23]/20 bg-white/60 backdrop-blur-md px-6 py-6 md:px-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Orders</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -132,74 +132,74 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
-                        <Layers size={18} />
+            <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+                <div className="flex items-center gap-4 rounded-3xl border border-[#9c7d23]/10 bg-white/60 backdrop-blur-md p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#9c7d23]/30">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FAF7F1] text-[#9c7d23]">
+                        <Layers size={20} strokeWidth={1.5} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Total Orders</p>
-                        <p className="mt-0.5 text-2xl font-bold text-black">{orders.length}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b8478]">Total Orders</p>
+                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#141414]">{orders.length}</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                        <IndianRupee size={18} />
+                <div className="flex items-center gap-4 rounded-3xl border border-[#9c7d23]/10 bg-white/60 backdrop-blur-md p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#9c7d23]/30">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                        <IndianRupee size={20} strokeWidth={1.5} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Revenue</p>
-                        <p className="mt-0.5 text-2xl font-bold text-black">₹{totalRevenue.toLocaleString()}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b8478]">Revenue</p>
+                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#141414]">₹{totalRevenue.toLocaleString()}</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                        <Clock size={18} />
+                <div className="flex items-center gap-4 rounded-3xl border border-[#9c7d23]/10 bg-white/60 backdrop-blur-md p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#9c7d23]/30">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                        <Clock size={20} strokeWidth={1.5} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Pending</p>
-                        <p className="mt-0.5 text-2xl font-bold text-black">{pendingCount}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b8478]">Pending</p>
+                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#141414]">{pendingCount}</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                        <CheckCircle2 size={18} />
+                <div className="flex items-center gap-4 rounded-3xl border border-[#9c7d23]/10 bg-white/60 backdrop-blur-md p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#9c7d23]/30">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                        <CheckCircle2 size={20} strokeWidth={1.5} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Delivered</p>
-                        <p className="mt-0.5 text-2xl font-bold text-black">{deliveredCount}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b8478]">Delivered</p>
+                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#141414]">{deliveredCount}</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
-                        <XCircle size={18} />
+                <div className="flex items-center gap-4 rounded-3xl border border-[#9c7d23]/10 bg-white/60 backdrop-blur-md p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#9c7d23]/30">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                        <XCircle size={20} strokeWidth={1.5} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Cancelled</p>
-                        <p className="mt-0.5 text-2xl font-bold text-black">{cancelledCount}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b8478]">Cancelled</p>
+                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#141414]">{cancelledCount}</p>
                     </div>
                 </div>
             </div>
 
             {/* Search + filters */}
-            <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+            <div className="mb-6 flex flex-wrap items-center gap-4 rounded-3xl border border-[#9c7d23]/20 bg-white/60 backdrop-blur-md p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div className="relative min-w-[220px] flex-1">
-                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8b8478]" />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by order ID, customer, phone, product or SKU…"
-                        className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3.5 text-sm text-black outline-none focus:border-black"
+                        className="w-full rounded-2xl border border-[#9c7d23]/20 bg-white/80 py-3 pl-11 pr-4 text-sm text-[#141414] outline-none transition-colors focus:border-[#9c7d23]/50 focus:bg-white"
                     />
                 </div>
 
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                    className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-black outline-none focus:border-black"
+                    className="rounded-2xl border border-[#9c7d23]/20 bg-white/80 px-4 py-3 text-sm text-[#141414] outline-none transition-colors focus:border-[#9c7d23]/50 focus:bg-white cursor-pointer"
                 >
                     <option value="all">All Statuses</option>
                     {Object.entries(STATUS_LABEL).map(([value, label]) => (
@@ -215,25 +215,25 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                             setSearch('')
                             setStatusFilter('all')
                         }}
-                        className="rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-50"
+                        className="rounded-2xl border border-[#9c7d23]/20 px-4 py-3 text-sm font-semibold text-[#8b8478] hover:bg-[#FAF7F1] hover:text-[#141414] transition-colors"
                     >
                         Clear
                     </button>
                 )}
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="hidden md:block overflow-hidden rounded-3xl border border-[#9c7d23]/20 bg-white/60 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div className="overflow-x-auto">
-                    <table className="min-w-[900px] w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
-                            <th className="w-8 px-6 py-3 font-semibold"></th>
-                            <th className="px-6 py-3 font-semibold">Order</th>
-                            <th className="px-6 py-3 font-semibold">Customer</th>
-                            <th className="px-6 py-3 font-semibold">Date</th>
-                            <th className="px-6 py-3 font-semibold">Items</th>
-                            <th className="px-6 py-3 font-semibold">Amount Paid</th>
-                            <th className="px-6 py-3 font-semibold">Status</th>
+                    <table className="min-w-[1000px] w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-[#FAF7F1] text-[10px] uppercase tracking-[0.2em] text-[#8b8478]">
+                        <tr>
+                            <th className="w-12 px-6 py-4 font-semibold"></th>
+                            <th className="px-6 py-4 font-semibold">Order</th>
+                            <th className="px-6 py-4 font-semibold">Customer</th>
+                            <th className="px-6 py-4 font-semibold">Date</th>
+                            <th className="px-6 py-4 font-semibold">Items</th>
+                            <th className="px-6 py-4 font-semibold">Amount Paid</th>
+                            <th className="px-6 py-4 font-semibold">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -252,50 +252,51 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
                             return (
                                 <Fragment key={o.id}>
-                                    <tr className="border-t border-stone-100 hover:bg-stone-50">
-                                        <td className="px-6 py-3.5">
+                                    <tr className="border-t border-[#9c7d23]/10 hover:bg-white/40 transition-colors">
+                                        <td className="px-6 py-4">
                                             <button
                                                 onClick={() => setExpanded(isOpen ? null : o.id)}
-                                                className="text-stone-400 hover:text-black"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-[#9c7d23]/20 text-[#8b8478] transition-all hover:border-[#9c7d23]/50 hover:text-[#141414] hover:shadow-sm"
                                             >
                                                 <ChevronDown
-                                                    size={16}
-                                                    className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                                    size={14}
+                                                    strokeWidth={2.5}
+                                                    className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
                                                 />
                                             </button>
                                         </td>
-                                        <td className="px-6 py-3.5 font-outfit text-xs text-stone-600">
-                                            #{o.id.slice(0, 8).toUpperCase()}
+                                        <td className="px-6 py-4">
+                                            <span className="font-semibold text-[#141414]">#{o.id.slice(0, 8).toUpperCase()}</span>
                                         </td>
-                                        <td className="px-6 py-3.5">
-                                            <p className="font-medium text-black">{o.ship_full_name}</p>
-                                            <p className="text-xs text-stone-500">{o.ship_phone}</p>
+                                        <td className="px-6 py-4">
+                                            <p className="font-semibold text-[#141414]">{o.ship_full_name}</p>
+                                            <p className="text-xs text-[#8b8478]">{o.ship_phone}</p>
                                         </td>
-                                        <td className="px-6 py-3.5 text-stone-600">{orderDate}</td>
-                                        <td className="px-6 py-3.5 text-stone-600">{itemCount}</td>
-                                        <td className="px-6 py-3.5 font-semibold text-black">
+                                        <td className="px-6 py-4 text-[#8b8478]">{orderDate}</td>
+                                        <td className="px-6 py-4 text-[#8b8478]">{itemCount} items</td>
+                                        <td className="px-6 py-4 font-bold text-[#141414]">
                                             ₹{Number(o.total).toLocaleString()}
                                         </td>
-                                        <td className="px-6 py-3.5">
-                                            <div className="flex items-center gap-2">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
                                                 <span
-                                                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ${
+                                                    className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold ${
                                                         STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'
                                                     }`}
                                                 >
                                                     {STATUS_LABEL[o.status] ?? o.status}
                                                 </span>
                                                 {updatingId === o.id && (
-                                                    <Loader2 size={12} className="animate-spin text-stone-400" />
+                                                    <Loader2 size={14} className="animate-spin text-[#9c7d23]" />
                                                 )}
                                                 <a
                                                     href={`/admin/orders/invoice/${o.id}`}
                                                     download
                                                     onClick={(e) => e.stopPropagation()}
                                                     title="Download invoice"
-                                                    className="ml-1 text-stone-400 hover:text-black"
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-[#9c7d23]/20 text-[#8b8478] transition-all hover:border-[#9c7d23]/50 hover:text-[#141414] hover:shadow-sm"
                                                 >
-                                                    <Download size={14} />
+                                                    <Download size={14} strokeWidth={2} />
                                                 </a>
                                             </div>
                                         </td>
@@ -441,6 +442,197 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </tbody>
                 </table>
                 </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {filteredOrders.map((o) => {
+                    const isOpen = expanded === o.id;
+                    const itemCount = o.items.reduce((sum, i) => sum + i.quantity, 0);
+                    const orderDate = new Date(o.created_at).toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                    });
+
+                    return (
+                        <div key={o.id} className="rounded-2xl border border-[#9c7d23]/20 bg-white/60 backdrop-blur-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex flex-col overflow-hidden">
+                            <div className="p-4 flex items-center justify-between border-b border-[#9c7d23]/10">
+                                <div>
+                                    <span className="font-semibold text-[#141414] text-sm">#{o.id.slice(0, 8).toUpperCase()}</span>
+                                    <p className="text-[11px] text-[#8b8478] mt-0.5">{orderDate}</p>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <span
+                                        className={`rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold ${
+                                            STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'
+                                        }`}
+                                    >
+                                        {STATUS_LABEL[o.status] ?? o.status}
+                                    </span>
+                                    {updatingId === o.id && (
+                                        <Loader2 size={12} className="animate-spin text-[#9c7d23]" />
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="p-4 flex flex-col gap-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold text-[#141414] text-sm">{o.ship_full_name}</p>
+                                        <p className="text-xs text-[#8b8478]">{o.ship_phone}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-[#141414] text-sm">₹{Number(o.total).toLocaleString()}</p>
+                                        <p className="text-xs text-[#8b8478]">{itemCount} items</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 pt-1">
+                                    <button
+                                        onClick={() => setExpanded(isOpen ? null : o.id)}
+                                        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white border border-[#9c7d23]/20 py-2 text-xs font-semibold text-[#8b8478] hover:border-[#9c7d23]/50 hover:text-[#141414]"
+                                    >
+                                        {isOpen ? 'Hide Details' : 'View Details'}
+                                        <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    <a
+                                        href={`/admin/orders/invoice/${o.id}`}
+                                        download
+                                        className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-white border border-[#9c7d23]/20 text-[#8b8478] hover:border-[#9c7d23]/50 hover:text-[#141414]"
+                                    >
+                                        <Download size={14} />
+                                    </a>
+                                </div>
+                            </div>
+
+                            {isOpen && (
+                                <div className="bg-[#FAF7F1] p-4 border-t border-[#9c7d23]/10 flex flex-col gap-5">
+                                    {/* Items */}
+                                    <div>
+                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                            Items
+                                        </p>
+                                        <div className="divide-y divide-[#9c7d23]/10 rounded-xl border border-[#9c7d23]/10 bg-white">
+                                            {o.items.map((item) => (
+                                                <div key={item.id} className="flex gap-3 p-3">
+                                                    {item.product_variations?.image_url ? (
+                                                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-[#9c7d23]/10">
+                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                            <img
+                                                                src={item.product_variations.image_url}
+                                                                alt={item.product_name}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[#9c7d23]/10 bg-stone-50 text-stone-300">
+                                                            <ImageOff size={14} />
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-xs font-semibold text-[#141414] leading-tight">
+                                                            {item.product_name}
+                                                        </p>
+                                                        <p className="text-[10px] text-[#8b8478] mt-0.5">
+                                                            {item.variation_label ||
+                                                                [
+                                                                    item.product_variations?.size,
+                                                                    item.product_variations?.color,
+                                                                ]
+                                                                    .filter(Boolean)
+                                                                    .join(' · ') ||
+                                                                item.product_variations?.sku ||
+                                                                '—'}
+                                                            {' · '}Qty {item.quantity}
+                                                        </p>
+                                                        <div className="mt-1.5 flex items-center justify-between">
+                                                            <p className="text-[10px] text-[#8b8478]">
+                                                                ₹{Number(item.unit_price).toLocaleString()} each
+                                                            </p>
+                                                            <p className="text-xs font-bold text-[#141414]">
+                                                                ₹{Number(item.line_total).toLocaleString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Shipping */}
+                                    <div>
+                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                            Shipping Address
+                                        </p>
+                                        <div className="flex items-start gap-2 rounded-xl border border-[#9c7d23]/10 bg-white p-3">
+                                            <MapPin size={14} className="mt-0.5 shrink-0 text-[#8b8478]" />
+                                            <div className="text-xs text-stone-600">
+                                                <p className="font-semibold text-[#141414]">{o.ship_full_name}</p>
+                                                <p className="mt-0.5 leading-relaxed text-[#8b8478]">
+                                                    {o.ship_line1}
+                                                    {o.ship_line2 ? `, ${o.ship_line2}` : ''}, {o.ship_city},{' '}
+                                                    {o.ship_state} {o.ship_postal_code}, {o.ship_country}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div>
+                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                            Update Status
+                                        </p>
+                                        <select
+                                            value={o.status}
+                                            disabled={updatingId === o.id}
+                                            onChange={(e) => handleStatusChange(o.id, e.target.value)}
+                                            className="w-full rounded-xl border border-[#9c7d23]/20 bg-white px-3.5 py-2.5 text-xs font-semibold text-[#141414] outline-none focus:border-[#9c7d23]/50 disabled:opacity-40 mb-4"
+                                        >
+                                            {Object.entries(STATUS_LABEL).map(([value, label]) => (
+                                                <option key={value} value={value}>
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                            Summary
+                                        </p>
+                                        <div className="space-y-1.5 rounded-xl border border-[#9c7d23]/10 bg-white p-3 text-xs">
+                                            <div className="flex justify-between text-stone-500">
+                                                <span>Subtotal</span>
+                                                <span>₹{Number(o.subtotal).toLocaleString()}</span>
+                                            </div>
+                                            {Number(o.discount_amount) > 0 && (
+                                                <div className="flex justify-between text-emerald-600">
+                                                    <span>
+                                                        Discount {o.coupon_code ? `(${o.coupon_code})` : ''}
+                                                    </span>
+                                                    <span>−₹{Number(o.discount_amount).toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between border-t border-[#9c7d23]/10 pt-2 text-sm font-bold text-[#141414]">
+                                                <span>Total</span>
+                                                <span>₹{Number(o.total).toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+
+                {filteredOrders.length === 0 && (
+                    <div className="rounded-2xl border border-[#9c7d23]/20 bg-white/60 p-8 text-center text-sm text-[#8b8478]">
+                        {orders.length === 0 ? 'No orders yet.' : 'No orders match your search or filter.'}
+                    </div>
+                )}
             </div>
         </div>
     )
