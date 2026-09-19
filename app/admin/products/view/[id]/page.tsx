@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { ArrowLeft, ImageOff } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -31,7 +34,7 @@ export default async function ViewProductPage({ params }: { params: Promise<{ id
 
   return (
     <div
-      className="min-h-screen bg-[#FAF7F1] px-10 py-10 font-sans text-black"
+      className="min-h-screen bg-[#FAF7F1] px-4 py-6 md:px-10 md:py-10 font-sans text-black"
       style={{ colorScheme: 'light' }}
     >
       <Link
@@ -86,7 +89,7 @@ export default async function ViewProductPage({ params }: { params: Promise<{ id
             Variations
           </h2>
         </div>
-        <table className="w-full text-left text-sm">
+        <table className="min-w-[900px] w-full text-left text-sm">
           <thead>
             <tr className="text-[11px] uppercase tracking-wider text-stone-400">
               <th className="px-6 py-2 font-semibold">Image</th>

@@ -20,6 +20,9 @@ import {
 } from 'lucide-react'
 import { getComprehensiveReport, CategoryReportRow } from '../reports/actions'
 
+export const dynamic = 'force-dynamic'
+
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -273,7 +276,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Unified 8-Card Stat Grid (4 Up, 4 Down perfectly structured) */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-8">
         {/* Card 1: Total Revenue */}
         <div className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-sm transition-all hover:border-[#9C7D23]/40">
           <div className="flex items-center justify-between">
@@ -488,7 +491,7 @@ export default async function AdminDashboardPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="min-w-[900px] w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-stone-100 text-stone-400 uppercase tracking-widest text-[10px]">
                     <th className="pb-3 font-semibold">Order ID</th>

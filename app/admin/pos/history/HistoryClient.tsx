@@ -165,7 +165,7 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
 
     return (
         <div>
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">POS History</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -175,9 +175,9 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
                         <Layers size={18} />
                     </div>
                     <div>
@@ -188,7 +188,7 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={18} />
                     </div>
@@ -200,7 +200,7 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
                         <RotateCcw size={18} />
                     </div>
@@ -262,8 +262,9 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                 )}
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-                <table className="w-full text-left text-sm">
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="min-w-[900px] w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
                             <th className="px-6 py-3 font-semibold w-8"></th>
@@ -336,7 +337,7 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                                     {isOpen && (
                                         <tr>
                                             <td colSpan={8} className="bg-stone-50/60 px-0 py-0">
-                                                <table className="w-full text-left text-sm">
+                                                <table className="min-w-[900px] w-full text-left text-sm">
                                                     <thead>
                                                         <tr className="text-[11px] uppercase tracking-wider text-stone-400">
                                                             <th className="px-6 py-2 font-semibold">SKU</th>
@@ -393,6 +394,105 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                         )}
                     </tbody>
                 </table>
+            </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {filteredOrders.map((o) => {
+                    const isOpen = expanded === o.id
+                    const itemCount = o.items.reduce((sum, i) => sum + i.quantity, 0)
+                    return (
+                        <div key={o.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <h3 className="font-outfit font-semibold text-black">{o.order_number}</h3>
+                                    <p className="text-[10px] text-stone-500 mt-0.5">
+                                        {new Date(o.created_at).toLocaleString('en-IN', {
+                                            timeZone: 'Asia/Kolkata',
+                                            day: '2-digit', month: '2-digit', year: 'numeric',
+                                            hour: '2-digit', minute: '2-digit', hour12: false
+                                        })}
+                                    </p>
+                                </div>
+                                <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium capitalize shrink-0 ${statusStyles(o.status)}`}>
+                                    {o.status}
+                                </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-2 border-t border-stone-100 pt-3">
+                                <div>
+                                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-400">Items</span>
+                                    <span className="mt-0.5 block text-xs font-medium text-stone-600">{itemCount}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-400">Payment</span>
+                                    <span className="mt-0.5 block text-xs font-medium uppercase text-stone-600">{o.payment_method}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-400">Total</span>
+                                    <span className="mt-0.5 block text-sm font-semibold text-black">₹{Number(o.total).toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between border-t border-stone-100 pt-3">
+                                <button
+                                    onClick={() => setExpanded(isOpen ? null : o.id)}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-black"
+                                >
+                                    <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                    {isOpen ? 'Hide Details' : 'View Details'}
+                                </button>
+                                
+                                {o.items.length > 0 && (
+                                    <button
+                                        onClick={() => openExchange(o)}
+                                        className="flex items-center gap-1.5 rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-semibold text-stone-700 hover:border-black hover:text-black"
+                                    >
+                                        <Repeat size={12} />
+                                        Exchange
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {isOpen && (
+                                <div className="mt-2 rounded-xl bg-stone-50 p-3 flex flex-col gap-3">
+                                    {o.items.map((item) => (
+                                        <div key={item.id} className="flex flex-col gap-1.5 border-b border-stone-200/60 pb-3 last:border-0 last:pb-0">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-xs font-medium text-black">{item.product_name}</span>
+                                                <span className="text-xs font-semibold text-black">₹{Number(item.line_total).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px] text-stone-500">
+                                                <span className="font-outfit">{item.sku}</span>
+                                                <span>Qty: {item.quantity}</span>
+                                            </div>
+                                            {[item.size, item.color].filter(Boolean).length > 0 && (
+                                                <span className="text-[10px] text-stone-500">
+                                                    {[item.size, item.color].filter(Boolean).join(' · ')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                    
+                                    <div className="border-t border-stone-200/60 pt-2 flex flex-col gap-1 items-end text-xs text-stone-600">
+                                        <span>Subtotal: ₹{Number(o.subtotal).toLocaleString()}</span>
+                                        <span>Discount: ₹{Number(o.discount).toLocaleString()}</span>
+                                        <span className="font-semibold text-black mt-1">Total: ₹{Number(o.total).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+
+                {filteredOrders.length === 0 && (
+                    <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+                        {orders.length === 0
+                            ? 'No orders yet.'
+                            : 'No orders match your search or filter.'}
+                    </div>
+                )}
             </div>
 
             {/* Exchange popup */}

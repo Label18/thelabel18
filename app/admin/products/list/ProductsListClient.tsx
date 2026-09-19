@@ -191,7 +191,7 @@ function VariationsPanel({ variations }: { variations: Variation[] }) {
 
   return (
     <>
-      <table className="w-full text-left text-sm">
+      <table className="min-w-[900px] w-full text-left text-sm">
         <thead>
           <tr className="text-[11px] uppercase tracking-wider text-stone-400">
             <th className="px-6 py-2 font-semibold">Image</th>
@@ -344,7 +344,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
     <div>
       {/* Header */}
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-black">Products</h1>
           <p className="mt-1 text-sm font-medium text-stone-600">
@@ -353,7 +353,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
         </div>
         <Link
           href="/admin/products/add"
-          className="flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
+          className="flex w-full md:w-auto justify-center items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
         >
           <Plus size={15} strokeWidth={2} />
           Add Product
@@ -361,9 +361,9 @@ export default function ProductsListClient({ products }: { products: ProductRow[
       </div>
 
       {/* Stat cards */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
             <Package size={18} />
           </div>
           <div>
@@ -374,7 +374,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
             <CheckCircle2 size={18} />
           </div>
@@ -386,7 +386,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
             <EyeOff size={18} />
           </div>
@@ -491,8 +491,8 @@ export default function ProductsListClient({ products }: { products: ProductRow[
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <div className="hidden md:block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+        <table className="min-w-[900px] w-full text-left text-sm">
           <thead>
             <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
               <th className="px-6 py-3 font-semibold w-8"></th>
@@ -600,6 +600,86 @@ export default function ProductsListClient({ products }: { products: ProductRow[
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card Layout */}
+      <div className="flex flex-col gap-4 md:hidden">
+        {filteredProducts.map((p) => {
+          const isOpen = expanded === p.id
+          return (
+            <div key={p.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                {p.image_url ? (
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+                    <Image src={p.image_url} alt={p.name} fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">
+                    <ImageOff size={24} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-black truncate">{p.name}</h3>
+                  <p className="font-outfit text-xs text-stone-500 mt-0.5">SKU: {p.sku}</p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {p.category && <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] text-stone-600">{p.category.name}</span>}
+                    {p.sub_category && <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] text-stone-600">{p.sub_category.name}</span>}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 border-t border-stone-100 pt-4">
+                <div>
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Total Stock</span>
+                  <span className="mt-0.5 block text-sm font-medium text-black">{totalStock(p)} units</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Visible</span>
+                  <div className="mt-0.5">
+                    <StatusToggle isVisible={p.is_visible} onChange={(next) => toggleProductVisibility(p.id, next)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-stone-100 pt-4">
+                <button
+                  onClick={() => setExpanded(isOpen ? null : p.id)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-black"
+                >
+                  <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  {isOpen ? 'Hide Variations' : 'Show Variations'}
+                </button>
+                <div className="flex items-center gap-1">
+                  <Link href={`/admin/products/view/${p.id}`} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black">
+                    <Eye size={16} />
+                  </Link>
+                  <Link href={`/admin/products/edit/${p.id}`} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black">
+                    <Pencil size={16} />
+                  </Link>
+                  <button onClick={() => {
+                    if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
+                      startTransition(() => deleteProduct(p.id, p.image_url))
+                    }
+                  }} className="rounded-lg p-2 text-stone-400 hover:bg-rose-50 hover:text-rose-500">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+              
+              {isOpen && (
+                <div className="mt-2 rounded-xl bg-stone-50 overflow-hidden">
+                  <VariationsPanel variations={p.variations} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {filteredProducts.length === 0 && (
+          <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+            {products.length === 0 ? 'No products yet.' : 'No products match your search or filters.'}
+          </div>
+        )}
       </div>
     </div>
   )

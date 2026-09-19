@@ -184,7 +184,7 @@ export default function ReportsClient() {
       </div>
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {/* Total Revenue */}
         <div className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export default function ReportsClient() {
       </div>
 
       {/* Category Performance Highlight Cards (Jewellery, Clothing, #1 Seller) */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
         {/* Jewellery Sold Card */}
         <div className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-sm transition-all hover:border-[#9C7D23]/40">
           <div className="flex items-center justify-between">

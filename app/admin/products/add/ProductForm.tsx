@@ -531,7 +531,7 @@ export default function ProductForm({
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-black">Add Product</h1>
           <p className="mt-1 text-sm font-medium text-stone-600">

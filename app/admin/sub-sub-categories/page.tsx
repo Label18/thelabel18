@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import SubSubCategoriesClient, {
+
+export const dynamic = 'force-dynamic'
+
   type SubSubCategory,
   type SubCategoryOption,
 } from './SubSubCategoriesClient'
@@ -26,7 +29,7 @@ export default async function SubSubCategoriesPage() {
   if (subSubRes.error) {
     return (
       <div
-        className="min-h-screen bg-[#FAF7F1] px-10 py-10 font-outfit text-[#141414]"
+        className="min-h-screen bg-[#FAF7F1] px-4 py-6 md:px-10 md:py-10 font-outfit text-[#141414]"
         style={{ colorScheme: 'light' }}
       >
         <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-600">
@@ -39,7 +42,7 @@ export default async function SubSubCategoriesPage() {
   if (subCategoriesRes.error) {
     return (
       <div
-        className="min-h-screen bg-[#FAF7F1] px-10 py-10 font-outfit text-[#141414]"
+        className="min-h-screen bg-[#FAF7F1] px-4 py-6 md:px-10 md:py-10 font-outfit text-[#141414]"
         style={{ colorScheme: 'light' }}
       >
         <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-600">
@@ -70,7 +73,7 @@ export default async function SubSubCategoriesPage() {
 
   return (
     <div
-      className="min-h-screen bg-[#FAF7F1] px-10 py-10 font-outfit text-[#141414]"
+      className="min-h-screen bg-[#FAF7F1] px-4 py-6 md:px-10 md:py-10 font-outfit text-[#141414]"
       style={{ colorScheme: 'light' }}
     >
       <SubSubCategoriesClient

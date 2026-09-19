@@ -122,7 +122,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
     return (
         <div>
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Orders</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -132,9 +132,9 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
                         <Layers size={18} />
                     </div>
                     <div>
@@ -143,7 +143,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                         <IndianRupee size={18} />
                     </div>
@@ -153,7 +153,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                         <Clock size={18} />
                     </div>
@@ -163,7 +163,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                         <CheckCircle2 size={18} />
                     </div>
@@ -173,7 +173,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
                         <XCircle size={18} />
                     </div>
@@ -223,7 +223,8 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-                <table className="w-full text-left text-sm">
+                <div className="overflow-x-auto">
+                    <table className="min-w-[900px] w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
                             <th className="w-8 px-6 py-3 font-semibold"></th>
@@ -303,7 +304,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                     {isOpen && (
                                         <tr>
                                             <td colSpan={7} className="bg-stone-50/60 px-0 py-0">
-                                                <div className="grid grid-cols-1 gap-6 px-6 py-5 lg:grid-cols-[1.6fr_1fr]">
+                                                <div className="grid grid-cols-2 gap-6 px-6 py-5 lg:grid-cols-[1.6fr_1fr]">
                                                     {/* Items + variations */}
                                                     <div>
                                                         <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
@@ -439,6 +440,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )

@@ -494,7 +494,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
 
     return (
         <div className={poppins.className}>
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Coupons</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -503,7 +503,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
+                    className="flex w-full md:w-auto justify-center items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
                 >
                     <Plus size={15} strokeWidth={2} />
                     Add Coupon
@@ -511,9 +511,9 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
                         <Layers size={18} />
                     </div>
                     <div>
@@ -524,7 +524,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={18} />
                     </div>
@@ -536,7 +536,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
                         <XCircle size={18} />
                     </div>
@@ -586,9 +586,9 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                 )}
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="min-w-[900px] w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
                                 <th className="px-6 py-3 font-semibold">Code</th>
@@ -680,6 +680,92 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {filteredCoupons.map((c) => (
+                    <div key={c.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                                <Tag size={16} className="text-stone-400" />
+                                <span className="font-outfit text-lg font-bold text-black">{c.code}</span>
+                                <button
+                                    onClick={() => handleCopy(c.code, c.id)}
+                                    className="text-stone-400 hover:text-stone-700 transition-colors"
+                                    title="Copy code"
+                                >
+                                    {copiedId === c.id ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                                </button>
+                            </div>
+                            <StatusBadge coupon={c} />
+                        </div>
+                        
+                        {c.description && (
+                            <p className="mt-1.5 text-sm text-stone-500 line-clamp-2">
+                                {c.description}
+                            </p>
+                        )}
+                        
+                        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-stone-50 p-3">
+                            <div>
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Discount</span>
+                                <span className="mt-0.5 block text-sm font-medium text-black">{formatDiscount(c)}</span>
+                            </div>
+                            <div>
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Min Order</span>
+                                <span className="mt-0.5 block text-sm font-medium text-black">{c.min_order_value > 0 ? `₹${c.min_order_value}` : '—'}</span>
+                            </div>
+                            <div>
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Usage</span>
+                                <span className="mt-0.5 block text-sm font-medium text-black">{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ' / ∞'}</span>
+                            </div>
+                            <div>
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Valid Until</span>
+                                <span className="mt-0.5 block text-sm font-medium text-black">{formatDate(c.valid_until)}</span>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">Enabled</span>
+                                <ActiveToggle id={c.id} isActive={c.is_active} />
+                            </div>
+                            
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setViewingCoupon(c)}
+                                    className="rounded-lg p-2 text-stone-400 transition-colors hover:bg-stone-100 hover:text-black"
+                                    aria-label={`View ${c.code}`}
+                                >
+                                    <Eye size={18} />
+                                </button>
+                                <button
+                                    onClick={() => setEditingCoupon(c)}
+                                    className="rounded-lg p-2 text-stone-400 transition-colors hover:bg-stone-100 hover:text-black"
+                                    aria-label={`Edit ${c.code}`}
+                                >
+                                    <Pencil size={18} />
+                                </button>
+                                <button
+                                    onClick={() => startTransition(() => deleteCoupon(c.id))}
+                                    className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                                    aria-label={`Delete ${c.code}`}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredCoupons.length === 0 && (
+                    <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+                        {coupons.length === 0
+                            ? 'No coupons yet. Click "Add Coupon" to create your first one.'
+                            : 'No coupons match your search or filter.'}
+                    </div>
+                )}
             </div>
 
             {showModal && <AddCouponModal onClose={() => setShowModal(false)} />}

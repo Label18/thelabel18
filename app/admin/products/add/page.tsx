@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import ProductForm from './ProductForm'
 
+export const dynamic = 'force-dynamic'
+
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -22,7 +25,7 @@ export default async function AddProductPage() {
 
   return (
     <div
-      className="min-h-screen bg-[#FAF7F1] px-10 py-10 font-outfit text-black"
+      className="min-h-screen bg-[#FAF7F1] px-4 py-6 md:px-10 md:py-10 font-outfit text-black"
       style={{ colorScheme: 'light' }}
     >
       <ProductForm

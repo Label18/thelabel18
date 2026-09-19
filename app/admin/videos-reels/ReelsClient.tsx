@@ -185,7 +185,7 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-black">Videos & Reels</h1>
           <p className="mt-1 text-sm font-medium text-stone-600">
@@ -202,9 +202,9 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
       </div>
 
       {/* Stat cards */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
             <Layers size={18} />
           </div>
           <div>
@@ -213,7 +213,7 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <Video size={18} />
           </div>
@@ -223,7 +223,7 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
             <AtSign size={18} />
           </div>

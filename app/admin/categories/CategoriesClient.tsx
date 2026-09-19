@@ -389,7 +389,7 @@ export default function CategoriesClient({ categories }: { categories: Category[
 
     return (
         <div className={poppins.className}>
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Categories</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -398,7 +398,7 @@ export default function CategoriesClient({ categories }: { categories: Category[
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
+                    className="flex w-full md:w-auto items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
                 >
                     <Plus size={15} strokeWidth={2} />
                     Add Category
@@ -406,9 +406,9 @@ export default function CategoriesClient({ categories }: { categories: Category[
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
                         <Layers size={18} />
                     </div>
                     <div>
@@ -419,7 +419,7 @@ export default function CategoriesClient({ categories }: { categories: Category[
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={18} />
                     </div>
@@ -431,7 +431,7 @@ export default function CategoriesClient({ categories }: { categories: Category[
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
                         <EyeOff size={18} />
                     </div>
@@ -457,9 +457,9 @@ export default function CategoriesClient({ categories }: { categories: Category[
                 </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="min-w-[900px] w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
                                 <th className="px-6 py-3 font-semibold">Image</th>
@@ -529,6 +529,68 @@ export default function CategoriesClient({ categories }: { categories: Category[
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {filteredCategories.map((cat) => (
+                    <div key={cat.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                        <div className="flex items-start gap-4">
+                            {cat.image_url ? (
+                                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+                                    <Image src={cat.image_url} alt={cat.name} fill className="object-cover" />
+                                </div>
+                            ) : (
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">
+                                    <ImageOff size={24} />
+                                </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-black truncate">{cat.name}</h3>
+                                <p className="mt-1 text-xs text-stone-500 line-clamp-2">
+                                    {cat.description || 'No description'}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
+                            <div className="flex items-center gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Visible</span>
+                                    <VisibilityToggle id={cat.id} isVisible={cat.is_visible} />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Priority</span>
+                                    <PriorityInput id={cat.id} value={cat.priority} />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setEditingCategory(cat)}
+                                    className="rounded-lg p-2 text-stone-400 transition-colors hover:bg-stone-100 hover:text-black"
+                                    aria-label={`Edit ${cat.name}`}
+                                >
+                                    <Pencil size={18} />
+                                </button>
+                                <button
+                                    onClick={() => startTransition(() => deleteCategory(cat.id, cat.image_url))}
+                                    className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                                    aria-label={`Delete ${cat.name}`}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredCategories.length === 0 && (
+                    <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+                        {categories.length === 0
+                            ? 'No categories yet. Click "Add Category" to create your first one.'
+                            : 'No categories match your search.'}
+                    </div>
+                )}
             </div>
 
             {showModal && <AddCategoryModal onClose={() => setShowModal(false)} />}

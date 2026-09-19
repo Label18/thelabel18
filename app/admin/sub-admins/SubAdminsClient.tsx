@@ -50,7 +50,7 @@ function PermissionCheckboxes({ selected, onChange }: { selected: string[]; onCh
             <label className="block text-xs font-medium uppercase tracking-wider text-[#8b8478]">
                 Accessible Tabs & Permissions
             </label>
-            <div className="max-h-48 overflow-y-auto rounded-xl border border-[#E4DDCE] bg-[#FAF7F1] p-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="max-h-48 overflow-y-auto rounded-xl border border-[#E4DDCE] bg-[#FAF7F1] p-3 grid grid-cols-2 gap-2 md:grid-cols-2">
                 {AVAILABLE_TABS.map((tab) => {
                     const isChecked = selected.includes(tab.path)
                     return (
@@ -108,7 +108,7 @@ function AddSubAdminModal({ onClose }: { onClose: () => void }) {
                     }}
                     className="space-y-4"
                 >
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
                         <div className="space-y-1.5">
                             <label className="block text-xs font-medium uppercase tracking-wider text-[#8b8478]">Name</label>
                             <input
@@ -207,7 +207,7 @@ function EditSubAdminModal({
                     }}
                     className="space-y-4"
                 >
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
                         <div className="space-y-1.5">
                             <label className="block text-xs font-medium uppercase tracking-wider text-[#8b8478]">Name</label>
                             <input
@@ -289,7 +289,7 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
 
     return (
         <div className={poppins.className}>
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-6 py-5 shadow-sm">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Sub Admin Management</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
@@ -298,7 +298,7 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
+                    className="flex w-full md:w-auto justify-center items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.99]"
                 >
                     <Plus size={15} strokeWidth={2} />
                     Add Sub Admin
@@ -306,9 +306,9 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
             </div>
 
             {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 shrink-0">
                         <UserCheck size={18} />
                     </div>
                     <div>
@@ -317,7 +317,7 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-5 shadow-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                         <ShieldCheck size={18} />
                     </div>
@@ -341,9 +341,9 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                 </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="min-w-[900px] w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
                                 <th className="px-6 py-3 font-semibold">Name</th>
@@ -403,6 +403,57 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {filteredSubAdmins.map((admin) => (
+                    <div key={admin.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 className="font-semibold text-black">{admin.name}</h3>
+                                <p className="text-xs text-stone-500 mt-0.5">{admin.email}</p>
+                            </div>
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-[10px] font-medium text-stone-800 shrink-0">
+                                {admin.role}
+                            </span>
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
+                            <div>
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-400">Permissions</span>
+                                <span className="mt-0.5 block text-xs font-medium text-stone-600">
+                                    {admin.permissions?.length ? `${admin.permissions.length} tabs allowed` : 'No access'}
+                                </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setEditingSubAdmin(admin)}
+                                    className="rounded-lg p-2 text-stone-400 transition-colors hover:bg-stone-100 hover:text-black"
+                                    aria-label={`Edit ${admin.name}`}
+                                >
+                                    <Pencil size={18} />
+                                </button>
+                                <button
+                                    onClick={() => startTransition(() => deleteSubAdmin(admin.id))}
+                                    className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                                    aria-label={`Delete ${admin.name}`}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredSubAdmins.length === 0 && (
+                    <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+                        {subAdmins.length === 0
+                            ? 'No sub-admins yet. Click "Add Sub Admin" to create your first one.'
+                            : 'No sub-admins match your search.'}
+                    </div>
+                )}
             </div>
 
             {showModal && <AddSubAdminModal onClose={() => setShowModal(false)} />}
