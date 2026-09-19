@@ -27,7 +27,7 @@ export default function GlobalLoader() {
                     document.body.style.overflow = "";
                 }
             });
-        }, 1500);
+        }, 6000);
 
         return () => {
             clearTimeout(timer);

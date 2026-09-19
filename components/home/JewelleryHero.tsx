@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import CanvasSequence, { SequenceConfig } from "@/components/CanvasSequence";
 import { CategoryTree } from "@/lib/categories";
@@ -22,6 +22,15 @@ export default function JewelleryHero({ category }: { category: CategoryTree | u
     const textRefs2 = useRef<(HTMLDivElement | null)[]>([]);
     const counterRef2 = useRef<HTMLSpanElement>(null);
     const scrollIndicatorRef2 = useRef<HTMLDivElement>(null);
+
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const onProgress2 = useCallback((progress: number) => {
         const num = Math.min(10, Math.floor(progress * 10) + 1);
@@ -105,7 +114,13 @@ export default function JewelleryHero({ category }: { category: CategoryTree | u
                         triggerRef={scrollSectionRef2}
                         sequences={sequences2}
                         className="hero-canvas"
-                        lazy={true}
+                        bgColor="black"
+                        lazy={false}
+                        priority={true}
+                        focalPointY="top"
+                        scale={1}
+                        offsetX={isMobile ? 120 : 0}
+                        offsetY={isMobile ? 80 : 100}
                         onProgressChange={onProgress2}
                     />
 
