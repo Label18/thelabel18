@@ -108,3 +108,67 @@ export async function createProduct(formData: FormData) {
 
   revalidatePath('/admin/products/list')
 }
+export async function updateProduct(productId: string, formData: FormData) {
+  const sku = String(formData.get('sku') || '').trim()
+  const name = String(formData.get('name') || '').trim()
+  const category_id = String(formData.get('category_id') || '')
+  const sub_category_id = String(formData.get('sub_category_id') || '') || null
+  const sub_sub_category_id = String(formData.get('sub_sub_category_id') || '') || null
+  const description = String(formData.get('description') || '').trim()
+  const mainImageFile = formData.get('image') as File | null
+  const existingImageUrl = String(formData.get('existing_image_url') || '') || null
+
+  if (!sku) throw new Error('SKU is required')
+  if (!name) throw new Error('Product name is required')
+  if (!category_id) throw new Error('Category is required')
+
+  // only replace the main image if a new file was actually chosen
+  const newImageUrl = await uploadImage(mainImageFile)
+  const image_url = newImageUrl ?? existingImageUrl
+
+  const { error } = await supabase
+    .from('products')
+    .update({ sku, name, category_id, sub_category_id, sub_sub_category_id, description, image_url })
+    .eq('id', productId)
+
+  if (error) throw new Error(error.message)
+
+  // Replace all variations: simplest correct approach — delete existing, insert submitted set.
+  await supabase.from('product_variations').delete().eq('product_id', productId)
+
+  const variationCount = Number(formData.get('variation_count') || 0)
+  for (let i = 0; i < variationCount; i++) {
+    const size = (String(formData.get(`variations[${i}][size]`) || '').trim()) || null
+    const color = (String(formData.get(`variations[${i}][color]`) || '').trim()) || null
+    const color_hex = (String(formData.get(`variations[${i}][color_hex]`) || '').trim()) || null
+    const stock_quantity = Number(formData.get(`variations[${i}][stock]`) || 0)
+    const price = Number(formData.get(`variations[${i}][price]`) || 0)
+    const compareRaw = formData.get(`variations[${i}][compare_at_price]`)
+    const compare_at_price = compareRaw && String(compareRaw).trim() !== '' ? Number(compareRaw) : null
+    const variationImageFile = formData.get(`variations[${i}][image]`) as File | null
+    const existingVariationImage = String(formData.get(`variations[${i}][existing_image_url]`) || '') || null
+
+    const uploadedUrl = await uploadImage(variationImageFile)
+    const variationImageUrl = uploadedUrl ?? existingVariationImage
+
+    const suffix = [slug(color || ''), slug(size || '')].filter(Boolean).join('-')
+    const variationSku = suffix ? `${sku}-${suffix}` : `${sku}-${i + 1}`
+
+    const { error: varError } = await supabase.from('product_variations').insert({
+      product_id: productId,
+      sku: variationSku,
+      size,
+      color,
+      color_hex,
+      stock_quantity,
+      price,
+      compare_at_price,
+      image_url: variationImageUrl,
+    })
+
+    if (varError) throw new Error(`Variation ${i + 1}: ${varError.message}`)
+  }
+
+  revalidatePath('/admin/products/list')
+  
+}

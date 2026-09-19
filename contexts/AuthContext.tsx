@@ -71,8 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
-    if (data) setProfile(data as Profile);
+      .maybeSingle();
+    if (data) {
+      setProfile(data as Profile);
+      return true;
+    }
+    return false;
   };
 
   const refreshCart = async () => {
@@ -116,23 +120,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        fetchProfile(session.user.id);
-        refreshCounts();
+        const isCustomer = await fetchProfile(session.user.id);
+        if (isCustomer) {
+          setUser(session.user);
+          refreshCounts();
+        } else {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
       setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        fetchProfile(session.user.id);
-        refreshCounts();
+        const isCustomer = await fetchProfile(session.user.id);
+        if (isCustomer) {
+          setUser(session.user);
+          refreshCounts();
+        } else {
+          setUser(null);
+          setProfile(null);
+          setCartCount(0);
+          setWishlistCount(0);
+        }
       } else {
+        setUser(null);
         setProfile(null);
         setCartCount(0);
         setWishlistCount(0);
@@ -143,9 +161,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
+  const syncGuestData = async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) return;
+
+    try {
+      const cartRaw = window.localStorage.getItem("guest_cart_v1");
+      const wishlistRaw = window.localStorage.getItem("guest_wishlist_v1");
+      
+      const guestCart = cartRaw ? JSON.parse(cartRaw) : [];
+      const guestWishlist = wishlistRaw ? JSON.parse(wishlistRaw) : [];
+
+      if (guestCart.length === 0 && guestWishlist.length === 0) return;
+
+      // Sync Cart
+      for (const item of guestCart) {
+        try {
+          const { data: existing } = await supabase
+            .from("cart_items")
+            .select("id, quantity")
+            .eq("user_id", currentUser.id)
+            .eq("variation_id", item.variationId)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from("cart_items")
+              .update({ quantity: existing.quantity + item.quantity })
+              .eq("id", existing.id);
+          } else {
+            await supabase.from("cart_items").insert({
+              user_id: currentUser.id,
+              product_id: item.productId,
+              variation_id: item.variationId,
+              quantity: item.quantity,
+            });
+          }
+        } catch (e) { console.error(e); }
+      }
+
+      // Sync Wishlist
+      for (const item of guestWishlist) {
+        try {
+          const { data: existing } = await supabase
+            .from("wishlist")
+            .select("id")
+            .eq("user_id", currentUser.id)
+            .eq("product_id", item.productId)
+            .maybeSingle();
+
+          if (!existing) {
+            await supabase.from("wishlist").insert({
+              user_id: currentUser.id,
+              product_id: item.productId,
+              variation_id: item.variationId,
+            });
+          }
+        } catch (e) { console.error(e); }
+      }
+
+      // Clear guest data
+      window.localStorage.removeItem("guest_cart_v1");
+      window.localStorage.removeItem("guest_wishlist_v1");
+      
+      // Dispatch storage event so GuestCartWishlistProvider updates
+      window.dispatchEvent(new Event("storage"));
+      
+      await refreshCounts();
+    } catch (err) {
+      console.error("Error syncing guest data", err);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error) setIsLoginOpen(false);
+    if (!error) {
+      await syncGuestData();
+      setIsLoginOpen(false);
+    }
     return { error: error ? error.message : null };
   };
 
@@ -160,7 +253,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
-    if (!error) setIsLoginOpen(false);
+    if (!error) {
+      await syncGuestData();
+      setIsLoginOpen(false);
+    }
     return { error: error ? error.message : null };
   };
 

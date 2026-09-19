@@ -558,7 +558,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                           <Eye size={16} />
                         </Link>
                         <Link
-                          href={`/admin/products/edit/${p.id}`}
+                          href={`/admin/products/add?edit_id=${p.id}`}
                           className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black"
                           aria-label="Edit"
                         >
@@ -653,7 +653,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                   <Link href={`/admin/products/view/${p.id}`} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black">
                     <Eye size={16} />
                   </Link>
-                  <Link href={`/admin/products/edit/${p.id}`} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black">
+                  <Link href={`/admin/products/add?edit_id=${p.id}`} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-black">
                     <Pencil size={16} />
                   </Link>
                   <button onClick={() => {

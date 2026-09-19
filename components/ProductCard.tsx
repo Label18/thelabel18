@@ -44,7 +44,7 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
     return Array.from(uniqueSizes);
   }, [product.product_variations, colorVariations]);
 
-  const [activeColor, setActiveColor] = useState<string | null>(colorVariations.length > 0 ? colorVariations[0].color : null);
+  const [activeColor, setActiveColor] = useState<string | null>(null);
 
   // Determine current image based on selected color
   const currentImage = useMemo(() => {

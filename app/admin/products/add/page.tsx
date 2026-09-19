@@ -9,7 +9,25 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export default async function AddProductPage() {
+export default async function AddProductPage(props: { searchParams?: any }) {
+  const searchParams = await (props.searchParams || Promise.resolve({}))
+  const editId = searchParams.edit_id
+
+  let existingProduct = null
+  if (editId) {
+    const { data } = await supabase
+      .from('products')
+      .select('*, variations:product_variations(*)')
+      .eq('id', editId)
+      .single()
+      
+    if (data) {
+      // sort variations so they appear consistently
+      data.variations.sort((a: any, b: any) => a.sku.localeCompare(b.sku))
+      existingProduct = data
+    }
+  }
+
   const [{ data: categories }, { data: subCategories }, { data: subSubCategories }] =
     await Promise.all([
       supabase.from('categories').select('id, name').order('priority', { ascending: true }),
@@ -29,6 +47,7 @@ export default async function AddProductPage() {
       style={{ colorScheme: 'light' }}
     >
       <ProductForm
+        product={existingProduct}
         categories={categories ?? []}
         subCategories={subCategories ?? []}
         subSubCategories={subSubCategories ?? []}

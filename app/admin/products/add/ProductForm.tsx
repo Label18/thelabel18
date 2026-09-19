@@ -12,23 +12,45 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronDown,
+  Check
 } from 'lucide-react'
-import { createProduct } from './actions'
+import { createProduct, updateProduct } from './actions'
 
 type Category = { id: string; name: string }
 type SubCategory = { id: string; name: string; category_id: string }
 type SubSubCategory = { id: string; name: string; sub_category_id: string }
+
+
+type ExistingProduct = {
+  id: string
+  sku: string
+  name: string
+  description: string | null
+  image_url: string | null
+  category_id: string
+  sub_category_id: string | null
+  sub_sub_category_id: string | null
+  variations: {
+    size: string | null
+    color: string | null
+    color_hex: string | null
+    stock_quantity: number
+    price: number
+    compare_at_price: number | null
+    image_url: string | null
+  }[]
+}
 
 type Variation = {
   key: string
   size: string
   color: string
   color_hex: string
-  color_family: string
   stock: string
   price: string
   compare_at_price: string
   image: File | null
+  existing_image_url?: string | null
 }
 
 function emptyVariation(): Variation {
@@ -37,8 +59,7 @@ function emptyVariation(): Variation {
     size: '',
     color: '',
     color_hex: '',
-    color_family: '',
-    stock: '0',
+        stock: '0',
     price: '',
     compare_at_price: '',
     image: null,
@@ -212,14 +233,16 @@ function NoColorSwatch({ size = 20 }: { size?: number }) {
 
 function ImagePicker({
   file,
+  existingUrl,
   onChange,
   label,
 }: {
   file: File | null
+  existingUrl?: string | null
   onChange: (f: File | null) => void
   label: string
 }) {
-  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file])
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : existingUrl), [file, existingUrl])
 
   return (
     <div className="flex items-center gap-3">
@@ -262,18 +285,17 @@ function ImagePicker({
 // (color_family) so a storefront filter for "Pink" matches every shade.
 
 function ColorPicker({
-  colorFamily,
   colorName,
   colorHex,
   onChange,
 }: {
-  colorFamily: string
   colorName: string
   colorHex: string
-  onChange: (patch: { color_family?: string; color?: string; color_hex?: string }) => void
+  onChange: (patch: {  color?: string; color_hex?: string }) => void
 }) {
   const [open, setOpen] = useState(false)
-  const activeFamily = COLOR_PALETTE.find((f) => f.family === colorFamily)
+  const activeFamily = COLOR_PALETTE.find((f) => f.shades.some(s => s.name === colorName))
+  const colorFamily = activeFamily?.family || ''
   const swatchHex = colorHex || activeFamily?.hex || '#E5E5E5'
 
   // Lock body scroll while the modal is open so the page doesn't scroll
@@ -320,7 +342,7 @@ function ColorPicker({
         {colorName && (
           <button
             type="button"
-            onClick={() => onChange({ color_family: '', color: '', color_hex: '' })}
+            onClick={() => onChange({ color: '', color_hex: '' })}
             className="shrink-0 text-stone-300 hover:text-rose-500"
             aria-label="Clear color"
           >
@@ -357,7 +379,7 @@ function ColorPicker({
               <button
                 type="button"
                 onClick={() => {
-                  onChange({ color_family: '', color: '', color_hex: '' })
+                  onChange({ color: '', color_hex: '' })
                   setOpen(false)
                 }}
                 className={`mb-5 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-colors ${!colorName
@@ -387,7 +409,7 @@ function ColorPicker({
                           type="button"
                           onClick={() => {
                             onChange({
-                              color_family: fam.family,
+                              
                               color: shade.name,
                               color_hex: shade.hex,
                             })
@@ -418,10 +440,12 @@ function ColorPicker({
 }
 
 export default function ProductForm({
+  product,
   categories,
   subCategories,
   subSubCategories,
 }: {
+  product?: ExistingProduct | null
   categories: Category[]
   subCategories: SubCategory[]
   subSubCategories: SubSubCategory[]
@@ -430,10 +454,25 @@ export default function ProductForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const [categoryId, setCategoryId] = useState('')
-  const [subCategoryId, setSubCategoryId] = useState('')
+  const isEdit = !!product
+  const [categoryId, setCategoryId] = useState(product?.category_id || '')
+  const [subCategoryId, setSubCategoryId] = useState(product?.sub_category_id || '')
   const [mainImage, setMainImage] = useState<File | null>(null)
-  const [variations, setVariations] = useState<Variation[]>([emptyVariation()])
+  const [variations, setVariations] = useState<Variation[]>(
+    isEdit && product && product.variations.length > 0
+      ? product.variations.map((v) => ({
+          key: crypto.randomUUID(),
+          size: v.size || '',
+          color: v.color || '',
+          color_hex: v.color_hex || '',
+          stock: String(v.stock_quantity),
+          price: String(v.price),
+          compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
+          image: null,
+          existing_image_url: v.image_url,
+        }))
+      : [emptyVariation()]
+  )
 
   // Label the user types (e.g. "TL18-BAG") drives the auto-generated SKU.
   const [skuLabel, setSkuLabel] = useState('')
@@ -465,11 +504,32 @@ export default function ProductForm({
   }
 
   function resetAll() {
-    setVariations([emptyVariation()])
-    setMainImage(null)
-    setCategoryId('')
-    setSubCategoryId('')
-    setSkuLabel('')
+    if (isEdit && product) {
+        setVariations(
+          product.variations.length > 0
+            ? product.variations.map((v) => ({
+                key: crypto.randomUUID(),
+                size: v.size || '',
+                color: v.color || '',
+                color_hex: v.color_hex || '',
+                stock: String(v.stock_quantity),
+                price: String(v.price),
+                compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
+                image: null,
+                existing_image_url: v.image_url,
+              }))
+            : [emptyVariation()]
+        )
+        setMainImage(null)
+        setCategoryId(product.category_id || '')
+        setSubCategoryId(product.sub_category_id || '')
+    } else {
+        setVariations([emptyVariation()])
+        setMainImage(null)
+        setCategoryId('')
+        setSubCategoryId('')
+        setSkuLabel('')
+    }
     setError(null)
     setSuccess(false)
       ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
@@ -479,43 +539,52 @@ export default function ProductForm({
     setError(null)
     setSuccess(false)
 
-    if (!normalizedLabel) {
+    if (!isEdit && !normalizedLabel) {
       setError('Enter a label to generate the SKU.')
       return
     }
 
     if (mainImage) formData.set('image', mainImage)
-
-    // Submit the auto-generated SKU (input is read-only, so set it explicitly).
-    formData.set('sku', generatedSku)
-    formData.set('sku_label', normalizedLabel)
+    if (isEdit && product) {
+        formData.set('existing_image_url', product.image_url || '')
+    } else {
+        formData.set('sku', generatedSku)
+        formData.set('sku_label', normalizedLabel)
+    }
 
     formData.set('variation_count', String(variations.length))
     variations.forEach((v, i) => {
       formData.set(`variations[${i}][size]`, v.size)
       formData.set(`variations[${i}][color]`, v.color)
       formData.set(`variations[${i}][color_hex]`, v.color_hex)
-      formData.set(`variations[${i}][color_family]`, v.color_family)
       formData.set(`variations[${i}][stock]`, v.stock)
       formData.set(`variations[${i}][price]`, v.price)
       formData.set(`variations[${i}][compare_at_price]`, v.compare_at_price)
+      if (isEdit) {
+          formData.set(`variations[${i}][existing_image_url]`, v.existing_image_url || '')
+      }
       if (v.image) formData.set(`variations[${i}][image]`, v.image)
     })
 
     startTransition(async () => {
       try {
-        await createProduct(formData)
-        // Only persist the counter once the save actually succeeds, so a
-        // failed submit doesn't burn a SKU number.
-        commitSkuNumber(normalizedLabel, skuNumber)
+        if (isEdit && product) {
+            await updateProduct(product.id, formData)
+            setSuccess(true)
+            setTimeout(() => setSuccess(false), 3000)
+        } else {
+            await createProduct(formData)
+            commitSkuNumber(normalizedLabel, skuNumber)
 
-        setSuccess(true)
-        setVariations([emptyVariation()])
-        setMainImage(null)
-        setCategoryId('')
-        setSubCategoryId('')
-        setSkuLabel('')
-        ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
+            setSuccess(true)
+            setTimeout(() => setSuccess(false), 3000)
+            setVariations([emptyVariation()])
+            setMainImage(null)
+            setCategoryId('')
+            setSubCategoryId('')
+            setSkuLabel('')
+            ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong')
       }
@@ -531,9 +600,9 @@ export default function ProductForm({
       {/* Header */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-5 md:px-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-black">Add Product</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-black">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
           <p className="mt-1 text-sm font-medium text-stone-600">
-            {variations.length} variation{variations.length === 1 ? '' : 's'} · assign a category and add size/color options
+            {variations.length} variation{variations.length === 1 ? '' : 's'} · {isEdit ? 'Update product info and variations' : 'Assign a category and add size/color options'}
           </p>
         </div>
         <button
@@ -567,8 +636,15 @@ export default function ProductForm({
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className={labelClass}>Label</label>
+            {isEdit ? (
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className={labelClass}>SKU Number</label>
+                <input name="sku" required defaultValue={product?.sku} className={inputClass} />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Label</label>
               <input
                 value={skuLabel}
                 onChange={(e) => setSkuLabel(e.target.value)}
@@ -591,10 +667,12 @@ export default function ProductForm({
                 className={`${inputClass} cursor-not-allowed bg-stone-50 text-stone-500`}
               />
             </div>
+            </>
+            )}
 
             <div className="space-y-1.5 sm:col-span-2">
               <label className={labelClass}>Product Name</label>
-              <input name="name" required placeholder="Signature Tote" className={inputClass} />
+              <input name="name" required defaultValue={product?.name} placeholder="Signature Tote" className={inputClass} />
             </div>
 
             <div className="space-y-1.5">
@@ -642,6 +720,7 @@ export default function ProductForm({
               <label className={labelClass}>Sub Sub Category</label>
               <select
                 name="sub_sub_category_id"
+                defaultValue={product?.sub_sub_category_id || ""}
                 disabled={!subCategoryId}
                 className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50 sm:max-w-xs`}
               >
@@ -661,6 +740,7 @@ export default function ProductForm({
               <textarea
                 name="description"
                 rows={4}
+                defaultValue={product?.description || ""}
                 placeholder="A short, storefront-facing description of the product…"
                 className={`${inputClass} resize-none`}
               />
@@ -671,7 +751,7 @@ export default function ProductForm({
               <p className="mb-2 text-xs text-stone-400">
                 The single main image for this product (used when no specific variation image applies).
               </p>
-              <ImagePicker file={mainImage} onChange={setMainImage} label="Product image" />
+              <ImagePicker file={mainImage} existingUrl={product?.image_url} onChange={setMainImage} label="Product image" />
             </div>
           </div>
         </div>
@@ -734,12 +814,11 @@ export default function ProductForm({
                   </div>
                   <div className="col-span-2 space-y-1 sm:col-span-2">
                     <label className="text-[11px] font-medium text-stone-500">Color</label>
-                    <ColorPicker
-                      colorFamily={v.color_family}
-                      colorName={v.color}
-                      colorHex={v.color_hex}
-                      onChange={(patch) => updateVariation(v.key, patch)}
-                    />
+                      <ColorPicker
+                        colorName={v.color}
+                        colorHex={v.color_hex}
+                        onChange={(patch) => updateVariation(v.key, patch)}
+                      />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] font-medium text-stone-500">Stock Amount</label>
@@ -786,6 +865,7 @@ export default function ProductForm({
                     </label>
                     <ImagePicker
                       file={v.image}
+                      existingUrl={v.existing_image_url}
                       onChange={(f) => updateVariation(v.key, { image: f })}
                       label={`${v.color || 'No Color'} image`}
                     />
@@ -803,9 +883,9 @@ export default function ProductForm({
           </div>
         )}
         {success && (
-          <div className="flex items-start gap-2.5 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-700">
-            <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-            Product created successfully.
+          <div className="fixed bottom-10 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-black px-5 py-3 text-sm font-medium text-white shadow-xl animate-in fade-in slide-in-from-bottom-5">
+            <Check size={16} className="text-emerald-400" />
+            {isEdit ? 'Product updated successfully' : 'Product created successfully'}
           </div>
         )}
 

@@ -69,35 +69,41 @@ type DashboardData = {
 
 async function getDashboardData(): Promise<DashboardData> {
   try {
-    // 1. Fetch online orders
-    const { data: onlineOrders } = await supabase
-      .from('orders')
-      .select('id, total, status, ship_full_name, created_at, order_items(id)')
-      .order('created_at', { ascending: false })
+    const date30DaysAgo = new Date()
+    date30DaysAgo.setDate(date30DaysAgo.getDate() - 30)
+    const endIso = new Date().toISOString()
+    const startIso = date30DaysAgo.toISOString()
 
-    // 2. Fetch POS orders
-    const { data: posOrders } = await supabase
-      .from('pos_orders')
-      .select('id, order_number, total, status, cashier_name, payment_method, created_at, pos_order_items(id)')
-      .order('created_at', { ascending: false })
-
-    // 3. Fetch products count
-    const { count: productsCount } = await supabase
-      .from('products')
-      .select('id', { count: 'exact', head: true })
-
-    // 4. Fetch categories count
-    const { data: categories } = await supabase
-      .from('categories')
-      .select('id, name, products(id)')
-
-    // 5. Fetch low stock variations
-    const { data: lowStockRows } = await supabase
-      .from('product_variations')
-      .select('id, stock_quantity, price, color, size, sku, products(name)')
-      .lte('stock_quantity', 5)
-      .order('stock_quantity', { ascending: true })
-      .limit(6)
+    const [
+      { data: onlineOrders },
+      { data: posOrders },
+      { count: productsCount },
+      { data: categories },
+      { data: lowStockRows },
+      report
+    ] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('id, total, status, ship_full_name, created_at, order_items(id)')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('pos_orders')
+        .select('id, order_number, total, status, cashier_name, payment_method, created_at, pos_order_items(id)')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true }),
+      supabase
+        .from('categories')
+        .select('id, name, products(id)'),
+      supabase
+        .from('product_variations')
+        .select('id, stock_quantity, price, color, size, sku, products(name)')
+        .lte('stock_quantity', 5)
+        .order('stock_quantity', { ascending: true })
+        .limit(6),
+      getComprehensiveReport(startIso, endIso)
+    ])
 
     const onlineRev = (onlineOrders ?? []).reduce((sum, o) => sum + (Number(o.total) || 0), 0)
     const posRev = (posOrders ?? []).reduce((sum, o) => sum + (Number(o.total) || 0), 0)
@@ -146,11 +152,7 @@ async function getDashboardData(): Promise<DashboardData> {
     }))
 
     // 6. Fetch 30 day performance for top categories
-    const date30DaysAgo = new Date()
-    date30DaysAgo.setDate(date30DaysAgo.getDate() - 30)
-    const endIso = new Date().toISOString()
-    const startIso = date30DaysAgo.toISOString()
-    const report = await getComprehensiveReport(startIso, endIso)
+    // (Already fetched in Promise.all)
 
     // Full (unsliced) category performance list, used to find specific categories
     // and the single top seller. Assumes report.categories is sorted by revenue desc.
