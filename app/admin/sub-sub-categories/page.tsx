@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import SubSubCategoriesClient, {
-
-export const dynamic = 'force-dynamic'
-
   type SubSubCategory,
   type SubCategoryOption,
 } from './SubSubCategoriesClient'
+
+export const dynamic = 'force-dynamic'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
