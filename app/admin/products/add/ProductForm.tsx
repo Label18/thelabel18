@@ -514,10 +514,8 @@ export default function ProductForm({
         setMainImage(null)
         setCategoryId('')
         setSubCategoryId('')
-        // Keep the same label, but move straight to the next number so the
-        // next product for this label is ready to go.
-        setSkuNumber(skuNumber + 1)
-          ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
+        setSkuLabel('')
+        ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong')
       }
