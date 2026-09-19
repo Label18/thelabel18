@@ -32,15 +32,15 @@ interface CanvasSequenceProps {
 }
 
 /** How many frames to load in the initial high-priority batch */
-const PRIORITY_BATCH = 15;
+const PRIORITY_BATCH = 25;
 /** How many frames ahead/behind the current scroll position to proactively load */
-const LOAD_WINDOW = 40;
+const LOAD_WINDOW = 100;
 /** How many frames ahead/behind the current scroll position to keep in memory (avoids unloading) */
-const CACHE_WINDOW = 80;
+const CACHE_WINDOW = 250;
 /** How many frames to load per background batch */
 const BATCH_SIZE = 15;
 /** Delay between background batches (ms) */
-const BATCH_DELAY = 30;
+const BATCH_DELAY = 10;
 /** Maximum canvas DPR — prevents oversized canvas on Retina displays */
 const MAX_DPR = 1.5;
 
@@ -188,19 +188,19 @@ export default function CanvasSequence({
         }
       }
 
-      // 3. Fallback to last successfully rendered frame
-      if (lastRenderedIndexRef.current !== null) {
-        const last = imgList[lastRenderedIndexRef.current];
-        if (last && last.complete && last.naturalWidth > 0) {
-          return { img: last, index: lastRenderedIndexRef.current };
-        }
-      }
-
-      // 4. Search forwards for any available frame (e.g. initial frames)
+      // 3. Search forwards for any available frame (e.g. initial frames)
       for (let i = targetIndex + 1; i < imgList.length; i++) {
         const candidate = imgList[i];
         if (candidate && candidate.complete && candidate.naturalWidth > 0) {
           return { img: candidate, index: i };
+        }
+      }
+
+      // 4. Fallback to last successfully rendered frame
+      if (lastRenderedIndexRef.current !== null) {
+        const last = imgList[lastRenderedIndexRef.current];
+        if (last && last.complete && last.naturalWidth > 0) {
+          return { img: last, index: lastRenderedIndexRef.current };
         }
       }
 
