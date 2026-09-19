@@ -128,7 +128,7 @@ function EditCategoryModal({
                 </div>
 
                 <form
-                    action={(formData) => {
+                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                         setError(null)
                         formData.set('existingImageUrl', category.image_url ?? '')
                         startTransition(async () => {
@@ -265,7 +265,7 @@ function AddCategoryModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <form
-                    action={(formData) => {
+                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                         setError(null)
                         startTransition(async () => {
                             try {

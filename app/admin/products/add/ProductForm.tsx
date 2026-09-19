@@ -548,7 +548,14 @@ export default function ProductForm({
         </button>
       </div>
 
-      <form id="add-product-form" action={handleSubmit} className="space-y-6">
+      <form 
+        id="add-product-form" 
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit(new FormData(e.currentTarget));
+        }} 
+        className="space-y-6"
+      >
         {/* Basic info */}
         <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-2">

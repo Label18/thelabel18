@@ -147,7 +147,7 @@ function EditSubCategoryModal({
                 </div>
 
                 <form
-                    action={(formData) => {
+                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                         setError(null)
                         formData.set('existingImageUrl', subCategory.image_url ?? '')
                         startTransition(async () => {
@@ -313,7 +313,7 @@ function AddSubCategoryModal({
                     </div>
                 ) : (
                     <form
-                        action={(formData) => {
+                        onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                             setError(null)
                             startTransition(async () => {
                                 try {

@@ -184,7 +184,7 @@ export default function EditProductForm({
         <p className="mt-1 text-sm text-stone-600">{product.name}</p>
       </div>
 
-      <form action={handleSubmit} className="space-y-8">
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="space-y-8">
         <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
           <h2 className="mb-5 text-sm font-bold uppercase tracking-wider text-stone-500">
             Product Details

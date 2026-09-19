@@ -94,7 +94,7 @@ function AddSubAdminModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <form
-                    action={(formData) => {
+                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                         setError(null)
                         formData.set('permissions', JSON.stringify(permissions))
                         startTransition(async () => {
@@ -193,7 +193,7 @@ function EditSubAdminModal({
                 </div>
 
                 <form
-                    action={(formData) => {
+                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
                         setError(null)
                         formData.set('permissions', JSON.stringify(permissions))
                         startTransition(async () => {
