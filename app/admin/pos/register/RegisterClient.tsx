@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { findVariationBySku, searchVariations, checkout, type ScannedItem, type CartLine } from './actions'
+import toast from 'react-hot-toast'
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Cash', icon: Banknote },
@@ -160,8 +161,11 @@ export default function RegisterClient({ initialProducts }: { initialProducts: S
         setCart([])
         setDiscount(0)
         scanInputRef.current?.focus()
+        toast.success(`POS Order #${result.orderNumber} completed successfully!`)
       } catch (err) {
-        setScanError(err instanceof Error ? err.message : 'Checkout failed')
+        const msg = err instanceof Error ? err.message : 'Checkout failed'
+        setScanError(msg)
+        toast.error(msg)
       } finally {
         submittingRef.current = false // NEW — release the lock either way
       }

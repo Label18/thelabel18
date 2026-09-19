@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { Upload, Link2, Trash2, Loader2, Film, Layers, Video, AtSign, Plus, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { uploadVideoReel, addInstagramReel, deleteReel, type Reel } from './actions'
 
 declare global {
@@ -147,11 +148,13 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
         formData.set('file', file)
         formData.set('caption', caption)
         await uploadVideoReel(formData)
+        toast.success('Video uploaded successfully')
         resetForm()
         setShowModal(false)
         window.location.reload() // simplest way to refresh the server-fetched list + storage URL
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
+        toast.error('Failed to upload video')
       }
     })
   }
@@ -162,11 +165,13 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
     startTransition(async () => {
       try {
         await addInstagramReel({ url: igUrl, caption })
+        toast.success('Instagram reel added successfully')
         resetForm()
         setShowModal(false)
         window.location.reload()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to add link')
+        toast.error('Failed to add Instagram reel')
       }
     })
   }
@@ -176,8 +181,10 @@ export default function ReelsClient({ initialReels }: { initialReels: Reel[] }) 
     startTransition(async () => {
       try {
         await deleteReel(id, storagePath)
+        toast.success('Reel deleted successfully')
       } catch (err) {
         console.error(err)
+        toast.error('Failed to delete reel')
       }
     })
   }

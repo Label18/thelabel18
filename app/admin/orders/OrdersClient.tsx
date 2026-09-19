@@ -16,6 +16,7 @@ import {
     Download,
 } from 'lucide-react'
 import { updateOrderStatus } from './actions'
+import toast from 'react-hot-toast'
 
 type OrderItem = {
     id: string
@@ -112,9 +113,11 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
         try {
             await updateOrderStatus(orderId, newStatus)
+            toast.success(`Order status updated to ${newStatus}`)
         } catch (err) {
             setOrders(prev)
             console.error('Failed to update order status:', err)
+            toast.error('Failed to update order status')
         } finally {
             setUpdatingId(null)
         }

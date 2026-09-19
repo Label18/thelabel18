@@ -77,6 +77,8 @@ export default function Header() {
   const handleSignOut = async () => {
     setIsUserMenuOpen(false);
     await signOut();
+    router.push("/");
+    router.refresh();
   };
 
   return (

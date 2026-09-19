@@ -16,9 +16,9 @@ export default async function ProductsListPage() {
     .select(
       `
       id, sku, name, description, image_url, is_visible, created_at,
-      category:categories ( name ),
-      sub_category:sub_categories ( name ),
-      sub_sub_category:sub_sub_categories ( name ),
+      category:categories ( name, is_visible ),
+      sub_category:sub_categories ( name, is_visible ),
+      sub_sub_category:sub_sub_categories ( name, is_visible ),
       variations:product_variations (
         id, sku, size, color, color_hex, image_url,
         stock_quantity, price, compare_at_price, is_visible

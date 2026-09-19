@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Address, getAddresses, addAddress, AddressInput } from "@/lib/supabase/addresses";
 import AddressForm from "@/components/AddressForm";
 import { decreaseStockForOrder } from "@/app/(site)/checkout/actions";
+import toast from "react-hot-toast";
 
 type CartRow = {
   id: string;
@@ -159,7 +160,9 @@ export default function CheckoutPage() {
 
   async function handlePlaceOrder() {
     if (!selectedAddressId) {
-      setPlaceError("Please select or add a shipping address.");
+      const msg = "Please select or add a shipping address.";
+      setPlaceError(msg);
+      toast.error(msg);
       return;
     }
     setPlaceError(null);
@@ -176,9 +179,12 @@ export default function CheckoutPage() {
       });
       if (error) throw error;
 
+      toast.success("Order placed successfully!");
       router.push(`/orders/${orderId}`);
     } catch (err: any) {
-      setPlaceError(err?.message ?? "Couldn't place your order. Please try again.");
+      const msg = err?.message ?? "Couldn't place your order. Please try again.";
+      setPlaceError(msg);
+      toast.error(msg);
     } finally {
       setPlacing(false);
     }

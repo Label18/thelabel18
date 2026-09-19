@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Check
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { createProduct, updateProduct } from './actions'
 
 type Category = { id: string; name: string }
@@ -59,7 +60,7 @@ function emptyVariation(): Variation {
     size: '',
     color: '',
     color_hex: '',
-        stock: '0',
+    stock: '0',
     price: '',
     compare_at_price: '',
     image: null,
@@ -291,7 +292,7 @@ function ColorPicker({
 }: {
   colorName: string
   colorHex: string
-  onChange: (patch: {  color?: string; color_hex?: string }) => void
+  onChange: (patch: { color?: string; color_hex?: string }) => void
 }) {
   const [open, setOpen] = useState(false)
   const activeFamily = COLOR_PALETTE.find((f) => f.shades.some(s => s.name === colorName))
@@ -383,8 +384,8 @@ function ColorPicker({
                   setOpen(false)
                 }}
                 className={`mb-5 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-colors ${!colorName
-                    ? 'border-black bg-stone-100 text-black'
-                    : 'border-dashed border-stone-300 text-stone-500 hover:border-stone-400'
+                  ? 'border-black bg-stone-100 text-black'
+                  : 'border-dashed border-stone-300 text-stone-500 hover:border-stone-400'
                   }`}
               >
                 <NoColorSwatch size={16} />
@@ -409,15 +410,15 @@ function ColorPicker({
                           type="button"
                           onClick={() => {
                             onChange({
-                              
+
                               color: shade.name,
                               color_hex: shade.hex,
                             })
                             setOpen(false)
                           }}
                           className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs font-medium transition-colors ${active
-                              ? 'border-black bg-stone-100 text-black'
-                              : 'border-stone-200 text-stone-600 hover:border-stone-400'
+                            ? 'border-black bg-stone-100 text-black'
+                            : 'border-stone-200 text-stone-600 hover:border-stone-400'
                             }`}
                         >
                           <span
@@ -461,16 +462,16 @@ export default function ProductForm({
   const [variations, setVariations] = useState<Variation[]>(
     isEdit && product && product.variations.length > 0
       ? product.variations.map((v) => ({
-          key: crypto.randomUUID(),
-          size: v.size || '',
-          color: v.color || '',
-          color_hex: v.color_hex || '',
-          stock: String(v.stock_quantity),
-          price: String(v.price),
-          compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
-          image: null,
-          existing_image_url: v.image_url,
-        }))
+        key: crypto.randomUUID(),
+        size: v.size || '',
+        color: v.color || '',
+        color_hex: v.color_hex || '',
+        stock: String(v.stock_quantity),
+        price: String(v.price),
+        compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
+        image: null,
+        existing_image_url: v.image_url,
+      }))
       : [emptyVariation()]
   )
 
@@ -505,30 +506,30 @@ export default function ProductForm({
 
   function resetAll() {
     if (isEdit && product) {
-        setVariations(
-          product.variations.length > 0
-            ? product.variations.map((v) => ({
-                key: crypto.randomUUID(),
-                size: v.size || '',
-                color: v.color || '',
-                color_hex: v.color_hex || '',
-                stock: String(v.stock_quantity),
-                price: String(v.price),
-                compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
-                image: null,
-                existing_image_url: v.image_url,
-              }))
-            : [emptyVariation()]
-        )
-        setMainImage(null)
-        setCategoryId(product.category_id || '')
-        setSubCategoryId(product.sub_category_id || '')
+      setVariations(
+        product.variations.length > 0
+          ? product.variations.map((v) => ({
+            key: crypto.randomUUID(),
+            size: v.size || '',
+            color: v.color || '',
+            color_hex: v.color_hex || '',
+            stock: String(v.stock_quantity),
+            price: String(v.price),
+            compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
+            image: null,
+            existing_image_url: v.image_url,
+          }))
+          : [emptyVariation()]
+      )
+      setMainImage(null)
+      setCategoryId(product.category_id || '')
+      setSubCategoryId(product.sub_category_id || '')
     } else {
-        setVariations([emptyVariation()])
-        setMainImage(null)
-        setCategoryId('')
-        setSubCategoryId('')
-        setSkuLabel('')
+      setVariations([emptyVariation()])
+      setMainImage(null)
+      setCategoryId('')
+      setSubCategoryId('')
+      setSkuLabel('')
     }
     setError(null)
     setSuccess(false)
@@ -546,10 +547,10 @@ export default function ProductForm({
 
     if (mainImage) formData.set('image', mainImage)
     if (isEdit && product) {
-        formData.set('existing_image_url', product.image_url || '')
+      formData.set('existing_image_url', product.image_url || '')
     } else {
-        formData.set('sku', generatedSku)
-        formData.set('sku_label', normalizedLabel)
+      formData.set('sku', generatedSku)
+      formData.set('sku_label', normalizedLabel)
     }
 
     formData.set('variation_count', String(variations.length))
@@ -561,7 +562,7 @@ export default function ProductForm({
       formData.set(`variations[${i}][price]`, v.price)
       formData.set(`variations[${i}][compare_at_price]`, v.compare_at_price)
       if (isEdit) {
-          formData.set(`variations[${i}][existing_image_url]`, v.existing_image_url || '')
+        formData.set(`variations[${i}][existing_image_url]`, v.existing_image_url || '')
       }
       if (v.image) formData.set(`variations[${i}][image]`, v.image)
     })
@@ -569,24 +570,26 @@ export default function ProductForm({
     startTransition(async () => {
       try {
         if (isEdit && product) {
-            await updateProduct(product.id, formData)
-            setSuccess(true)
-            setTimeout(() => setSuccess(false), 3000)
+          await updateProduct(product.id, formData)
+          toast.success('Product updated successfully')
+          setSuccess(true)
+          window.location.href = '/admin/products/list'
         } else {
-            await createProduct(formData)
-            commitSkuNumber(normalizedLabel, skuNumber)
-
-            setSuccess(true)
-            setTimeout(() => setSuccess(false), 3000)
-            setVariations([emptyVariation()])
-            setMainImage(null)
-            setCategoryId('')
-            setSubCategoryId('')
-            setSkuLabel('')
+          await createProduct(formData)
+          commitSkuNumber(normalizedLabel, skuNumber)
+          toast.success('Product created successfully')
+          setSuccess(true)
+          setTimeout(() => setSuccess(false), 3000)
+          setVariations([emptyVariation()])
+          setMainImage(null)
+          setCategoryId('')
+          setSubCategoryId('')
+          setSkuLabel('')
             ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong')
+        toast.error('Failed to save product')
       }
     })
   }
@@ -615,12 +618,12 @@ export default function ProductForm({
         </button>
       </div>
 
-      <form 
-        id="add-product-form" 
+      <form
+        id="add-product-form"
         onSubmit={(e) => {
           e.preventDefault();
           handleSubmit(new FormData(e.currentTarget));
-        }} 
+        }}
         className="space-y-6"
       >
         {/* Basic info */}
@@ -645,29 +648,29 @@ export default function ProductForm({
               <>
                 <div className="space-y-1.5">
                   <label className={labelClass}>Label</label>
-              <input
-                value={skuLabel}
-                onChange={(e) => setSkuLabel(e.target.value)}
-                required
-                placeholder="TL18-BAG"
-                className={inputClass}
-              />
-              <p className="text-[11px] text-stone-400">
-                A short prefix — the SKU number continues from wherever this label last left off.
-              </p>
-            </div>
+                  <input
+                    value={skuLabel}
+                    onChange={(e) => setSkuLabel(e.target.value)}
+                    required
+                    placeholder="TL18-BAG"
+                    className={inputClass}
+                  />
+                  <p className="text-[11px] text-stone-400">
+                    A short prefix — the SKU number continues from wherever this label last left off.
+                  </p>
+                </div>
 
-            <div className="space-y-1.5">
-              <label className={labelClass}>SKU Number (auto-generated)</label>
-              <input
-                name="sku"
-                value={generatedSku}
-                readOnly
-                placeholder="Enter a label first"
-                className={`${inputClass} cursor-not-allowed bg-stone-50 text-stone-500`}
-              />
-            </div>
-            </>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>SKU Number (auto-generated)</label>
+                  <input
+                    name="sku"
+                    value={generatedSku}
+                    readOnly
+                    placeholder="Enter a label first"
+                    className={`${inputClass} cursor-not-allowed bg-stone-50 text-stone-500`}
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-1.5 sm:col-span-2">
@@ -814,11 +817,11 @@ export default function ProductForm({
                   </div>
                   <div className="col-span-2 space-y-1 sm:col-span-2">
                     <label className="text-[11px] font-medium text-stone-500">Color</label>
-                      <ColorPicker
-                        colorName={v.color}
-                        colorHex={v.color_hex}
-                        onChange={(patch) => updateVariation(v.key, patch)}
-                      />
+                    <ColorPicker
+                      colorName={v.color}
+                      colorHex={v.color_hex}
+                      onChange={(patch) => updateVariation(v.key, patch)}
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] font-medium text-stone-500">Stock Amount</label>
@@ -880,12 +883,6 @@ export default function ProductForm({
           <div className="flex items-start gap-2.5 rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-600">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             {error}
-          </div>
-        )}
-        {success && (
-          <div className="fixed bottom-10 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-black px-5 py-3 text-sm font-medium text-white shadow-xl animate-in fade-in slide-in-from-bottom-5">
-            <Check size={16} className="text-emerald-400" />
-            {isEdit ? 'Product updated successfully' : 'Product created successfully'}
           </div>
         )}
 

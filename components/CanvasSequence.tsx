@@ -32,13 +32,15 @@ interface CanvasSequenceProps {
 }
 
 /** How many frames to load in the initial high-priority batch */
-const PRIORITY_BATCH = 5;
-/** How many frames ahead/behind the current scroll position to keep loaded */
-const LOAD_WINDOW = 30;
+const PRIORITY_BATCH = 15;
+/** How many frames ahead/behind the current scroll position to proactively load */
+const LOAD_WINDOW = 40;
+/** How many frames ahead/behind the current scroll position to keep in memory (avoids unloading) */
+const CACHE_WINDOW = 80;
 /** How many frames to load per background batch */
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 15;
 /** Delay between background batches (ms) */
-const BATCH_DELAY = 40;
+const BATCH_DELAY = 30;
 /** Maximum canvas DPR — prevents oversized canvas on Retina displays */
 const MAX_DPR = 1.5;
 
@@ -219,7 +221,6 @@ export default function CanvasSequence({
       lastRenderedIndexRef.current = best.index;
 
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
       ctx.globalAlpha = 1;
 
       // Only fill background if image doesn't cover completely
@@ -285,8 +286,7 @@ export default function CanvasSequence({
         const img = new Image();
         imgArray[index] = img;
 
-        img.onload = () => {
-          // Draw frame 0 to canvas immediately when it arrives
+        const handleLoad = () => {
           if (index === 0 && canvasRef.current) {
             const ctx = canvasRef.current.getContext("2d");
             if (ctx) {
@@ -294,6 +294,14 @@ export default function CanvasSequence({
             }
           }
           resolve();
+        };
+
+        img.onload = () => {
+          if (img.decode) {
+            img.decode().then(handleLoad).catch(handleLoad);
+          } else {
+            handleLoad();
+          }
         };
         img.onerror = () => resolve(); // Don't block batch on a single failure
         img.src = urls[index];
@@ -309,13 +317,16 @@ export default function CanvasSequence({
       const urls = urlsRef.current;
       if (!urls.length) return;
 
-      const start = Math.max(0, centerFrame - LOAD_WINDOW);
-      const end = Math.min(urls.length - 1, centerFrame + LOAD_WINDOW);
+      const loadStart = Math.max(0, centerFrame - LOAD_WINDOW);
+      const loadEnd = Math.min(urls.length - 1, centerFrame + LOAD_WINDOW);
+      
+      const cacheStart = Math.max(0, centerFrame - CACHE_WINDOW);
+      const cacheEnd = Math.min(urls.length - 1, centerFrame + CACHE_WINDOW);
 
       // --- MEMORY MANAGEMENT ---
-      // Unload frames outside the current window to free RAM
+      // Unload frames outside the cache window to free RAM
       for (let i = 0; i < urls.length; i++) {
-        if (i < start || i > end) {
+        if (i < cacheStart || i > cacheEnd) {
           const img = imagesRef.current[i];
           if (img) {
             img.src = ""; // Cancel load and free memory
@@ -332,8 +343,8 @@ export default function CanvasSequence({
         // Load ahead (forward) first, then behind
         const ahead = centerFrame + offset;
         const behind = centerFrame - offset;
-        if (ahead <= end && !loadedSetRef.current.has(ahead)) toLoad.push(ahead);
-        if (behind >= start && behind !== ahead && !loadedSetRef.current.has(behind)) toLoad.push(behind);
+        if (ahead <= loadEnd && !loadedSetRef.current.has(ahead)) toLoad.push(ahead);
+        if (behind >= loadStart && behind !== ahead && !loadedSetRef.current.has(behind)) toLoad.push(behind);
       }
 
       if (toLoad.length === 0) return;

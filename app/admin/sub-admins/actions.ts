@@ -99,7 +99,7 @@ export async function updateSubAdmin(id: string, formData: FormData) {
 export async function deleteSubAdmin(id: string) {
   // Remove the Auth user first...
   const { error: authError } = await supabase.auth.admin.deleteUser(id)
-  if (authError) {
+  if (authError && !authError.message.includes('User not found')) {
     throw new Error(authError.message)
   }
 

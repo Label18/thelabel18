@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { createClient } from "@/lib/supabase/client";
 import LoginModal from "@/components/LoginModal";
+import toast from "react-hot-toast";
 
 type CartRow = {
   id: string;
@@ -83,9 +84,17 @@ export default function CartPage() {
     setError(null);
     const { data, error } = await supabase
       .from("cart_items")
-      .select(
-        "id, quantity, product_id, variation_id, products(id, name, sku, image_url), product_variations(id, size, color, color_hex, price, compare_at_price, stock_quantity, sku, image_url)"
-      )
+      .select(`
+        id, quantity, product_id, variation_id, 
+        products(
+          id, name, sku, image_url, is_visible,
+          category_id, sub_category_id, sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        ), 
+        product_variations(id, size, color, color_hex, price, compare_at_price, stock_quantity, sku, image_url)
+      `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -93,7 +102,22 @@ export default function CartPage() {
       setError(error.message);
       setRows([]);
     } else {
-      setRows((data ?? []) as unknown as CartRow[]);
+      const isVis = (cat: any, id: string | null) => {
+        if (id && !cat) return false;
+        if (!cat) return true;
+        if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+        return cat.is_visible !== false;
+      };
+
+      const validData = (data ?? []).filter((item) => {
+        const p = item.products as any;
+        if (!p || p.is_visible === false) return false;
+        if (!isVis(p.category || p.categories, p.category_id)) return false;
+        if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+        if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+        return true;
+      });
+      setRows(validData as unknown as CartRow[]);
     }
     setLoading(false);
   }, [user, supabase]);
@@ -116,6 +140,42 @@ export default function CartPage() {
     ] as string[];
 
     let freshById = new Map<string, any>();
+    const productIds = [...new Set(localItems.map((i) => i.productId))];
+    const visibleProductIds = new Set<string>();
+
+    if (productIds.length > 0) {
+      const { data } = await supabase
+        .from("products")
+        .select(`
+          id, is_visible,
+          category_id, sub_category_id, sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        `)
+        .in("id", productIds);
+
+      if (data) {
+        const isVis = (cat: any, id: string | null) => {
+          if (id && !cat) return false;
+          if (!cat) return true;
+          if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+          return cat.is_visible !== false;
+        };
+
+        data.forEach((p: any) => {
+          if (
+            p.is_visible !== false &&
+            isVis(p.category || p.categories, p.category_id) &&
+            isVis(p.sub_category || p.sub_categories, p.sub_category_id) &&
+            isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)
+          ) {
+            visibleProductIds.add(p.id);
+          }
+        });
+      }
+    }
+
     if (variationIds.length > 0) {
       const { data, error } = await supabase
         .from("product_variations")
@@ -129,7 +189,9 @@ export default function CartPage() {
       }
     }
 
-    const display: DisplayCartItem[] = localItems.map((item) => {
+    const display: DisplayCartItem[] = localItems
+      .filter((item) => visibleProductIds.has(item.productId))
+      .map((item) => {
       const fresh = item.variationId ? freshById.get(item.variationId) : null;
       return {
         key: `${item.productId}-${item.variationId ?? "default"}`,
@@ -232,8 +294,11 @@ export default function CartPage() {
         guest.removeFromCart(item.productId, item.variationId);
         await loadGuestCart();
       }
+      toast.success("Removed from cart");
     } catch (err: any) {
-      setError(err?.message ?? "Couldn't remove item.");
+      const msg = err?.message ?? "Couldn't remove item.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setPending(item.key, false);
     }

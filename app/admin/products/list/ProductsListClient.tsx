@@ -21,6 +21,7 @@ import {
   ArrowUpDown,
   Plus,
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { toggleProductVisibility, toggleVariationVisibility, deleteProduct } from './actions'
 
 export type Variation = {
@@ -43,9 +44,9 @@ export type ProductRow = {
   description: string | null
   image_url: string | null
   is_visible: boolean
-  category: { name: string } | null
-  sub_category: { name: string } | null
-  sub_sub_category: { name: string } | null
+  category: { name: string, is_visible: boolean } | null
+  sub_category: { name: string, is_visible: boolean } | null
+  sub_sub_category: { name: string, is_visible: boolean } | null
   variations: Variation[]
 }
 
@@ -73,8 +74,10 @@ function StatusToggle({
         startTransition(async () => {
           try {
             await onChange(next)
-          } catch {
+            toast.success(next ? 'Visibility updated: Visible' : 'Visibility updated: Hidden')
+          } catch (err: any) {
             setChecked(!next)
+            toast.error(err?.message || 'Failed to update visibility')
           }
         })
       }}
@@ -547,6 +550,19 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                         isVisible={p.is_visible}
                         onChange={(next) => toggleProductVisibility(p.id, next)}
                       />
+                      {p.category?.is_visible === false ? (
+                        <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight max-w-[120px]">
+                          Hidden (Category inactive)
+                        </div>
+                      ) : p.sub_category?.is_visible === false ? (
+                        <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight max-w-[120px]">
+                          Hidden (Sub-category inactive)
+                        </div>
+                      ) : p.sub_sub_category?.is_visible === false ? (
+                        <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight max-w-[120px]">
+                          Hidden (Sub-sub-category inactive)
+                        </div>
+                      ) : null}
                     </td>
                     <td className="px-6 py-3.5">
                       <div className="flex items-center justify-end gap-1.5">
@@ -567,7 +583,14 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                         <button
                           onClick={() => {
                             if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
-                              startTransition(() => deleteProduct(p.id, p.image_url))
+                              startTransition(async () => {
+                                try {
+                                  await deleteProduct(p.id, p.image_url)
+                                  toast.success('Product deleted successfully')
+                                } catch (err: any) {
+                                  toast.error(err.message)
+                                }
+                              })
                             }
                           }}
                           className="rounded-lg p-2 text-stone-400 hover:bg-rose-50 hover:text-rose-500"
@@ -636,7 +659,23 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                 <div>
                   <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500">Visible</span>
                   <div className="mt-0.5">
-                    <StatusToggle isVisible={p.is_visible} onChange={(next) => toggleProductVisibility(p.id, next)} />
+                    <StatusToggle
+                      isVisible={p.is_visible}
+                      onChange={(next) => toggleProductVisibility(p.id, next)}
+                    />
+                    {p.category?.is_visible === false ? (
+                      <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight">
+                        Hidden (Category inactive)
+                      </div>
+                    ) : p.sub_category?.is_visible === false ? (
+                      <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight">
+                        Hidden (Sub-category inactive)
+                      </div>
+                    ) : p.sub_sub_category?.is_visible === false ? (
+                      <div className="mt-1.5 text-[10px] text-rose-500 font-medium leading-tight">
+                        Hidden (Sub-sub-category inactive)
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -658,7 +697,14 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                   </Link>
                   <button onClick={() => {
                     if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
-                      startTransition(() => deleteProduct(p.id, p.image_url))
+                      startTransition(async () => {
+                        try {
+                          await deleteProduct(p.id, p.image_url)
+                          toast.success('Product deleted successfully')
+                        } catch (err: any) {
+                          toast.error(err.message)
+                        }
+                      })
                     }
                   }} className="rounded-lg p-2 text-stone-400 hover:bg-rose-50 hover:text-rose-500">
                     <Trash2 size={16} />

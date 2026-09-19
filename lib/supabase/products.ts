@@ -50,7 +50,13 @@ export async function getProducts(filters: ProductFilters) {
 
   let query = supabase
     .from("products")
-    .select("*, product_variations(*)")
+    .select(`
+      *, 
+      product_variations(*),
+      category:categories(is_visible),
+      sub_category:sub_categories(is_visible),
+      sub_sub_category:sub_sub_categories(is_visible)
+    `)
     .eq("is_visible", true);
 
   if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
@@ -61,12 +67,27 @@ export async function getProducts(filters: ProductFilters) {
   const { data, error } = await query;
   if (error) throw error;
 
-  let items: ProductWithPrice[] = (data as Product[]).map((p) => {
-    const visibleVariations = p.product_variations.filter((v) => v.is_visible);
-    const prices = visibleVariations.map((v) => Number(v.price));
+  const isVis = (cat: any, id: string | null) => {
+    if (id && !cat) return false; // RLS stripped it, so it's invisible
+    if (!cat) return true;
+    if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+    return cat.is_visible !== false;
+  };
+
+  // Filter out products whose parent categories are invisible
+  const validData = (data as any[]).filter((p) => {
+    if (!isVis(p.category || p.categories, p.category_id)) return false;
+    if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+    if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+    return true;
+  });
+
+  let items: ProductWithPrice[] = validData.map((p) => {
+    const visibleVariations = (p.product_variations || []).filter((v: any) => v.is_visible);
+    const prices = visibleVariations.map((v: any) => Number(v.price));
     const minPrice = prices.length ? Math.min(...prices) : null;
     const maxPrice = prices.length ? Math.max(...prices) : null;
-    const inStock = visibleVariations.some((v) => v.stock_quantity > 0);
+    const inStock = visibleVariations.some((v: any) => v.stock_quantity > 0);
     return { ...p, minPrice, maxPrice, inStock };
   });
 
@@ -107,14 +128,32 @@ export async function getProductById(id: string) {
 
   const { data, error } = await supabase
     .from("products")
-    .select("*, product_variations(*)")
+    .select(`
+      *, 
+      product_variations(*),
+      category:categories(is_visible),
+      sub_category:sub_categories(is_visible),
+      sub_sub_category:sub_sub_categories(is_visible)
+    `)
     .eq("id", id)
     .eq("is_visible", true)
     .single();
 
   if (error || !data) return null;
 
-  const product = data as Product;
+  const isVis = (cat: any, id: string | null) => {
+    if (id && !cat) return false; // RLS stripped it
+    if (!cat) return true;
+    if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+    return cat.is_visible !== false;
+  };
+
+  const raw = data as any;
+  if (!isVis(raw.category || raw.categories, raw.category_id)) return null;
+  if (!isVis(raw.sub_category || raw.sub_categories, raw.sub_category_id)) return null;
+  if (!isVis(raw.sub_sub_category || raw.sub_sub_categories, raw.sub_sub_category_id)) return null;
+
+  const product = raw as Product;
   // Supabase can return null here instead of [] when a product has no
   // matching rows in product_variations — normalize it before use.
   product.product_variations = (product.product_variations ?? []).filter(
@@ -128,10 +167,16 @@ export async function getRelatedProducts(product: Product, limit = 4) {
 
   let query = supabase
     .from("products")
-    .select("*, product_variations(*)")
+    .select(`
+      *, 
+      product_variations(*),
+      category:categories(is_visible),
+      sub_category:sub_categories(is_visible),
+      sub_sub_category:sub_sub_categories(is_visible)
+    `)
     .eq("is_visible", true)
     .neq("id", product.id)
-    .limit(limit);
+    .limit(limit * 3); // Fetch more initially in case some are filtered out
 
   if (product.sub_category_id) {
     query = query.eq("sub_category_id", product.sub_category_id);
@@ -142,14 +187,28 @@ export async function getRelatedProducts(product: Product, limit = 4) {
   const { data, error } = await query;
   if (error || !data) return [];
 
-  return (data as Product[]).map((p) => {
-    const visible = p.product_variations.filter((v) => v.is_visible);
-    const prices = visible.map((v) => Number(v.price));
+  const isVis = (cat: any, id: string | null) => {
+    if (id && !cat) return false;
+    if (!cat) return true;
+    if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+    return cat.is_visible !== false;
+  };
+
+  const validData = (data as any[]).filter((p) => {
+    if (!isVis(p.category || p.categories, p.category_id)) return false;
+    if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+    if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+    return true;
+  }).slice(0, limit);
+
+  return validData.map((p) => {
+    const visible = (p.product_variations || []).filter((v: any) => v.is_visible);
+    const prices = visible.map((v: any) => Number(v.price));
     return {
       ...p,
       minPrice: prices.length ? Math.min(...prices) : null,
       maxPrice: prices.length ? Math.max(...prices) : null,
-      inStock: visible.some((v) => v.stock_quantity > 0),
+      inStock: visible.some((v: any) => v.stock_quantity > 0),
     };
   });
 }

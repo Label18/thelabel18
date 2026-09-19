@@ -16,6 +16,7 @@ import {
     CheckCircle2,
     XCircle,
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { addCoupon, updateCoupon, toggleCouponActive, deleteCoupon } from './actions'
 
 const poppins = Poppins({
@@ -130,8 +131,10 @@ function ActiveToggle({ id, isActive }: { id: string; isActive: boolean }) {
                 startTransition(async () => {
                     try {
                         await toggleCouponActive(id, next)
+                        toast.success(next ? 'Coupon activated' : 'Coupon deactivated')
                     } catch {
                         setChecked(!next) // revert on failure
+                        toast.error('Failed to update coupon status')
                     }
                 })
             }}
@@ -411,9 +414,11 @@ function AddCouponModal({ onClose }: { onClose: () => void }) {
                         startTransition(async () => {
                             try {
                                 await addCoupon(formData)
+                                toast.success('Coupon created successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to create coupon')
                             }
                         })
                     }}
@@ -447,9 +452,11 @@ function EditCouponModal({ coupon, onClose }: { coupon: Coupon; onClose: () => v
                         startTransition(async () => {
                             try {
                                 await updateCoupon(coupon.id, formData)
+                                toast.success('Coupon updated successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to update coupon')
                             }
                         })
                     }}
@@ -656,7 +663,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                                                 <Pencil size={16} />
                                             </button>
                                             <button
-                                                onClick={() => startTransition(() => deleteCoupon(c.id))}
+                                                onClick={() => startTransition(async () => { try { await deleteCoupon(c.id); toast.success('Coupon deleted') } catch { toast.error('Failed to delete coupon') } })}
                                                 className="rounded-lg p-2 text-stone-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
                                                 aria-label={`Delete ${c.code}`}
                                                 title="Delete coupon"
@@ -748,7 +755,7 @@ export default function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                                     <Pencil size={18} />
                                 </button>
                                 <button
-                                    onClick={() => startTransition(() => deleteCoupon(c.id))}
+                                    onClick={() => startTransition(async () => { try { await deleteCoupon(c.id); toast.success('Coupon deleted') } catch { toast.error('Failed to delete coupon') } })}
                                     className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
                                     aria-label={`Delete ${c.code}`}
                                 >

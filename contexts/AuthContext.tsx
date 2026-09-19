@@ -89,12 +89,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { count } = await supabase
+    const { data } = await supabase
       .from("cart_items")
-      .select("id", { count: "exact", head: true })
+      .select(`
+        id,
+        products(
+          is_visible,
+          category_id,
+          sub_category_id,
+          sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        )
+      `)
       .eq("user_id", currentUser.id);
 
-    setCartCount(count || 0);
+    const isVis = (cat: any, id: string | null) => {
+      if (id && !cat) return false;
+      if (!cat) return true;
+      if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+      return cat.is_visible !== false;
+    };
+
+    const count = (data ?? []).filter((item) => {
+      const p = item.products as any;
+      if (!p || p.is_visible === false) return false;
+      if (!isVis(p.category || p.categories, p.category_id)) return false;
+      if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+      if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+      return true;
+    }).length;
+
+    setCartCount(count);
   };
 
   const refreshWishlist = async () => {
@@ -107,12 +134,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { count } = await supabase
+    const { data } = await supabase
       .from("wishlist")
-      .select("id", { count: "exact", head: true })
+      .select(`
+        id,
+        products(
+          is_visible,
+          category_id,
+          sub_category_id,
+          sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        )
+      `)
       .eq("user_id", currentUser.id);
 
-    setWishlistCount(count || 0);
+    const isVis = (cat: any, id: string | null) => {
+      if (id && !cat) return false;
+      if (!cat) return true;
+      if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+      return cat.is_visible !== false;
+    };
+
+    const count = (data ?? []).filter((item) => {
+      const p = item.products as any;
+      if (!p || p.is_visible === false) return false;
+      if (!isVis(p.category || p.categories, p.category_id)) return false;
+      if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+      if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+      return true;
+    }).length;
+
+    setWishlistCount(count);
   };
 
   const refreshCounts = async () => {
@@ -168,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const cartRaw = window.localStorage.getItem("guest_cart_v1");
       const wishlistRaw = window.localStorage.getItem("guest_wishlist_v1");
-      
+
       const guestCart = cartRaw ? JSON.parse(cartRaw) : [];
       const guestWishlist = wishlistRaw ? JSON.parse(wishlistRaw) : [];
 
@@ -223,10 +277,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear guest data
       window.localStorage.removeItem("guest_cart_v1");
       window.localStorage.removeItem("guest_wishlist_v1");
-      
+
       // Dispatch storage event so GuestCartWishlistProvider updates
       window.dispatchEvent(new Event("storage"));
-      
+
       await refreshCounts();
     } catch (err) {
       console.error("Error syncing guest data", err);
@@ -297,7 +351,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     await refreshCart();
-    toast.success("Added to your shopping bag");
   };
 
   const updateCartQuantity = async (cartItemId: string, quantity: number) => {

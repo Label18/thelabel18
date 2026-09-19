@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Poppins } from 'next/font/google'
 import { Plus, Trash2, ImageOff, X, Pencil, Search, Layers, CheckCircle2, EyeOff } from 'lucide-react'
+import toast from 'react-hot-toast'
 import {
     addSubCategory,
     toggleSubCategoryVisibility,
@@ -49,8 +50,10 @@ function VisibilityToggle({ id, isVisible }: { id: string; isVisible: boolean })
                 startTransition(async () => {
                     try {
                         await toggleSubCategoryVisibility(id, next)
+                        toast.success(next ? 'Sub-category is now visible' : 'Sub-category is now hidden')
                     } catch {
                         setChecked(!next) // revert on failure
+                        toast.error('Failed to update visibility')
                     }
                 })
             }}
@@ -88,6 +91,7 @@ function PriorityInput({
             try {
                 await updateSubCategoryPriority(id, categoryId, val)
                 setError(null)
+                toast.success('Priority updated')
             } catch (err) {
                 setVal(value) // revert on failure (e.g. priority already taken in this category)
                 setError(err instanceof Error ? err.message : 'Update failed')
@@ -153,9 +157,11 @@ function EditSubCategoryModal({
                         startTransition(async () => {
                             try {
                                 await updateSubCategory(subCategory.id, formData)
+                                toast.success('Sub-category updated successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Operation failed')
                             }
                         })
                     }}
@@ -321,6 +327,7 @@ function AddSubCategoryModal({
                                     onClose()
                                 } catch (err) {
                                     setError(err instanceof Error ? err.message : 'Something went wrong')
+                                    toast.error('Operation failed')
                                 }
                             })
                         }}
@@ -618,9 +625,18 @@ export default function SubCategoriesClient({
                                                 <Pencil size={16} />
                                             </button>
                                             <button
-                                                onClick={() =>
-                                                    startTransition(() => deleteSubCategory(sub.id, sub.image_url))
-                                                }
+                                                onClick={() => {
+                                                    if (confirm('Warning: Deleting this sub-category will permanently delete ALL products inside it. Are you absolutely sure?')) {
+                                                        startTransition(async () => {
+                                                            try {
+                                                                await deleteSubCategory(sub.id, sub.image_url)
+                                                                toast.success('Sub-category deleted successfully')
+                                                            } catch (err: any) {
+                                                                toast.error(err.message || 'Failed to delete sub-category')
+                                                            }
+                                                        })
+                                                    }
+                                                }}
                                                 className="rounded-lg p-2 text-stone-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
                                                 aria-label={`Delete ${sub.name}`}
                                             >
@@ -692,7 +708,18 @@ export default function SubCategoriesClient({
                                     <Pencil size={18} />
                                 </button>
                                 <button
-                                    onClick={() => startTransition(() => deleteSubCategory(sub.id, sub.image_url))}
+                                    onClick={() => {
+                                        if (confirm('Warning: Deleting this sub-category will permanently delete ALL products inside it. Are you absolutely sure?')) {
+                                            startTransition(async () => {
+                                                            try {
+                                                                await deleteSubCategory(sub.id, sub.image_url)
+                                                                toast.success('Sub-category deleted successfully')
+                                                            } catch (err: any) {
+                                                                toast.error(err.message || 'Failed to delete sub-category')
+                                                            }
+                                                        })
+                                        }
+                                    }}
                                     className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
                                     aria-label={`Delete ${sub.name}`}
                                 >

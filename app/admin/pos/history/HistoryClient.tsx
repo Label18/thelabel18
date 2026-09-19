@@ -18,6 +18,7 @@ import {
     exchangeOrderItem,
     type ExchangeCandidate,
 } from './actions'
+import toast from 'react-hot-toast'
 
 type OrderItem = {
     id: string
@@ -152,9 +153,12 @@ export default function HistoryClient({ orders }: { orders: PosOrder[] }) {
                 newQuantity: quantity,
             })
             closeExchange()
+            toast.success('Item exchanged successfully')
             router.refresh()
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Exchange failed')
+            const msg = err instanceof Error ? err.message : 'Exchange failed'
+            setError(msg)
+            toast.error(msg)
         } finally {
             setSubmitting(false)
         }

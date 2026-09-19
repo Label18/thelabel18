@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { Poppins } from 'next/font/google'
 import { Plus, Trash2, X, Pencil, Search, ShieldCheck, UserCheck, Lock } from 'lucide-react'
 import { addSubAdmin, updateSubAdmin, deleteSubAdmin } from './actions'
+import toast from 'react-hot-toast'
 
 const poppins = Poppins({
     subsets: ['latin'],
@@ -100,9 +101,11 @@ function AddSubAdminModal({ onClose }: { onClose: () => void }) {
                         startTransition(async () => {
                             try {
                                 await addSubAdmin(formData)
+                                toast.success('Sub-admin added successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to add sub-admin')
                             }
                         })
                     }}
@@ -199,9 +202,11 @@ function EditSubAdminModal({
                         startTransition(async () => {
                             try {
                                 await updateSubAdmin(subAdmin.id, formData)
+                                toast.success('Sub-admin updated successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to update sub-admin')
                             }
                         })
                     }}
@@ -379,7 +384,7 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                                             </button>
                                             <button
                                                 onClick={() =>
-                                                    startTransition(() => deleteSubAdmin(admin.id))
+                                                    startTransition(async () => { try { await deleteSubAdmin(admin.id); toast.success('Sub-admin deleted') } catch { toast.error('Failed to delete sub-admin') } })
                                                 }
                                                 className="rounded-lg p-2 text-stone-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
                                                 aria-label={`Delete ${admin.name}`}
@@ -436,7 +441,7 @@ export default function SubAdminsClient({ subAdmins }: { subAdmins: SubAdmin[] }
                                     <Pencil size={18} />
                                 </button>
                                 <button
-                                    onClick={() => startTransition(() => deleteSubAdmin(admin.id))}
+                                    onClick={() => startTransition(async () => { try { await deleteSubAdmin(admin.id); toast.success('Sub-admin deleted') } catch { toast.error('Failed to delete sub-admin') } })}
                                     className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
                                     aria-label={`Delete ${admin.name}`}
                                 >

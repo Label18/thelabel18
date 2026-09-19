@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { createClient } from "@/lib/supabase/client";
+import toast from "react-hot-toast";
 
 type WishlistRow = {
   id: string;
@@ -69,9 +70,17 @@ export default function WishlistPage() {
     setError(null);
     const { data, error } = await supabase
       .from("wishlist")
-      .select(
-        "id, product_id, variation_id, products(id, name, sku, image_url), product_variations(id, price, compare_at_price, stock_quantity, color, size, image_url)"
-      )
+      .select(`
+        id, product_id, variation_id, 
+        products(
+          id, name, sku, image_url, is_visible,
+          category_id, sub_category_id, sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        ), 
+        product_variations(id, price, compare_at_price, stock_quantity, color, size, image_url)
+      `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -79,7 +88,22 @@ export default function WishlistPage() {
       setError(error.message);
       setRows([]);
     } else {
-      setRows((data ?? []) as unknown as WishlistRow[]);
+      const isVis = (cat: any, id: string | null) => {
+        if (id && !cat) return false;
+        if (!cat) return true;
+        if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+        return cat.is_visible !== false;
+      };
+
+      const validData = (data ?? []).filter((item) => {
+        const p = item.products as any;
+        if (!p || p.is_visible === false) return false;
+        if (!isVis(p.category || p.categories, p.category_id)) return false;
+        if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+        if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+        return true;
+      });
+      setRows(validData as unknown as WishlistRow[]);
     }
     setLoading(false);
   }, [user, supabase]);
@@ -102,6 +126,42 @@ export default function WishlistPage() {
     ] as string[];
 
     let freshById = new Map<string, any>();
+    const productIds = [...new Set(localItems.map((i) => i.productId))];
+    const visibleProductIds = new Set<string>();
+
+    if (productIds.length > 0) {
+      const { data } = await supabase
+        .from("products")
+        .select(`
+          id, is_visible,
+          category_id, sub_category_id, sub_sub_category_id,
+          category:categories(is_visible),
+          sub_category:sub_categories(is_visible),
+          sub_sub_category:sub_sub_categories(is_visible)
+        `)
+        .in("id", productIds);
+
+      if (data) {
+        const isVis = (cat: any, id: string | null) => {
+          if (id && !cat) return false;
+          if (!cat) return true;
+          if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
+          return cat.is_visible !== false;
+        };
+
+        data.forEach((p: any) => {
+          if (
+            p.is_visible !== false &&
+            isVis(p.category || p.categories, p.category_id) &&
+            isVis(p.sub_category || p.sub_categories, p.sub_category_id) &&
+            isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)
+          ) {
+            visibleProductIds.add(p.id);
+          }
+        });
+      }
+    }
+
     if (variationIds.length > 0) {
       const { data, error } = await supabase
         .from("product_variations")
@@ -115,7 +175,9 @@ export default function WishlistPage() {
       }
     }
 
-    const display: DisplayWishlistItem[] = localItems.map((item) => {
+    const display: DisplayWishlistItem[] = localItems
+      .filter((item) => visibleProductIds.has(item.productId))
+      .map((item) => {
       const fresh = item.variationId ? freshById.get(item.variationId) : null;
       return {
         key: `${item.productId}-${item.variationId ?? "default"}`,
@@ -178,21 +240,19 @@ export default function WishlistPage() {
     setPending(item.key, true);
     try {
       if (user) {
-        await toggleWishlist(item.productId, null);
+        const { error: delError } = await supabase.from("wishlist").delete().eq("id", item.key);
+        if (delError) throw delError;
         await loadWishlist();
         await refreshWishlist();
       } else {
-        guest.toggleWishlist({
-          productId: item.productId,
-          variationId: item.variationId,
-          name: item.name,
-          price: item.price ?? 0,
-          image: item.image,
-        });
+        guest.removeFromWishlist(item.productId, item.variationId);
         await loadGuestWishlist();
       }
+      toast.success("Removed from wishlist");
     } catch (err: any) {
-      setError(err?.message ?? "Couldn't remove item.");
+      const msg = err?.message ?? "Couldn't remove item.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setPending(item.key, false);
     }
@@ -220,8 +280,11 @@ export default function WishlistPage() {
         );
       }
       setMovedIds((prev) => new Set(prev).add(item.key));
+      toast.success("Moved to cart");
     } catch (err: any) {
-      setError(err?.message ?? "Couldn't add to cart.");
+      const msg = err?.message ?? "Couldn't add to cart.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setPending(item.key, false);
     }

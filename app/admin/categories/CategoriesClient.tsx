@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Poppins } from 'next/font/google'
 import { Plus, Trash2, ImageOff, X, Pencil, Search, Layers, CheckCircle2, EyeOff } from 'lucide-react'
+import toast from 'react-hot-toast'
 import {
     addCategory,
     toggleCategoryVisibility,
@@ -41,8 +42,10 @@ function VisibilityToggle({ id, isVisible }: { id: string; isVisible: boolean })
                 startTransition(async () => {
                     try {
                         await toggleCategoryVisibility(id, next)
+                        toast.success(next ? 'Category is now visible' : 'Category is now hidden')
                     } catch {
                         setChecked(!next) // revert on failure
+                        toast.error('Failed to update visibility')
                     }
                 })
             }}
@@ -71,9 +74,11 @@ function PriorityInput({ id, value }: { id: string; value: number }) {
             try {
                 await updateCategoryPriority(id, val)
                 setError(null)
+                toast.success('Priority updated')
             } catch (err) {
                 setVal(value) // revert on failure (e.g. priority already taken)
                 setError(err instanceof Error ? err.message : 'Update failed')
+                toast.error(err instanceof Error ? err.message : 'Failed to update priority')
             }
         })
     }
@@ -134,9 +139,11 @@ function EditCategoryModal({
                         startTransition(async () => {
                             try {
                                 await updateCategory(category.id, formData)
+                                toast.success('Category updated successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to update category')
                             }
                         })
                     }}
@@ -270,9 +277,11 @@ function AddCategoryModal({ onClose }: { onClose: () => void }) {
                         startTransition(async () => {
                             try {
                                 await addCategory(formData)
+                                toast.success('Category added successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Failed to add category')
                             }
                         })
                     }}
@@ -504,9 +513,18 @@ export default function CategoriesClient({ categories }: { categories: Category[
                                                 <Pencil size={16} />
                                             </button>
                                             <button
-                                                onClick={() =>
-                                                    startTransition(() => deleteCategory(cat.id, cat.image_url))
-                                                }
+                                                onClick={() => {
+                                                    if (confirm('Warning: Deleting this category will permanently delete ALL products inside it. Are you absolutely sure?')) {
+                                                        startTransition(async () => {
+                                                            try {
+                                                                await deleteCategory(cat.id, cat.image_url)
+                                                                toast.success('Category deleted successfully')
+                                                            } catch (err: any) {
+                                                                toast.error(err.message || 'Failed to delete category')
+                                                            }
+                                                        })
+                                                    }
+                                                }}
                                                 className="rounded-lg p-2 text-stone-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
                                                 aria-label={`Delete ${cat.name}`}
                                             >
@@ -573,7 +591,18 @@ export default function CategoriesClient({ categories }: { categories: Category[
                                     <Pencil size={18} />
                                 </button>
                                 <button
-                                    onClick={() => startTransition(() => deleteCategory(cat.id, cat.image_url))}
+                                    onClick={() => {
+                                        if (confirm('Warning: Deleting this category will permanently delete ALL products inside it. Are you absolutely sure?')) {
+                                            startTransition(async () => {
+                                                try {
+                                                    await deleteCategory(cat.id, cat.image_url)
+                                                    toast.success('Category deleted successfully')
+                                                } catch (err: any) {
+                                                    toast.error(err.message || 'Failed to delete category')
+                                                }
+                                            })
+                                        }
+                                    }}
                                     className="rounded-lg p-2 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
                                     aria-label={`Delete ${cat.name}`}
                                 >
