@@ -59,7 +59,7 @@ export default function ClothingHero({ category }: { category: CategoryTree | un
         const populated1 = textRefs.current.filter(Boolean);
         const textCount = populated1.length;
         const slot1 = 1 / textCount;
-        
+
         populated1.forEach((text, i) => {
             if (!text) return;
 
@@ -111,7 +111,7 @@ export default function ClothingHero({ category }: { category: CategoryTree | un
                         focalPointY="top"
                         scale={1}
                         offsetX={isMobile ? -30 : 0}
-                        offsetY={80}
+                        offsetY={isMobile ? 50 : 80}
                         onProgressChange={onProgress1}
                     />
 
