@@ -110,8 +110,8 @@ export default function ClothingHero({ category }: { category: CategoryTree | un
                         priority={true}
                         focalPointY="top"
                         scale={1}
-                        offsetX={isMobile ? 120 : 0}
-                        offsetY={isMobile ? 80 : 100}
+                        offsetX={isMobile ? -30 : 0}
+                        offsetY={80}
                         onProgressChange={onProgress1}
                     />
 

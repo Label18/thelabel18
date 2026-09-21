@@ -11,13 +11,13 @@ const instagramPath = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691
 
 const socialLinks = [
   {
-    label: "Jewellery",
-    href: "https://www.instagram.com/thelabel18_accessories?igsi=MW8yOGFlYzdwd2ZoOQ%3D%3D&utm_source=qr",
+    label: "Clothing",
+    href: "https://www.instagram.com/thelabel_18?igsi=c3E5YW8weXNrajJo&utm_source=qr",
     path: instagramPath,
   },
   {
-    label: "Clothing",
-    href: "https://www.instagram.com/thelabel_18?igsi=c3E5YW8weXNrajJo&utm_source=qr",
+    label: "Jewellery",
+    href: "https://www.instagram.com/thelabel18_accessories?igsi=MW8yOGFlYzdwd2ZoOQ%3D%3D&utm_source=qr",
     path: instagramPath,
   },
 ];
@@ -113,7 +113,7 @@ export default async function Footer() {
                 {featuredCategories.map((cat) => (
                   <li key={cat.id}>
                     <Link
-                      href={`/category/${cat.id}`}
+                      href={`/categories/${cat.id}`}
                       className="block font-outfit font-light text-[#1A1A1A] hover:text-[#9c7d23] transition-colors duration-300 text-[12.5px] tracking-[0.1em] uppercase mb-2"
                     >
                       {cat.name}
@@ -123,7 +123,7 @@ export default async function Footer() {
                         {cat.sub_categories.slice(0, 3).map((sub) => (
                           <li key={sub.id}>
                             <Link
-                              href={`/category/${cat.id}/${sub.id}`}
+                              href={`/categories/${cat.id}/${sub.id}`}
                               className="block font-outfit font-light text-[#1A1A1A]/60 hover:text-[#9c7d23] transition-colors duration-300 text-[11px] tracking-[0.08em] uppercase"
                             >
                               {sub.name}

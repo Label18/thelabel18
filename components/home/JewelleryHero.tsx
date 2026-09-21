@@ -128,8 +128,8 @@ export default function JewelleryHero({ category }: { category: CategoryTree | u
                         priority={!isMobile}
                         focalPointY="top"
                         scale={1}
-                        offsetX={isMobile ? 120 : 0}
-                        offsetY={isMobile ? 80 : 100}
+                        offsetX={isMobile ? -30 : 0}
+                        offsetY={0}
                         onProgressChange={onProgress2}
                     />
 
