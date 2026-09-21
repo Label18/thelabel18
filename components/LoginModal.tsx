@@ -186,14 +186,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           {/* Tabs */}
           <div className="relative flex bg-white/[0.04] border border-white/10 rounded-full p-1 mb-7">
             <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#d4af37] transition-transform duration-300 ease-out ${
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] transition-transform duration-300 ease-out shadow-sm ${
                 mode === "register" ? "translate-x-[calc(100%+8px)]" : "translate-x-0"
               }`}
             />
             <button
               type="button"
               onClick={() => switchMode("login")}
-              className={`relative z-10 flex-1 py-2.5 font-outfit font-medium text-[11px] tracking-[0.2em] uppercase rounded-full transition-colors duration-300 ${
+              className={`relative z-10 flex-1 py-2.5 font-outfit font-semibold text-[11px] tracking-[0.2em] uppercase rounded-full transition-colors duration-300 ${
                 mode === "login" ? "text-black" : "text-white/50 hover:text-white/80"
               }`}
             >
@@ -202,7 +202,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <button
               type="button"
               onClick={() => switchMode("register")}
-              className={`relative z-10 flex-1 py-2.5 font-outfit font-medium text-[11px] tracking-[0.2em] uppercase rounded-full transition-colors duration-300 ${
+              className={`relative z-10 flex-1 py-2.5 font-outfit font-semibold text-[11px] tracking-[0.2em] uppercase rounded-full transition-colors duration-300 ${
                 mode === "register" ? "text-black" : "text-white/50 hover:text-white/80"
               }`}
             >
@@ -260,7 +260,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="text-white/30 hover:text-[#d4af37] transition-colors shrink-0"
+                className="text-white/30 hover:text-[#E6C35C] transition-colors shrink-0"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -281,7 +281,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#d4af37] hover:bg-[#e6c34d] disabled:opacity-50 disabled:cursor-not-allowed text-black font-outfit font-semibold text-[12px] tracking-[0.2em] uppercase rounded-full py-3.5 transition-all duration-300 mt-2 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_6px_28px_rgba(212,175,55,0.4)]"
+              className="w-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-black font-outfit font-bold text-[12px] tracking-[0.2em] uppercase rounded-full py-3.5 transition-all duration-300 mt-2 shadow-[0_4px_20px_rgba(212,175,55,0.35)] hover:shadow-[0_6px_28px_rgba(212,175,55,0.55)]"
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 Don&apos;t have an account?{" "}
                 <button
                   onClick={() => switchMode("register")}
-                  className="text-[#d4af37] hover:text-[#e6c34d] transition-colors"
+                  className="text-[#E6C35C] hover:text-[#F5E6C8] font-medium transition-colors"
                 >
                   Register
                 </button>
@@ -312,7 +312,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 Already have an account?{" "}
                 <button
                   onClick={() => switchMode("login")}
-                  className="text-[#d4af37] hover:text-[#e6c34d] transition-colors"
+                  className="text-[#E6C35C] hover:text-[#F5E6C8] font-medium transition-colors"
                 >
                   Sign In
                 </button>

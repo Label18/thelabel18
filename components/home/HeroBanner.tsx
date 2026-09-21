@@ -4,396 +4,277 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { CategoryTree } from "@/lib/categories";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 
 interface HeroBannerProps {
   clothingCategory?: CategoryTree;
   jewelleryCategory?: CategoryTree;
 }
 
-const slides = [
+/**
+ * Flagship Full-Width Moving Hero Banner for The Label 18
+ *
+ * Requirements:
+ * 1. Desktop: Left-side text positioned gracefully in the vertical center as before.
+ * 2. Mobile: Well-designed, bottom-aligned layout with crisp legibility,
+ *    centered models, and side-by-side action buttons.
+ * 3. Exactly the 4 requested elements in refined, small text size:
+ *    - Title: IMPERIAL PALATIAL / ROYAL COUTURE
+ *    - Description: Handcrafted Palatial Lehengas...
+ *    - Buttons: EXPLORE CLOTHING + FINE JEWELLERY
+ *    - Photo Scrolling: PHOTO 01 OF 02 / + ROYAL COUTURE EDITION
+ */
+export const heroSlides = [
   {
-    id: "clothing",
-    category: "clothing",
-    badge: "THE LABEL 18 • CLOTHING EDIT",
-    slideNumber: "01",
-    totalSlides: "02",
-    line1: "ROYAL ARTISANAL",
-    line2: "CLOTHING",
-    subtitle: "Handloom Silk Sarees • Imperial Zardozi Couture",
-    description: "Step into royal grandeur with handwoven mulberry silk sarees and bespoke ceremonial couture crafted with authentic gold zari.",
-    tabLabel: "Clothing",
-    ctaPrimary: "Explore Clothing",
-    ctaSecondary: "View Catalog",
-    glowColor: "rgba(212, 175, 55, 0.25)",
-    looks: [
-      {
-        title: "Royal Heritage Silk Saree",
-        subtitle: "Pure Handloom Mulberry Silk & Gold Zari",
-        image: "/images/thelabel18_saree_perfect.jpg",
-        objectPosition: "object-top",
-        pill: "Silk Saree",
-      },
-      {
-        title: "Imperial Zardozi Couture",
-        subtitle: "Sage Embroidered Raw Silk with Dupatta",
-        image: "/images/thelabel18_couture_model.jpg",
-        objectPosition: "object-top",
-        pill: "Couture Suit",
-      },
-    ],
+    id: "royal-palace-group",
+    line1: "IMPERIAL PALATIAL",
+    line2: "ROYAL COUTURE",
+    subtitle:
+      "Handcrafted Palatial Lehengas, Handloom Silks & 22K Traditional Polki Jewellery curated for royal celebrations.",
+    ctaPrimary: "EXPLORE CLOTHING",
+    ctaSecondary: "+ FINE JEWELLERY",
+    editionLabel: "+ ROYAL COUTURE EDITION",
+    desktopImage: "/bannersections1.jpeg",
+    mobileImage: "/bannersections1.jpeg",
+    desktopPosition: "object-[center_top]",
+    mobilePosition: "object-[55%_top]",
+    glow: "rgba(212, 175, 55, 0.32)",
   },
   {
-    id: "jewellery",
-    category: "jewellery",
-    badge: "THE LABEL 18 • HEIRLOOM EDITIONS",
-    slideNumber: "02",
-    totalSlides: "02",
-    line1: "FINE HEIRLOOM",
-    line2: "JEWELLERY",
-    subtitle: "Polki Diamonds • Colombian Emeralds • 22K Gold",
-    description: "Mastercrafted heirloom ornaments forged with uncut polki stones, emerald accents, and traditional temple gold.",
-    tabLabel: "Jewellery",
-    ctaPrimary: "Explore Jewellery",
-    ctaSecondary: "View Catalog",
-    glowColor: "rgba(220, 160, 60, 0.25)",
-    looks: [
-      {
-        title: "Imperial Emerald & Polki Choker",
-        subtitle: "Handcrafted Heritage Bridal Choker",
-        image: "/images/thelabel18_jewellery_clean.jpg",
-        objectPosition: "object-center",
-        pill: "Emerald Polki",
-      },
-      {
-        title: "Royal Gold Choker & Earrings",
-        subtitle: "22K Traditional Gold Bridal Heritage Set",
-        image: "/images/jellwerys.jpg",
-        objectPosition: "object-[80%_center]",
-        pill: "Royal Gold",
-      },
-    ],
+    id: "lilac-palace-saree",
+    line1: "ARTISANAL LILAC",
+    line2: "PALACE SAREE",
+    subtitle:
+      "Handcrafted Lilac Embroidered Silks & Palatial Twilight Elegance paired with heirloom ornaments.",
+    ctaPrimary: "EXPLORE CLOTHING",
+    ctaSecondary: "+ FINE JEWELLERY",
+    editionLabel: "+ ROYAL COUTURE EDITION",
+    desktopImage: "/bannersections2.jpeg",
+    mobileImage: "/bannersections2.jpeg",
+    desktopPosition: "object-[center_top]",
+    mobilePosition: "object-[62%_top]",
+    glow: "rgba(212, 175, 55, 0.32)",
   },
 ];
 
 export default function HeroBanner({ clothingCategory, jewelleryCategory }: HeroBannerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeLookIndex, setActiveLookIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  const slideDuration = 3000; // Exact 3-second cycle
-  const tickInterval = 30;
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-    setActiveLookIndex(0);
-    setProgress(0);
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   }, []);
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    setActiveLookIndex(0);
-    setProgress(0);
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   }, []);
 
-  // 3-second continuous rotation
+  const goToSlide = (idx: number) => {
+    setCurrentSlide(idx);
+  };
+
+  // Dedicated 4-second automatic slide advancement
   useEffect(() => {
-    if (isPaused) return;
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, [currentSlide]);
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          nextSlide();
-          return 0;
-        }
-        return prev + (tickInterval / slideDuration) * 100;
-      });
-    }, tickInterval);
+  // Smooth 4-second progress bar animation
+  useEffect(() => {
+    setProgress(0);
+    const start = Date.now();
+    const duration = 4000;
+    const progressTimer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const pct = Math.min(100, (elapsed / duration) * 100);
+      setProgress(pct);
+      if (pct >= 100) {
+        clearInterval(progressTimer);
+      }
+    }, 25);
+    return () => clearInterval(progressTimer);
+  }, [currentSlide]);
 
-    return () => clearInterval(timer);
-  }, [isPaused, nextSlide]);
+  const active = heroSlides[currentSlide];
 
-  const active = slides[currentSlide];
+  const primaryHref = clothingCategory
+    ? `/categories/${clothingCategory.id}`
+    : "/shop?category=clothing";
 
-  const getPrimaryHref = (idx: number) => {
-    const s = slides[idx];
-    if (s.category === "jewellery") {
-      return jewelleryCategory ? `/categories/${jewelleryCategory.id}` : "/shop?category=jewellery";
-    }
-    return clothingCategory ? `/categories/${clothingCategory.id}` : "/shop?category=clothing";
-  };
-
-  const getSecondaryHref = (idx: number) => {
-    const s = slides[idx];
-    if (s.category === "jewellery") {
-      return jewelleryCategory ? `/shop?category=${jewelleryCategory.id}` : "/shop";
-    }
-    return clothingCategory ? `/shop?category=${clothingCategory.id}` : "/shop";
-  };
+  const secondaryHref = jewelleryCategory
+    ? `/categories/${jewelleryCategory.id}`
+    : "/shop?category=jewellery";
 
   return (
     <section
-      className="relative w-full bg-[#080808] text-white overflow-hidden pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 border-b border-[#222]"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      aria-label="The Label 18 Hero Showcase"
+      className="relative w-full overflow-hidden bg-[#060606] text-white border-b border-[#222] select-none
+                 mt-[88px] sm:mt-[96px] lg:mt-[104px]
+                 h-[480px] sm:h-[510px] md:h-[530px] lg:h-[540px] xl:h-[580px]
+                 flex flex-col justify-end lg:justify-center"
+      aria-label="The Label 18 Cinematic Showcase"
     >
-      {/* 1. Dynamic Ambient Colored Glow */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {slides.map((s, idx) => (
-          <div
-            key={s.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              idx === currentSlide ? "opacity-25" : "opacity-0"
-            }`}
-          >
+      {/* ========================================================================= */}
+      {/* 1. FULL-WIDTH BACKGROUND CINEMATIC PHOTOS                                 */}
+      {/* ========================================================================= */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {heroSlides.map((s, idx) => {
+          const isActive = idx === currentSlide;
+          return (
             <div
-              className="absolute -top-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full blur-[130px]"
-              style={{ background: s.glowColor }}
-            />
-            <div
-              className="absolute -bottom-1/4 -left-1/4 w-[45vw] h-[45vw] rounded-full blur-[110px]"
-              style={{ background: s.glowColor }}
-            />
-          </div>
-        ))}
+              key={s.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                isActive ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0 pointer-events-none"
+              }`}
+            >
+              {/* DESKTOP BANNER (Top anchored, large panoramic view) */}
+              <div className="hidden sm:block absolute inset-0">
+                <Image
+                  src={s.desktopImage}
+                  alt={`${s.line1} ${s.line2} — The Label 18`}
+                  fill
+                  priority={true}
+                  quality={95}
+                  sizes="100vw"
+                  className={`object-cover ${s.desktopPosition} transition-transform duration-[7000ms] ${
+                    isActive ? "scale-100" : "scale-105"
+                  }`}
+                />
+              </div>
 
-        {/* Fine gold stardust grid */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080808]/90 via-transparent to-[#080808]" />
+              {/* MOBILE BANNER (Optimized horizontal offset to center models on phones) */}
+              <div className="block sm:hidden absolute inset-0">
+                <Image
+                  src={s.mobileImage}
+                  alt={`${s.line1} ${s.line2} — The Label 18`}
+                  fill
+                  priority={true}
+                  quality={95}
+                  sizes="100vw"
+                  className={`object-cover ${s.mobilePosition} transition-transform duration-[7000ms] ${
+                    isActive ? "scale-100" : "scale-105"
+                  }`}
+                />
+              </div>
+
+              {/* Ambient Gold Glow */}
+              <div
+                className="absolute -top-1/4 -right-1/4 w-[75vw] h-[75vw] max-w-[750px] max-h-[750px] rounded-full blur-[170px] opacity-40"
+                style={{ background: s.glow }}
+              />
+            </div>
+          );
+        })}
+
+        {/* GRADIENT OVERLAYS */}
+        {/* Top subtle navbar blend */}
+        <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-[#060606]/35 to-transparent z-10" />
+
+        {/* Desktop Left-Side Scrim: Provides crisp text readability on the left, leaves right 50% sunlit & clear */}
+        <div className="hidden lg:block absolute inset-y-0 left-0 w-1/2 xl:w-5/12 bg-gradient-to-r from-[#060606]/92 via-[#060606]/60 to-transparent z-10" />
+
+        {/* Mobile Scrim: Shaded at bottom for text, clear at top for models' faces & arches */}
+        <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/70 via-45% to-transparent z-10" />
+
+        {/* Bottom edge fade */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#060606]/85 to-transparent z-10" />
+
+        {/* Corner Filigrees (Desktop) */}
+        <div className="absolute top-5 left-6 w-5 h-5 border-t border-l border-[#D4AF37]/50 pointer-events-none z-20 hidden md:block" />
+        <div className="absolute top-5 right-6 w-5 h-5 border-t border-r border-[#D4AF37]/50 pointer-events-none z-20 hidden md:block" />
+        <div className="absolute bottom-5 left-6 w-5 h-5 border-b border-l border-[#D4AF37]/50 pointer-events-none z-20 hidden md:block" />
+        <div className="absolute bottom-5 right-6 w-5 h-5 border-b border-r border-[#D4AF37]/50 pointer-events-none z-20 hidden md:block" />
       </div>
 
-      {/* 2. Main Content Grid */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
+      {/* ========================================================================= */}
+      {/* 2. FOREGROUND CONTENT: LEFT SIDE ON DESKTOP, PERFECTLY TUNED ON MOBILE   */}
+      {/* ========================================================================= */}
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 w-full pb-6 sm:pb-8 lg:pb-0 pt-20 lg:pt-0">
+        <div className="max-w-md lg:max-w-lg">
           
-          {/* Left Column: Clean 2-Line Headline, Concise Text & Independent Rows (7 cols) */}
-          <div className="lg:col-span-7 flex flex-col justify-center order-2 lg:order-1">
-            
-            {/* Top Bar: Compact Badge & Slide Counter */}
-            <div className="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.18em] font-medium shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
-                <span>{active.badge}</span>
-              </div>
+          {/* ELEMENT 1: TITLE (Small, refined luxury text) */}
+          <h1 className="font-outfit uppercase leading-[1.12] mb-2 sm:mb-2.5">
+            <span className="block text-xs sm:text-sm md:text-base font-light tracking-[0.2em] text-white/90">
+              {active.line1}
+            </span>
+            <span className="block text-lg sm:text-xl md:text-2xl font-bold tracking-[0.12em] text-transparent bg-clip-text bg-gradient-to-r from-[#FFF9EE] via-[#E8C766] to-[#C19623] drop-shadow-[0_2px_14px_rgba(212,175,55,0.4)] mt-0.5">
+              {active.line2}
+            </span>
+          </h1>
 
-              {/* Minimalist 01 / 03 Counter */}
-              <div className="flex items-center gap-1.5 font-mono text-[11px] text-white/50 tracking-widest">
-                <span className="text-[#D4AF37] font-semibold text-xs">{active.slideNumber}</span>
-                <span className="w-4 h-[1px] bg-[#D4AF37]/40" />
-                <span>{active.totalSlides}</span>
-              </div>
-            </div>
+          {/* ELEMENT 2: DESCRIPTION (Small, crisp text) */}
+          <p className="text-white/80 text-[11px] sm:text-xs md:text-[13px] font-light tracking-wide leading-relaxed mb-3.5 sm:mb-4 max-w-sm sm:max-w-md">
+            {active.subtitle}
+          </p>
 
-            {/* Main Headline - Strict 2 Distinct Lines with Regal Typography (No font distortion) */}
-            <h1 className="mb-2 sm:mb-2.5">
-              <span className="block font-outfit text-lg sm:text-2xl lg:text-3xl font-light tracking-[0.14em] uppercase text-white/90 leading-tight">
-                {active.line1}
-              </span>
-              <span className="block font-outfit text-2xl sm:text-3xl lg:text-4xl font-bold tracking-[0.08em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_15px_rgba(212,175,55,0.35)] leading-tight mt-0.5">
-                {active.line2}
-              </span>
-            </h1>
+          {/* ELEMENT 3: BTNS (Side-by-side on mobile, compact on desktop) */}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 mb-3.5 sm:mb-4">
+            {/* Primary Button: EXPLORE CLOTHING */}
+            <Link
+              href={primaryHref}
+              className="group inline-flex items-center justify-center gap-1.5 py-2.5 sm:py-2.5 sm:px-5 rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black font-semibold text-[10px] sm:text-[11px] tracking-[0.12em] uppercase shadow-[0_4px_16px_rgba(212,175,55,0.35)] hover:shadow-[0_6px_22px_rgba(212,175,55,0.55)] hover:scale-[1.02] active:scale-95 transition-all duration-300 text-center"
+            >
+              <span>{active.ctaPrimary}</span>
+              <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1 hidden sm:inline" />
+            </Link>
 
-            {/* Subtitle Accent Line */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 sm:w-7 h-[1.5px] bg-[#D4AF37] shrink-0" />
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-[#E6C35C] font-medium">
-                {active.subtitle}
-              </p>
-            </div>
-
-            {/* Concise 1-Sentence Narrative */}
-            <p className="text-white/80 text-[11px] sm:text-xs md:text-sm font-light leading-relaxed mb-3 max-w-lg">
-              {active.description}
-            </p>
-
-            {/* Dedicated Row 1: ACTION BUTTONS ONLY */}
-            <div className="grid grid-cols-2 sm:flex items-center gap-2.5 sm:gap-3.5 mb-3 sm:mb-4">
-              <Link
-                href={getPrimaryHref(currentSlide)}
-                className="justify-center group inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black font-semibold text-[10px] sm:text-xs tracking-[0.14em] uppercase shadow-[0_4px_18px_rgba(212,175,55,0.4)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.6)] transition-all duration-300 active:scale-95"
-              >
-                <span>{active.ctaPrimary}</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-              </Link>
-
-              <Link
-                href={getSecondaryHref(currentSlide)}
-                className="justify-center inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/50 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] font-medium text-[10px] sm:text-xs tracking-[0.14em] uppercase transition-all duration-300 active:scale-95"
-              >
-                <span>{active.ctaSecondary}</span>
-              </Link>
-            </div>
-
-            {/* Dedicated Row 2: SEPARATE SLIDE NAVIGATION DOCK */}
-            <div className="flex items-center justify-between sm:justify-start gap-2 pt-2 border-t border-white/10">
-              {/* Slide Tabs Switcher */}
-              <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-full border border-white/15">
-                {slides.map((s, idx) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setCurrentSlide(idx);
-                      setProgress(0);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.12em] transition-all duration-300 ${
-                      currentSlide === idx
-                        ? "bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-bold shadow-sm"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    {s.tabLabel}
-                  </button>
-                ))}
-              </div>
-
-              {/* Prev / Next Arrows */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={prevSlide}
-                  aria-label="Previous Slide"
-                  className="w-7 h-7 rounded-full text-white/70 hover:text-white hover:bg-white/10 border border-white/15 flex items-center justify-center transition-all active:scale-90"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  aria-label="Next Slide"
-                  className="w-7 h-7 rounded-full text-white/70 hover:text-white hover:bg-white/10 border border-white/15 flex items-center justify-center transition-all active:scale-90"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* 3-Second Autoplay Progress Indicator */}
-            <div className="w-full max-w-xs mt-2 h-[2px] bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] transition-all duration-30 ease-linear rounded-full"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
+            {/* Secondary Button: + FINE JEWELLERY */}
+            <Link
+              href={secondaryHref}
+              className="inline-flex items-center justify-center py-2.5 sm:py-2.5 sm:px-5 rounded-full bg-black/70 backdrop-blur-md border border-[#D4AF37]/50 hover:border-[#D4AF37] text-[#F5E6C8] hover:text-white font-medium text-[10px] sm:text-[11px] tracking-[0.12em] uppercase hover:bg-[#D4AF37]/10 active:scale-95 transition-all duration-300 shadow-sm text-center"
+            >
+              <span>{active.ctaSecondary}</span>
+            </Link>
           </div>
 
-          {/* Right Column: Framed Portrait Showcase (Scaled Down for Refined Proportions) */}
-          <div className="lg:col-span-5 order-1 lg:order-2 flex justify-center items-center">
-            <div className="relative w-full max-w-[210px] sm:max-w-[240px] md:max-w-[260px] lg:max-w-[300px] xl:max-w-[320px] group">
-              
-              {/* Outer Golden Aura Glow */}
-              <div
-                className="absolute -inset-1.5 rounded-2xl opacity-40 blur-lg transition-all duration-700 group-hover:opacity-60"
-                style={{ background: active.glowColor }}
-              />
-
-              {/* Luxury Frame Container */}
-              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-[#D4AF37]/50 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.9)] bg-[#121212]">
-                
-                {/* Image Aspect Ratio Box (Compact & Elegant) */}
-                <div className="relative w-full aspect-[3/3.8] overflow-hidden bg-neutral-950">
-                  {slides.map((s, sIdx) => {
-                    const isSlideActive = sIdx === currentSlide;
-                    return (
+          {/* ELEMENT 4: PHOTO SCROLLING (Tucked directly beneath buttons) */}
+          <div className="flex items-center gap-3 max-w-sm pt-2 sm:pt-2.5 border-t border-white/15">
+            {/* 2-Story Progress Bars & Counter */}
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 mb-1">
+                {heroSlides.map((s, idx) => {
+                  const isPast = idx < currentSlide;
+                  const isCurrent = idx === currentSlide;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => goToSlide(idx)}
+                      className="flex-1 h-1 rounded-full bg-white/20 overflow-hidden cursor-pointer group py-1 -my-1"
+                      aria-label={`Jump to slide ${idx + 1}`}
+                    >
                       <div
-                        key={s.id}
-                        className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-                          isSlideActive
-                            ? "opacity-100 pointer-events-auto"
-                            : "opacity-0 pointer-events-none"
-                        }`}
-                      >
-                        {s.looks.map((look, lIdx) => {
-                          const isLookActive = lIdx === activeLookIndex;
-                          return (
-                            <div
-                              key={look.title}
-                              className={`absolute inset-0 transition-all duration-700 ease-out ${
-                                isLookActive
-                                  ? "opacity-100 scale-100 pointer-events-auto"
-                                  : "opacity-0 scale-105 pointer-events-none"
-                              }`}
-                            >
-                              <Image
-                                src={look.image}
-                                alt={`${look.title} - The Label 18`}
-                                fill
-                                priority={sIdx === 0 && lIdx === 0}
-                                sizes="(max-width: 640px) 210px, (max-width: 1024px) 260px, 320px"
-                                className={`object-cover ${look.objectPosition} transition-transform duration-[3000ms] group-hover:scale-105`}
-                              />
-                              {/* Gentle bottom gradient for caption clarity */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-
-                  {/* Top-Right Seal Badge */}
-                  <div className="absolute top-2 right-2 z-20">
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/60 shadow text-[8px] sm:text-[9px] tracking-[0.16em] uppercase text-[#F5E6C8] font-medium">
-                      <Sparkles className="w-2 h-2 text-[#D4AF37]" />
-                      <span>The Label 18 Original</span>
-                    </div>
-                  </div>
-
-                  {/* Bottom Floating Look Card with Look Switcher */}
-                  <div className="absolute bottom-2 left-2 right-2 z-20">
-                    <div className="p-2 rounded-lg bg-black/85 backdrop-blur-md border border-[#D4AF37]/40 shadow-lg">
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[8px] font-mono tracking-[0.18em] uppercase text-[#D4AF37]">
-                          ✦ {active.tabLabel}
-                        </span>
-                        {/* Dual Look Switcher Pills */}
-                        <div className="flex items-center gap-1 bg-white/10 p-0.5 rounded-full">
-                          {active.looks.map((look, lIdx) => (
-                            <button
-                              key={look.pill}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveLookIndex(lIdx);
-                              }}
-                              className={`px-1.5 py-0.5 rounded-full text-[7.5px] uppercase tracking-wider transition-all ${
-                                activeLookIndex === lIdx
-                                  ? "bg-[#D4AF37] text-black font-bold"
-                                  : "text-white/60 hover:text-white"
-                              }`}
-                            >
-                              {look.pill}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <h3 className="font-outfit text-[11px] sm:text-xs font-medium text-white tracking-wide leading-tight truncate">
-                        {active.looks[activeLookIndex]?.title}
-                      </h3>
-                      <p className="text-[9px] text-white/70 tracking-wide font-light truncate mt-0.5">
-                        {active.looks[activeLookIndex]?.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Subtle Gold Corner Accents */}
-                  <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-[#D4AF37]/60 pointer-events-none" />
-                  <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-[#D4AF37]/60 pointer-events-none" />
-                  <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#D4AF37]/60 pointer-events-none" />
-                  <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[#D4AF37]/60 pointer-events-none" />
-                </div>
+                        className="h-1 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] transition-all duration-75 ease-linear shadow-[0_0_6px_rgba(212,175,55,0.6)]"
+                        style={{
+                          width: isPast ? "100%" : isCurrent ? `${progress}%` : "0%",
+                        }}
+                      />
+                    </button>
+                  );
+                })}
               </div>
+              <div className="flex items-center justify-between text-[8.5px] sm:text-[9.5px] uppercase tracking-widest text-white/60 font-mono">
+                <span>PHOTO 0{currentSlide + 1} OF 0{heroSlides.length}</span>
+                <span className="text-[#D4AF37] font-medium">{active.editionLabel}</span>
+              </div>
+            </div>
 
+            {/* Prev / Next Slide Chevrons */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={prevSlide}
+                aria-label="Previous Slide"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:border-[#D4AF37] flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={nextSlide}
+                aria-label="Next Slide"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:border-[#D4AF37] flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
