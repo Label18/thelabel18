@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getCategoriesTree, CategoryTree } from "@/lib/categories";
+import { getCategoriesTree } from "@/lib/categories";
 import { getProducts } from "@/lib/supabase/products";
 import ProductFilters from "@/components/ProductFilters";
 import ProductCard from "@/components/ProductCard";
 import ExpandableCategoryDescription from "@/components/ExpandableCategoryDescription";
+import { Sparkles } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -54,84 +55,116 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const currentDescription = currentCategoryNode.description;
 
   return (
-    <main className="min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#9c7d23]/30 selection:text-[#1A1A1A]">
-      {/* Category Hero Banner */}
+    <main className="min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Banner Header */}
       {currentImage ? (
-        <div className="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center mb-16 overflow-hidden">
+        <div className="relative w-full h-[40vh] min-h-[320px] md:h-[48vh] flex items-center justify-center mb-8 sm:mb-12 overflow-hidden">
           {/* Background Image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-90"
             style={{ backgroundImage: `url(${currentImage})` }}
           >
-            {/* Dark gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-black/60 bg-gradient-to-t from-black/80 via-black/40 to-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#F8F6F0] via-black/55 to-black/70" />
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#D4AF37] via-transparent to-transparent" />
           </div>
-          
+
           {/* Content */}
-          <div className="relative z-10 text-center px-6 mt-16 max-w-4xl">
-            <span className="font-outfit font-light text-[10px] md:text-[12px] tracking-[0.5em] uppercase text-[#d4af37] mb-6 block drop-shadow-md">
-              Collection
-            </span>
-            <h1 className="font-outfit font-light text-4xl md:text-7xl lg:text-8xl text-white tracking-widest uppercase drop-shadow-lg">
-              {currentName}
+          <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              <span>The Label 18 • Collection</span>
+            </div>
+
+            <h1 className="font-outfit font-light text-3xl sm:text-5xl md:text-6xl text-white tracking-widest uppercase drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27]">
+                {currentName}
+              </span>
             </h1>
+
             {currentDescription && (
               <ExpandableCategoryDescription
                 description={currentDescription}
                 variant="dark"
-                className="mt-6"
+                className="mt-3"
               />
             )}
-            <p className="font-outfit font-light text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-[#d4af37] mt-6">
-              {total} {total === 1 ? "piece" : "pieces"}
-              {sp.q ? ` · matching "${sp.q}"` : ""}
-            </p>
+
+            <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/80 text-[10px] font-mono tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+              <span>{total} {total === 1 ? "PIECE" : "PIECES"} AVAILABLE</span>
+              {sp.q && <span>· MATCHING &quot;{sp.q}&quot;</span>}
+            </div>
           </div>
         </div>
       ) : (
-        <div className="pt-32 md:pt-40 mb-14 text-center px-6">
-          <span className="font-outfit font-light text-[10px] tracking-[0.5em] uppercase text-[#9c7d23] mb-4 block">
-            Category
-          </span>
-          <h1 className="font-outfit font-light text-3xl md:text-6xl text-[#1A1A1A] tracking-widest uppercase">
-            {currentName}
-          </h1>
-          {currentDescription && (
-            <ExpandableCategoryDescription
-              description={currentDescription}
-              variant="light"
-              className="mt-4"
+        <div className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-12 sm:py-16 mb-8 sm:mb-12">
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] rounded-full blur-[140px] bg-[#D4AF37]/12" />
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+                backgroundSize: "28px 28px",
+              }}
             />
-          )}
-          <p className="font-outfit font-light text-[12px] tracking-[0.2em] uppercase text-[#1A1A1A]/40 mt-5">
-            {total} {total === 1 ? "product" : "products"}
-            {sp.q ? ` · matching "${sp.q}"` : ""}
-          </p>
+          </div>
+
+          <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              <span>The Label 18 • Category</span>
+            </div>
+
+            <h1 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-white tracking-widest uppercase mb-2">
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27]">
+                {currentName}
+              </span>
+            </h1>
+
+            {currentDescription && (
+              <ExpandableCategoryDescription
+                description={currentDescription}
+                variant="dark"
+                className="mt-2"
+              />
+            )}
+
+            <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/70 text-[10px] font-mono tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+              <span>{total} {total === 1 ? "PIECE" : "PIECES"} AVAILABLE</span>
+              {sp.q && <span>· MATCHING &quot;{sp.q}&quot;</span>}
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-16">
+      {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Catalog Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
         {/* Breadcrumbs */}
-        <nav aria-label="Breadcrumb" className="mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-thin">
-          <ol className="flex items-center gap-x-2 font-outfit font-medium text-[11px] tracking-[0.15em] uppercase text-[#1A1A1A]/70 w-max">
+        <nav aria-label="Breadcrumb" className="mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap pb-1 scrollbar-thin">
+          <ol className="flex items-center gap-x-2 font-outfit font-light text-[11px] tracking-[0.15em] uppercase w-max">
             <li className="flex items-center gap-x-2">
-              <Link href="/" className="hover:text-[#9c7d23] transition-colors">Home</Link>
+              <Link href="/" className="text-[#1A1A1A]/60 hover:text-[#9c7d23] transition-colors">Home</Link>
             </li>
             <li className="flex items-center gap-x-2">
-              <span>/</span>
+              <span className="text-[#9c7d23]/50">/</span>
               <Link
                 href={`/categories/${category.id}`}
-                className={`hover:text-[#9c7d23] transition-colors ${!subCategory ? "text-[#1A1A1A]" : ""}`}
+                className={`hover:text-[#9c7d23] transition-colors ${
+                  !subCategory ? "text-[#1A1A1A] font-medium" : "text-[#1A1A1A]/60"
+                }`}
               >
                 {category.name}
               </Link>
             </li>
             {subCategory && (
               <li className="flex items-center gap-x-2">
-                <span>/</span>
+                <span className="text-[#9c7d23]/50">/</span>
                 <Link
                   href={`/categories/${category.id}/${subCategory.id}`}
-                  className={`hover:text-[#9c7d23] transition-colors ${!subSubCategory ? "text-[#1A1A1A]" : ""}`}
+                  className={`hover:text-[#9c7d23] transition-colors ${
+                    !subSubCategory ? "text-[#1A1A1A] font-medium" : "text-[#1A1A1A]/60"
+                  }`}
                 >
                   {subCategory.name}
                 </Link>
@@ -139,15 +172,16 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             )}
             {subSubCategory && (
               <li className="flex items-center gap-x-2">
-                <span>/</span>
-                <span className="text-[#1A1A1A]">{subSubCategory.name}</span>
+                <span className="text-[#9c7d23]/50">/</span>
+                <span className="text-[#1A1A1A] font-medium">{subSubCategory.name}</span>
               </li>
             )}
           </ol>
         </nav>
+
         {/* Filters Top Bar */}
-        <div className="mb-10 w-full">
-          <div className="rounded-2xl bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 p-4 md:p-6 shadow-sm">
+        <div className="mb-8 sm:mb-10 w-full">
+          <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-[#D4AF37]/35 p-4 sm:p-5 shadow-[0_4px_25px_rgba(0,0,0,0.04)]">
             <ProductFilters
               categories={categories}
               initialCategoryId={category.id}
@@ -162,48 +196,49 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         {/* Results */}
         <div className="w-full">
           {items.length === 0 ? (
-            <div className="text-center py-24 rounded-xl bg-white border border-[#1A1A1A]/10">
-              <p className="font-outfit font-medium text-[13px] tracking-[0.1em] uppercase text-[#1A1A1A]/70">
+            <div className="text-center py-20 px-4 rounded-2xl bg-white border border-[#D4AF37]/30 max-w-md mx-auto shadow-sm">
+              <p className="font-outfit font-light text-sm tracking-[0.1em] uppercase text-[#1A1A1A]/70 mb-4">
                 No products found in this category.
               </p>
               <Link
                 href={`/categories/${category.id}`}
-                className="inline-block mt-4 text-[11px] tracking-[0.2em] uppercase font-outfit font-medium text-[#9c7d23] hover:text-[#1A1A1A] transition-colors"
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-semibold text-xs tracking-[0.14em] uppercase shadow transition-all active:scale-95"
               >
-                Clear filters →
+                Clear Filters
               </Link>
             </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-                {items.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5">
+              {items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-14">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                  const qp = new URLSearchParams({ ...sp, page: String(p) } as any);
-                  const isActive = p === page;
-                  return (
-                    <Link
-                      key={p}
-                      href={`/categories/${slug.join("/")}?${qp.toString()}`}
-                      className={`text-[12px] font-outfit font-medium w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
-                        isActive
-                          ? "bg-[#9c7d23] text-white"
-                          : "text-[#1A1A1A]/60 hover:text-[#9c7d23] border border-[#1A1A1A]/10 bg-white"
-                      }`}
-                    >
-                      {p}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12 sm:mt-16">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                const qp = new URLSearchParams({ ...sp, page: String(p) } as any);
+                const isActive = p === page;
+                return (
+                  <Link
+                    key={p}
+                    href={`/categories/${slug.join("/")}?${qp.toString()}`}
+                    className={`text-xs font-outfit font-medium w-9 h-9 flex items-center justify-center rounded-full transition-all ${
+                      isActive
+                        ? "bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-bold shadow-[0_2px_10px_rgba(212,175,55,0.4)]"
+                        : "text-[#1A1A1A]/70 hover:text-black border border-[#D4AF37]/30 bg-white hover:border-[#D4AF37]"
+                    }`}
+                  >
+                    {p}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </main>
-    );
-  }
+      </div>
+    </main>
+  );
+}

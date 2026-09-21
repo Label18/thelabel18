@@ -1,12 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { Sparkles } from "lucide-react";
 
 /**
- * Hand-drawn style dotted "spring" arrow — a loop that flows into a smooth
- * tail ending in a chevron arrowhead precisely tangent to the line.
- * Default orientation points down-right; flip with CSS transforms
- * (scaleX(-1) / scaleY(-1)) to point the same well-formed arrow elsewhere.
+ * Hand-drawn style dotted "spring" arrow
  */
 function SpringArrow({
   className,
@@ -37,32 +35,53 @@ function SpringArrow({
 
 export default function AboutUs() {
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] flex flex-col items-center selection:bg-[#d4af37]/30 selection:text-[#1A1A1A]">
-      {/* Premium Hero Section */}
-      <section className="relative w-full h-[38vh] min-h-[300px] flex items-center justify-center overflow-hidden border-b border-[#d4af37]/20 bg-[#F3F0E6] pt-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-[#F8F6F0] to-[#EAE5D9]"></div>
-        <div className="absolute inset-0 bg-[#d4af37]/5 mix-blend-multiply"></div>
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] flex flex-col items-center selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Section */}
+      <section className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-14 sm:py-20 text-white">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[650px] max-h-[650px] rounded-full blur-[150px] bg-[#D4AF37]/12" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
 
-        <div className="relative z-10 text-center flex flex-col items-center px-4 mt-6">
-          <span className="font-outfit font-medium text-[10.5px] tracking-[0.5em] uppercase text-[#9c7d23] mb-3">
-            The Story Of
-          </span>
-          <h1 className="text-4xl md:text-6xl lg:text-[5.5rem] leading-none font-normal text-[#1A1A1A] tracking-[0.08em] uppercase font-outfit">
-            The Label <span className="text-[#9c7d23] font-normal">18</span>
+        <div className="relative z-10 text-center flex flex-col items-center px-4 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            <span>The Heritage • The Story</span>
+          </div>
+
+          <h1 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light tracking-[0.08em] uppercase text-white leading-none">
+            The Story Of <br className="sm:hidden" />
+            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_20px_rgba(212,175,55,0.4)]">
+              The Label 18
+            </span>
           </h1>
+
+          <div className="w-12 h-[1.5px] bg-[#D4AF37]/60 my-3.5" />
+
+          <p className="font-outfit font-light text-xs sm:text-sm tracking-[0.18em] uppercase text-white/75 max-w-lg mx-auto">
+            Growth • Positivity • Abundance • Timeless Craftsmanship
+          </p>
         </div>
       </section>
 
-      <div className="w-full max-w-[1400px] px-6 lg:px-16 py-16">
+      {/* 2. DUAL COMPOSITION: Warm Ivory & Gold Storytelling Body */}
+      <div className="w-full max-w-[1400px] px-4 sm:px-6 lg:px-16 py-12 sm:py-20">
 
         {/* SECTION 1: Philosophy (Editorial Split with /aboutus.jpg) */}
-        <section className="mb-20">
+        <section className="mb-20 sm:mb-28">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
 
             {/* Left: Scattered Polaroid Collage (4 photos) */}
             <div className="lg:col-span-5 relative w-full max-w-sm mx-auto lg:max-w-none h-[540px] sm:h-[600px] lg:h-[660px] pt-16 pb-20">
 
-              {/* Caption + dotted spring arrow (points down into the photos) */}
+              {/* Caption + dotted spring arrow */}
               <div className="absolute -top-2 left-0 z-40 max-w-[160px]">
                 <p className="font-outfit font-light text-[11px] leading-snug text-[#1A1A1A]/70 mb-1">
                   The story behind every <span className="text-[#9c7d23] font-medium">stitch</span>.
@@ -70,7 +89,7 @@ export default function AboutUs() {
                 <SpringArrow className="w-24 h-20 text-[#1A1A1A]/80 -ml-2" />
               </div>
 
-              {/* Second caption + dotted spring arrow (points up into the photos) */}
+              {/* Second caption + dotted spring arrow */}
               <div className="absolute bottom-0 inset-x-0 flex flex-col items-center z-40 text-center max-w-[190px] mx-auto">
                 <SpringArrow
                   className="w-20 h-16 text-[#1A1A1A]/80"
@@ -81,8 +100,8 @@ export default function AboutUs() {
                 </p>
               </div>
 
-              {/* Polaroid 1 - top right, largest portrait */}
-              <div className="absolute top-6 right-0 w-[52%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-6 z-10">
+              {/* Polaroid 1 - top right */}
+              <div className="absolute top-6 right-0 w-[52%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-6 z-10 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
                     src="/aboutus.jpg"
@@ -94,8 +113,8 @@ export default function AboutUs() {
                 </div>
               </div>
 
-              {/* Polaroid 2 - mid left, landscape */}
-              <div className="absolute top-[30%] left-0 w-[56%] aspect-[4/3] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-6 z-20">
+              {/* Polaroid 2 - mid left */}
+              <div className="absolute top-[30%] left-0 w-[56%] aspect-[4/3] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-6 z-20 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
                     src="/aboutus.jpg"
@@ -109,7 +128,7 @@ export default function AboutUs() {
               </div>
 
               {/* Polaroid 3 - bottom left */}
-              <div className="absolute bottom-20 left-2 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-3 z-30">
+              <div className="absolute bottom-20 left-2 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-3 z-30 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
                     src="/aboutus.jpg"
@@ -122,8 +141,8 @@ export default function AboutUs() {
                 </div>
               </div>
 
-              {/* Polaroid 4 - bottom right, crosses over polaroid 3 */}
-              <div className="absolute bottom-24 right-4 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-4 z-40">
+              {/* Polaroid 4 - bottom right */}
+              <div className="absolute bottom-24 right-4 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-4 z-40 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
                     src="/aboutus.jpg"
@@ -139,13 +158,13 @@ export default function AboutUs() {
 
             {/* Right: Typography */}
             <div className="lg:col-span-7 flex flex-col justify-center">
-              <h2 className="text-2xl md:text-4xl text-[#9c7d23] leading-snug mb-6 font-outfit">
-                "Growth, positivity, abundance, confidence, and new beginnings."
+              <h2 className="text-2xl sm:text-3xl md:text-4xl text-[#9c7d23] leading-snug mb-6 font-outfit font-light">
+                &ldquo;Growth, positivity, abundance, confidence, and new beginnings.&rdquo;
               </h2>
 
               <div className="space-y-4 font-outfit font-light text-sm md:text-base text-[#1A1A1A]/80 leading-[1.9] tracking-wide max-w-2xl">
                 <p>
-                  <span className="text-[#1A1A1A] text-xl font-normal mr-2 font-outfit">T</span>he name 18 holds a special place at the heart of our brand. Our philosophy is rooted in the continuous journey of becoming the best version of yourself, expressed entirely through what you wear.
+                  <span className="text-[#1A1A1A] text-2xl font-serif font-bold mr-2">T</span>he name 18 holds a special place at the heart of our brand. Our philosophy is rooted in the continuous journey of becoming the best version of yourself, expressed entirely through what you wear.
                 </p>
                 <p>
                   Our brand identity draws deep inspiration from the seven chakras, symbolising absolute balance and radiant positive energy.
@@ -159,33 +178,33 @@ export default function AboutUs() {
           </div>
         </section>
 
-        {/* SECTION 2: Collections (Minimalist Grid) */}
-        <section className="mb-20">
-          <div className="border-t border-b border-[#1A1A1A]/15 py-14 bg-white/50 backdrop-blur-sm shadow-sm rounded-lg px-4 md:px-10">
+        {/* SECTION 2: Collections (Ivory & Gold Grid) */}
+        <section className="mb-20 sm:mb-28">
+          <div className="border border-[#D4AF37]/35 py-12 sm:py-16 bg-white/80 backdrop-blur-md shadow-sm rounded-2xl px-4 sm:px-8 md:px-12">
 
             <div className="flex flex-col items-center text-center mb-10">
-              <span className="font-outfit font-medium text-[11px] tracking-[0.4em] uppercase text-[#9c7d23] mb-3">
+              <span className="font-outfit font-medium text-[10px] sm:text-[11px] tracking-[0.4em] uppercase text-[#9c7d23] mb-2">
                 What We Offer
               </span>
-              <h2 className="text-3xl md:text-4xl font-normal text-[#1A1A1A] tracking-widest font-outfit">
-                OUR <span className="text-[#9c7d23] font-normal">COLLECTIONS</span>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#1A1A1A] tracking-widest font-outfit uppercase">
+                OUR <span className="font-semibold text-[#9c7d23]">COLLECTIONS</span>
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-[#1A1A1A]/15">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 md:divide-x divide-[#D4AF37]/25">
               {[
-                { num: "01", title: "Clothing", desc: "A curated collection ranging from timeless traditional pieces to stylish contemporary fashion, selected for uncompromising quality and absolute elegance." },
-                { num: "02", title: "Jewellery", desc: "Statement pieces designed to transform an outfit. From traditional festive sets to immaculate accessories crafted for unforgettable occasions." },
-                { num: "03", title: "Accessories", desc: "The definitive finishing touches. Carefully selected elements that add profound personality, sophistication, and individuality to your style." }
+                { num: "01", title: "Clothing", desc: "A curated collection ranging from timeless traditional pit-loom sarees to stylish contemporary silhouettes, selected for uncompromising quality and elegance." },
+                { num: "02", title: "Jewellery", desc: "Statement heirloom ornaments designed to transform an ensemble. From 22K hallmarked gold sets to polki diamonds crafted for unforgettable celebrations." },
+                { num: "03", title: "Accessories", desc: "The definitive finishing touches. Carefully handcrafted elements that add profound personality, sophistication, and individuality to your signature style." }
               ].map((item, i) => (
-                <div key={i} className="px-6 md:px-8 py-4 text-center group">
-                  <span className="block font-outfit font-medium text-xs tracking-[0.3em] text-[#9c7d23] mb-3 transition-colors group-hover:scale-110 duration-300">
+                <div key={i} className="px-4 sm:px-6 md:px-8 py-4 text-center group">
+                  <span className="block font-outfit font-bold text-xs tracking-[0.3em] text-[#9c7d23] mb-2.5 transition-transform group-hover:scale-110 duration-300">
                     {item.num}
                   </span>
-                  <h3 className="font-normal text-xl text-[#1A1A1A] mb-3 tracking-widest font-outfit">
+                  <h3 className="font-normal text-lg sm:text-xl text-[#1A1A1A] mb-2.5 tracking-widest font-outfit uppercase">
                     {item.title}
                   </h3>
-                  <p className="font-outfit font-light text-xs md:text-sm text-[#1A1A1A]/70 leading-relaxed tracking-wide group-hover:text-[#1A1A1A] transition-colors duration-500">
+                  <p className="font-outfit font-light text-xs sm:text-sm text-[#1A1A1A]/70 leading-relaxed tracking-wide group-hover:text-[#1A1A1A] transition-colors duration-300">
                     {item.desc}
                   </p>
                 </div>
@@ -193,8 +212,8 @@ export default function AboutUs() {
             </div>
 
             <div className="mt-10 text-center">
-              <span className="inline-block border border-[#9c7d23]/40 bg-[#F8F6F0] px-6 py-2.5 font-outfit font-medium text-[10px] tracking-[0.4em] uppercase text-[#1A1A1A]/80 shadow-sm">
-                One Destination. A Complete Look.
+              <span className="inline-block border border-[#D4AF37]/40 bg-[#F8F6F0] px-6 py-2.5 rounded-full font-outfit font-medium text-[10px] tracking-[0.3em] uppercase text-[#1A1A1A]/80 shadow-sm">
+                ✦ One Destination • A Complete Look ✦
               </span>
             </div>
 
@@ -208,15 +227,15 @@ export default function AboutUs() {
             {/* Left Column: Title & Founders Photo */}
             <div className="lg:w-1/3 lg:sticky lg:top-28 h-fit space-y-6">
               <div>
-                <span className="font-outfit font-medium text-[11px] tracking-[0.4em] uppercase text-[#9c7d23] mb-3 block">
+                <span className="font-outfit font-medium text-[10px] sm:text-[11px] tracking-[0.4em] uppercase text-[#9c7d23] mb-2 block">
                   The People Behind
                 </span>
-                <h2 className="text-3xl md:text-4xl font-normal text-[#1A1A1A] tracking-widest leading-tight mb-4 font-outfit">
+                <h2 className="text-3xl md:text-4xl font-light text-[#1A1A1A] tracking-widest leading-tight mb-3 font-outfit uppercase">
                   MEET THE <br />
-                  <span className="text-[#9c7d23] font-normal">FOUNDERS</span>
+                  <span className="font-semibold text-[#9c7d23]">FOUNDERS</span>
                 </h2>
-                <div className="w-10 h-[1px] bg-[#9c7d23]/60 mb-4"></div>
-                <p className="font-outfit font-medium text-xs tracking-[0.3em] uppercase text-[#1A1A1A]/70">
+                <div className="w-10 h-[1.5px] bg-[#9c7d23]/60 mb-3" />
+                <p className="font-outfit font-medium text-xs tracking-[0.25em] uppercase text-[#1A1A1A]/75">
                   Priyanka &amp; Harish
                 </p>
               </div>
@@ -236,7 +255,7 @@ export default function AboutUs() {
                 </div>
 
                 {/* Polaroid 1 - back */}
-                <div className="absolute top-10 left-0 w-[62%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-4 z-10">
+                <div className="absolute top-10 left-0 w-[62%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-4 z-10 border border-neutral-200">
                   <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                     <Image
                       src="/aboutusphoto.jpg"
@@ -248,8 +267,8 @@ export default function AboutUs() {
                   </div>
                 </div>
 
-                {/* Polaroid 2 - crosses over polaroid 1, Instagram badge on its corner */}
-                <div className="absolute bottom-0 right-0 w-[56%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-5 z-20">
+                {/* Polaroid 2 - crosses over polaroid 1 */}
+                <div className="absolute bottom-0 right-0 w-[56%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-5 z-20 border border-neutral-200">
                   <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                     <Image
                       src="/aboutusphoto.jpg"
@@ -261,13 +280,13 @@ export default function AboutUs() {
                     />
                   </div>
 
-                  {/* Instagram icon, pinned to the polaroid's corner */}
+                  {/* Instagram icon badge */}
                   <Link
                     href="https://www.instagram.com/thelabel18"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="The Label 18 on Instagram"
-                    className="absolute -bottom-3 -right-3 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-white border border-[#9c7d23]/30 text-[#1A1A1A] hover:text-[#9c7d23] hover:border-[#9c7d23]/60 shadow-md transition-colors"
+                    className="absolute -bottom-3 -right-3 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-white border border-[#9c7d23]/40 text-[#1A1A1A] hover:text-[#9c7d23] hover:border-[#9c7d23] shadow-md transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4 h-4">
                       <rect x="3" y="3" width="18" height="18" rx="5" />
@@ -279,7 +298,7 @@ export default function AboutUs() {
               </div>
             </div>
 
-            {/* Right Column: Story */}
+            {/* Right Column: Narrative */}
             <div className="lg:w-2/3">
               <div className="space-y-6 font-outfit font-light text-sm md:text-base text-[#1A1A1A]/80 leading-[1.9] tracking-wide">
                 <p>
@@ -290,26 +309,26 @@ export default function AboutUs() {
                 </p>
 
                 {/* Pull Quote */}
-                <blockquote className="my-8 pl-6 md:pl-8 border-l-2 border-[#9c7d23] py-2 bg-white/40 shadow-sm rounded-r-md">
-                  <p className="text-xl md:text-2xl text-[#1A1A1A] leading-snug font-outfit">
-                    "When you feel good, you carry yourself differently. When you wear confidence, you shine differently."
+                <blockquote className="my-8 pl-6 md:pl-8 border-l-2 border-[#9c7d23] py-3 bg-white/60 rounded-r-xl shadow-sm">
+                  <p className="text-lg sm:text-xl md:text-2xl text-[#1A1A1A] leading-snug font-outfit font-light italic">
+                    &ldquo;When you feel good, you carry yourself differently. When you wear confidence, you shine differently.&rdquo;
                   </p>
                 </blockquote>
 
                 <p>
-                  Her ultimate vision for The Label 18 is to curate a singular sanctuary where women don't have to endlessly search multiple boutiques to piece together the perfect look. Here, clothing, exquisite jewellery, and refined accessories are thoughtfully harmonized.
+                  Her ultimate vision for The Label 18 is to curate a singular sanctuary where women don&apos;t have to endlessly search multiple boutiques to piece together the perfect look. Here, clothing, exquisite jewellery, and refined accessories are thoughtfully harmonized.
                 </p>
                 <p>
-                  Harish anchors the foundation, bringing invaluable support and strategic involvement to building the brand's day-to-day journey and long-term trajectory. Together, Priyanka and Harish have sculpted The Label 18 into a destination built purely around style, relentless positivity, and grand aspiration.
+                  Harish anchors the foundation, bringing invaluable support and strategic involvement to building the brand&apos;s day-to-day journey and long-term trajectory. Together, Priyanka and Harish have sculpted The Label 18 into a destination built purely around style, relentless positivity, and grand aspiration.
                 </p>
               </div>
 
               <div className="mt-12 text-center lg:text-left flex items-center gap-4 justify-center lg:justify-start">
-                <span className="w-6 h-[1px] bg-[#9c7d23]"></span>
+                <span className="w-8 h-[1px] bg-[#9c7d23]" />
                 <span className="font-outfit font-medium text-[10.5px] tracking-[0.4em] uppercase text-[#9c7d23]">
                   The Essence of 18
                 </span>
-                <span className="w-6 h-[1px] bg-[#9c7d23]"></span>
+                <span className="w-8 h-[1px] bg-[#9c7d23]" />
               </div>
             </div>
 

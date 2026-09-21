@@ -89,37 +89,40 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
     : `/product/${product.id}`;
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-[#1A1A1A]/10 bg-white hover:border-[#9c7d23]/40 hover:shadow-xl hover:shadow-[#9c7d23]/5 transition-all duration-500 overflow-hidden">
-      <Link href={productUrl} className="relative aspect-[4/5] bg-[#F8F6F0] overflow-hidden block">
+    <div className="group flex flex-col rounded-xl sm:rounded-2xl border border-[#1A1A1A]/10 bg-white hover:border-[#9c7d23]/40 hover:shadow-xl hover:shadow-[#9c7d23]/5 transition-all duration-500 overflow-hidden h-full w-full">
+      {/* Image Container */}
+      <Link href={productUrl} className="relative aspect-[4/5] bg-[#F8F6F0] overflow-hidden block w-full">
         {currentImage ? (
           <Image
             src={currentImage}
             alt={product.name}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            className="object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#1A1A1A]/20 text-[11px] uppercase tracking-widest">
+          <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs uppercase tracking-widest font-light">
             No Image
           </div>
         )}
+
         {!product.inStock && (
-          <span className="absolute top-3 right-3 bg-[#1A1A1A] text-white text-[9px] tracking-[0.15em] uppercase px-2.5 py-1 rounded-sm font-medium shadow-sm">
-            Out of stock
+          <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-[#1A1A1A]/80 backdrop-blur-sm text-white text-[8px] sm:text-[9px] tracking-[0.2em] uppercase px-2.5 py-0.5 sm:py-1 font-medium rounded-full shadow-sm">
+            Sold Out
           </span>
         )}
       </Link>
 
-      <div className="p-5 flex flex-col flex-1">
+      {/* Product Details */}
+      <div className="p-2.5 sm:p-4 flex flex-col flex-1">
         {/* Title and Price */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4 mb-4">
+        <div className="flex flex-col gap-0.5 sm:gap-1 mb-2 sm:mb-2.5">
           <Link href={productUrl} className="hover:text-[#9c7d23] transition-colors">
-            <h3 className="font-outfit font-medium text-[13px] tracking-wide text-[#1A1A1A] line-clamp-1 uppercase">
+            <h3 className="font-outfit font-medium text-[11px] sm:text-[13px] tracking-wide text-[#1A1A1A] line-clamp-1 uppercase">
               {product.name}
             </h3>
           </Link>
-          <p className="font-outfit font-bold text-[14px] text-red-600 shrink-0">
+          <p className="font-outfit font-bold text-[11px] sm:text-sm text-[#9c7d23]">
             {currentPrice != null
               ? `₹${currentPrice.toLocaleString()}`
               : "N/A"}
@@ -128,7 +131,7 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
 
         {/* Variations Swatches */}
         {colorVariations.length > 0 ? (
-          <div className="mt-3 flex items-center gap-1.5 px-1 pb-1">
+          <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-1.5 pb-1">
             {colorVariations.map(variant => (
               <button
                 key={variant.color}
@@ -137,19 +140,18 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
                   setActiveColor(variant.color);
                 }}
                 title={variant.color}
-                className={`w-5 h-5 rounded-full border transition-all ${
-                  activeColor === variant.color
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border transition-all ${activeColor === variant.color
                     ? "border-[#9c7d23] ring-1 ring-[#9c7d23]/30 scale-110"
                     : "border-[#1A1A1A]/20 hover:border-[#1A1A1A]/60"
-                }`}
+                  }`}
                 style={{ backgroundColor: variant.hex }}
               />
             ))}
           </div>
         ) : sizeVariations.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-1 px-1 pb-1">
+          <div className="mt-0.5 sm:mt-1 flex flex-wrap gap-1 pb-1">
             {sizeVariations.map(size => (
-              <span key={size} className="px-2 py-0.5 border border-[#1A1A1A]/10 rounded text-[10px] text-[#1A1A1A]/60 font-outfit uppercase">
+              <span key={size} className="px-1 sm:px-1.5 py-0.5 border border-[#1A1A1A]/10 rounded text-[8px] sm:text-[9px] text-[#1A1A1A]/60 font-outfit uppercase">
                 {size}
               </span>
             ))}
@@ -157,18 +159,18 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
         ) : null}
 
         {/* Bottom Action Bar */}
-        <div className="flex items-center justify-between pt-4 mt-auto border-t border-[#1A1A1A]/10">
+        <div className="flex items-center justify-between pt-2 sm:pt-3 mt-auto border-t border-[#1A1A1A]/10">
           <Link
             href={productUrl}
-            className="flex items-center gap-1.5 text-[#1A1A1A]/60 hover:text-[#9c7d23] transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+            className="flex items-center gap-1 text-[#1A1A1A]/60 hover:text-[#9c7d23] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 sm:w-3.5 h-3 sm:h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
             </svg>
-            <span className="text-[9px] tracking-[0.2em] font-medium uppercase">Details</span>
+            <span className="text-[8px] sm:text-[9px] tracking-[0.12em] font-medium uppercase">Details</span>
           </Link>
 
-          <div className="flex items-center gap-3 text-[#1A1A1A]/60">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[#1A1A1A]/60">
             <MiniWishlistButton
               productId={product.id}
               variationId={activeVariationId}
@@ -185,11 +187,6 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
               color={activeColor}
               inStock={activeVariationInStock}
             />
-            <Link href={productUrl} className="hover:text-[#9c7d23] transition-colors focus:text-[#9c7d23]">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-              </svg>
-            </Link>
           </div>
         </div>
       </div>

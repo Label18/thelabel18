@@ -1,208 +1,279 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCategoriesTree } from "@/lib/categories";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Sparkles,
+  ShieldCheck,
+  Gem,
+  Truck,
+  ArrowUpRight,
+  MessageCircle,
+} from "lucide-react";
 
-const contactItems = [
-  { label: "Contact number", value: "+91 98868 23456", href: "tel:+919886823456" },
-  { label: "Inquiries", value: "contact@thelabel18.com", href: "mailto:contact@thelabel18.com" },
-];
+function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
+  );
+}
 
-const instagramPath = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z";
-
-const socialLinks = [
-  {
-    label: "Clothing",
-    href: "https://www.instagram.com/thelabel_18?igsi=c3E5YW8weXNrajJo&utm_source=qr",
-    path: instagramPath,
-  },
-  {
-    label: "Jewellery",
-    href: "https://www.instagram.com/thelabel18_accessories?igsi=MW8yOGFlYzdwd2ZoOQ%3D%3D&utm_source=qr",
-    path: instagramPath,
-  },
-];
-
-const menuLinks = [
-  ["Home", "/"],
-  ["Shop", "/shop"],
-  ["About Us", "/about"],
-  ["All Categories", "/navigation"],
+const trustBadges = [
+  { icon: Sparkles, title: "Curated Master Weavers", sub: "Authentic Pure Silks" },
+  { icon: Gem, title: "Certified Purity", sub: "Hallmarked Ornaments" },
+  { icon: ShieldCheck, title: "Bespoke Bridal Tailoring", sub: "Personalized Fitting" },
+  { icon: Truck, title: "Worldwide Express", sub: "Insured Global Delivery" },
 ];
 
 export default async function Footer() {
   const categories = await getCategoriesTree();
-  const featuredCategories = categories.slice(0, 3);
+  const featuredCategories = categories.slice(0, 4);
 
   return (
-    <footer className="relative z-10 bg-[#F8F6F0] text-[#1A1A1A] font-outfit overflow-hidden mt-10 border-t border-[#d4af37]/40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+    <footer className="relative z-10 bg-gradient-to-b from-[#14120e] via-[#0d0c0a] to-[#080806] text-white font-outfit border-t border-[#d4af37]/30 overflow-hidden">
+      {/* Background Decorative Gold Radial Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4af37]/5 blur-[120px] pointer-events-none rounded-full" />
 
-      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-16 pt-8 pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-12 lg:gap-x-0 mb-12">
+      {/* 1. Trust Badges Strip */}
+      <div className="border-b border-white/10 bg-black/40 backdrop-blur-sm">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-5 sm:py-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {trustBadges.map((badge, idx) => {
+              const Icon = badge.icon;
+              return (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] shrink-0">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] sm:text-xs uppercase tracking-wider font-semibold text-white">
+                      {badge.title}
+                    </h4>
+                    <p className="text-[10px] text-white/50 font-light">
+                      {badge.sub}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
-          {/* Column 1 — Brand */}
-          <div className="lg:pr-10 lg:border-r lg:border-[#1A1A1A]/10">
-            <Link href="/" className="inline-block mb-6 transition-transform duration-500 hover:scale-105">
-              <Image
-                src="/logo.jpg"
-                alt="The Label 18"
-                width={80}
-                height={80}
-                className="w-12 h-12 object-contain rounded-sm border border-[#d4af37]/40 shadow-sm"
-              />
-            </Link>
-            <h2 className="text-xl text-[#1A1A1A] tracking-widest uppercase mb-3">
-              THE LABEL{" "}
-              <span className="text-[#9c7d23] italic font-normal lowercase">18</span>
-            </h2>
-            <p className="font-outfit font-light text-[#1A1A1A]/70 text-[13px] leading-[1.8] tracking-wide mb-6 max-w-[260px]">
-              Growth, positivity, abundance, confidence, and new beginnings.
-              Wear your energy. Express your essence.
-            </p>
-            <div className="flex gap-4">
-              {socialLinks.map((social) => (
+      {/* 2. Main Luxury Footer Content */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 pt-10 sm:pt-14 pb-8 sm:pb-10 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 border-b border-white/10">
+
+          {/* Col 1 (Span 4): Brand Essence */}
+          <div className="lg:col-span-4 flex flex-col justify-between space-y-6">
+            <div>
+              <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+                <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-[#d4af37]/40 p-0.5 bg-black">
+                  <Image
+                    src="/logo.jpg"
+                    alt="The Label 18 Logo"
+                    fill
+                    className="object-contain p-1"
+                  />
+                </div>
+                <div>
+                  <span className="font-outfit text-lg tracking-[0.25em] uppercase font-light text-white block">
+                    THE LABEL <span className="font-bold text-[#d4af37]">18</span>
+                  </span>
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-[#d4af37]/80 block font-medium">
+                    Haute Couture & Heirlooms
+                  </span>
+                </div>
+              </Link>
+
+              <p className="text-white/70 text-xs leading-relaxed font-light mb-5 max-w-sm">
+                Rooted in the auspicious symbolism of 18, representing manifestation, radiance, and royalty. 
+                We weave timeless Indian silk silhouettes and forge hallmarked heritage jewellery for the modern muse.
+              </p>
+
+              {/* Tagline */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#e5c158] text-[10px] tracking-[0.2em] uppercase font-medium">
+                <Sparkles className="w-3 h-3 text-[#d4af37]" />
+                Wear Your Energy • Express Your Essence
+              </div>
+            </div>
+
+            {/* Social Channels */}
+            <div className="space-y-2 pt-2">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-[#d4af37] font-semibold block">
+                Official Boutiques on Instagram
+              </span>
+              <div className="flex flex-wrap gap-2.5">
                 <a
-                  key={social.label}
-                  href={social.href}
+                  href="https://www.instagram.com/thelabel_18?igsi=c3E5YW8weXNrajJo&utm_source=qr"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="flex flex-col items-center gap-1.5 group"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-[#d4af37] hover:bg-[#d4af37]/10 text-xs text-white/80 hover:text-white transition-all duration-300"
                 >
-                  <span className="w-9 h-9 shrink-0 rounded-full border border-[#1A1A1A]/20 bg-white flex items-center justify-center text-[#1A1A1A]/80 group-hover:bg-[#1A1A1A] group-hover:text-[#F8F6F0] group-hover:border-[#1A1A1A] transition-all duration-300 shadow-sm">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d={social.path} />
-                    </svg>
-                  </span>
-                  <span className="font-outfit font-light text-[9px] tracking-[0.15em] uppercase text-[#1A1A1A]/60 group-hover:text-[#9c7d23] transition-colors duration-300">
-                    {social.label}
-                  </span>
+                  <InstagramIcon className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <span className="text-[11px]">@thelabel_18 (Clothing)</span>
                 </a>
-              ))}
+                <a
+                  href="https://www.instagram.com/thelabel18_accessories?igsi=MW8yOGFlYzdwd2ZoOQ%3D%3D&utm_source=qr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-[#d4af37] hover:bg-[#d4af37]/10 text-xs text-white/80 hover:text-white transition-all duration-300"
+                >
+                  <InstagramIcon className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <span className="text-[11px]">@thelabel18_accessories</span>
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Column 2 — Menu */}
-          <div className="lg:px-10 lg:border-r lg:border-[#1A1A1A]/10">
-            <h3 className="font-outfit font-medium text-[11px] text-[#9c7d23] tracking-[0.35em] uppercase mb-6">
-              Menu
+          {/* Col 2 (Span 3): Collections */}
+          <div className="lg:col-span-3 space-y-4">
+            <h3 className="font-outfit text-xs font-semibold uppercase tracking-[0.25em] text-[#d4af37] flex items-center gap-2">
+              <span>Collections</span>
+              <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             </h3>
-            <ul className="space-y-3">
-              {menuLinks.map(([title, url]) => (
-                <li key={title}>
-                  <Link
-                    href={url}
-                    className="group relative inline-block font-outfit font-light text-[#1A1A1A]/80 hover:text-[#9c7d23] transition-colors duration-300 text-[12.5px] tracking-[0.1em] uppercase"
-                  >
-                    {title}
-                    <span className="absolute -bottom-1.5 left-0 w-0 h-px bg-[#9c7d23] transition-all duration-300 group-hover:w-full" />
+
+            <ul className="space-y-2.5 text-xs">
+              <li>
+                <Link href="/shop?category=clothing" className="text-white/70 hover:text-[#d4af37] transition-colors flex items-center justify-between group">
+                  <span>Haute Couture & Sarees</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop?category=jewellery" className="text-white/70 hover:text-[#d4af37] transition-colors flex items-center justify-between group">
+                  <span>Fine Jewellery & Heirlooms</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+              {featuredCategories.map((cat) => (
+                <li key={cat.id}>
+                  <Link href={`/categories/${cat.id}`} className="text-white/70 hover:text-[#d4af37] transition-colors flex items-center justify-between group">
+                    <span>{cat.name}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/navigation" className="text-[#d4af37] hover:text-white transition-colors text-[11px] uppercase tracking-wider font-medium inline-block pt-1">
+                  Explore All Collections →
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Column 3 — Curations / Categories */}
-          <div className="lg:px-10 lg:border-r lg:border-[#1A1A1A]/10">
-            <h3 className="font-outfit font-medium text-[11px] text-[#9c7d23] tracking-[0.35em] uppercase mb-6">
-              Curations
+          {/* Col 3 (Span 2): The Maison Navigation */}
+          <div className="lg:col-span-2 space-y-4">
+            <h3 className="font-outfit text-xs font-semibold uppercase tracking-[0.25em] text-[#d4af37] flex items-center gap-2">
+              <span>The Maison</span>
+              <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             </h3>
-            {featuredCategories.length === 0 ? (
-              <p className="text-[#1A1A1A]/40 text-[12px] font-light">Categories coming soon.</p>
-            ) : (
-              <ul className="space-y-4">
-                {featuredCategories.map((cat) => (
-                  <li key={cat.id}>
-                    <Link
-                      href={`/categories/${cat.id}`}
-                      className="block font-outfit font-light text-[#1A1A1A] hover:text-[#9c7d23] transition-colors duration-300 text-[12.5px] tracking-[0.1em] uppercase mb-2"
-                    >
-                      {cat.name}
-                    </Link>
-                    {cat.sub_categories.length > 0 && (
-                      <ul className="space-y-1.5 border-l border-[#d4af37]/40 pl-3">
-                        {cat.sub_categories.slice(0, 3).map((sub) => (
-                          <li key={sub.id}>
-                            <Link
-                              href={`/categories/${cat.id}/${sub.id}`}
-                              className="block font-outfit font-light text-[#1A1A1A]/60 hover:text-[#9c7d23] transition-colors duration-300 text-[11px] tracking-[0.08em] uppercase"
-                            >
-                              {sub.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link
-              href="/navigation"
-              className="inline-block mt-4 text-[10.5px] tracking-[0.2em] uppercase font-outfit font-light text-[#9c7d23] hover:text-[#1A1A1A] transition-colors"
-            >
-              View all →
-            </Link>
+
+            <ul className="space-y-2.5 text-xs text-white/70">
+              <li>
+                <Link href="/" className="hover:text-[#d4af37] transition-colors">Home Experience</Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-[#d4af37] transition-colors">Our Royal Heritage</Link>
+              </li>
+              <li>
+                <Link href="/shop" className="hover:text-[#d4af37] transition-colors">Curated Catalog</Link>
+              </li>
+              <li>
+                <Link href="/wishlist" className="hover:text-[#d4af37] transition-colors">Saved Wishlist</Link>
+              </li>
+              <li>
+                <Link href="/cart" className="hover:text-[#d4af37] transition-colors">Bespoke Shopping Bag</Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-[#d4af37] transition-colors">Privacy & Security</Link>
+              </li>
+            </ul>
           </div>
 
-          {/* Column 4 — Boutique / Contact */}
-          <div className="lg:pl-10">
-            <h3 className="font-outfit font-medium text-[11px] text-[#9c7d23] tracking-[0.35em] uppercase mb-6">
-              Boutique
+          {/* Col 4 (Span 3): Flagship Boutique & Atelier */}
+          <div className="lg:col-span-3 space-y-4">
+            <h3 className="font-outfit text-xs font-semibold uppercase tracking-[0.25em] text-[#d4af37] flex items-center gap-2">
+              <span>Flagship Boutique</span>
+              <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             </h3>
-            <div className="space-y-6">
-              <div>
-                <span className="block text-[10.5px] text-[#9c7d23] tracking-[0.25em] uppercase mb-2 font-medium">
-                  Location
-                </span>
-                <p className="font-outfit font-light text-[#1A1A1A]/80 text-[12.5px] leading-[1.8]">
-                  #15 Elements Building, 4th Floor
-                  <br />
-                  32nd Cross, Jayanagar 7th Block
-                  <br />
-                  Bengaluru, KA 560070
+
+            <div className="space-y-3.5 text-xs">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
+                <p className="text-white/70 leading-relaxed font-light">
+                  #15 Elements Building, 4th Floor,<br />
+                  32nd Cross, Jayanagar 7th Block,<br />
+                  Bengaluru, Karnataka 560070
                 </p>
               </div>
-              <div className="space-y-4">
-                {contactItems.map((item) => (
-                  <div key={item.label}>
-                    <span className="block text-[10.5px] text-[#9c7d23] tracking-[0.25em] uppercase mb-1 font-medium">
-                      {item.label}
-                    </span>
-                    <a
-                      href={item.href}
-                      className="font-outfit font-light text-[#1A1A1A] hover:text-[#9c7d23] transition-colors duration-300 text-[12.5px]"
-                    >
-                      {item.value}
-                    </a>
-                  </div>
-                ))}
+
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-[#d4af37] shrink-0" />
+                <a href="tel:+919886823456" className="text-white/80 hover:text-[#d4af37] transition-colors">
+                  +91 98868 23456
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-[#d4af37] shrink-0" />
+                <a href="mailto:contact@thelabel18.com" className="text-white/80 hover:text-[#d4af37] transition-colors">
+                  contact@thelabel18.com
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-[#d4af37] shrink-0" />
+                <span className="text-white/60 font-light">
+                  Mon – Sat: 10:30 AM – 8:00 PM
+                </span>
+              </div>
+
+              {/* Direct WhatsApp Concierge Button */}
+              <div className="pt-2">
+                <a
+                  href="https://wa.me/919886823456?text=Hello%20The%20Label%2018%2C%20I%20would%20like%20to%20inquire%20about%20your%20couture%20and%20jewellery%20collections."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-all text-xs font-medium tracking-wide shadow-sm"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>WhatsApp Styling Concierge</span>
+                </a>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* Divider removed */}
+        {/* 3. Bottom Legal & Credits Bar */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-white/50 font-light">
+          <div>
+            &copy; {new Date().getFullYear()} <span className="text-white font-medium">The Label 18</span>. All rights reserved.
+          </div>
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 font-outfit font-light text-[10.5px] tracking-[0.18em] uppercase text-[#1A1A1A]/60">
-          <div className="flex items-center gap-5">
-            <Link href="/privacy" className="hover:text-[#1A1A1A] transition-colors">
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-[#d4af37] transition-colors">
               Privacy Policy
             </Link>
-            <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
-            <Link href="/terms" className="hover:text-[#1A1A1A] transition-colors">
+            <span className="w-1 h-1 rounded-full bg-[#d4af37]/60" />
+            <Link href="/terms" className="hover:text-[#d4af37] transition-colors">
               Terms &amp; Conditions
             </Link>
           </div>
 
-          <div className="text-center">
-            &copy; {new Date().getFullYear()} The Label 18. All Rights Reserved.
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="opacity-70">Developed By</span>
-            <a href="https://rakvih.in/" className="text-[#9c7d23] hover:text-[#1A1A1A] transition-colors font-medium normal-case tracking-wide">
+          <div className="flex items-center gap-2 text-white/40">
+            <span>Crafted by</span>
+            <a
+              href="https://rakvih.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#d4af37] hover:text-white transition-colors font-medium"
+            >
               Rakvih Solutions
             </a>
           </div>

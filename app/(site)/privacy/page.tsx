@@ -1,28 +1,49 @@
+import { Sparkles } from "lucide-react";
+
 export default function PrivacyPolicy() {
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] selection:bg-[#d4af37]/30 selection:text-[#1A1A1A]">
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Section */}
+      <section className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-14 sm:py-20 text-white">
+        {/* Ambient Glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[650px] max-h-[650px] rounded-full blur-[150px] bg-[#D4AF37]/12" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
 
-      {/* Premium Hero Section */}
-      <section className="relative w-full h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden border-b border-[#1A1A1A]/10 pt-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#f3efe6] via-[#F8F6F0] to-[#EAE5D9]"></div>
-        <div className="absolute inset-0 bg-[#9c7d23]/5 mix-blend-overlay"></div>
+        <div className="relative z-10 text-center flex flex-col items-center px-4 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            <span>Legal &amp; Transparency</span>
+          </div>
 
-        <div className="relative z-10 text-center flex flex-col items-center px-4 mt-12">
-          <span className="font-outfit font-light text-[10px] tracking-[0.5em] uppercase text-[#9c7d23] mb-4">
-            Legal & Policies
-          </span>
-          <h1 className="font-normal text-4xl md:text-6xl text-[#1A1A1A] tracking-widest uppercase">
-            Privacy <span className="text-[#9c7d23] font-normal tracking-normal uppercase">Policy</span>
+          <h1 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light tracking-wide uppercase text-white leading-tight">
+            Privacy{" "}
+            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_20px_rgba(212,175,55,0.4)]">
+              Policy
+            </span>
           </h1>
+
+          <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-3.5" />
+
+          <p className="font-outfit font-light text-xs sm:text-sm tracking-[0.15em] uppercase text-white/75 max-w-lg mx-auto">
+            Your Trust Is Our Foremost Commitment
+          </p>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="w-full flex justify-center py-20 px-6 lg:px-16">
-        <div className="w-full max-w-4xl font-outfit font-light text-[#1A1A1A]/70 leading-[2.2] tracking-wide text-sm md:text-base space-y-16">
+      {/* 2. DUAL COMPOSITION: Warm Cream Reading Body */}
+      <section className="w-full flex justify-center py-16 sm:py-20 px-4 sm:px-6 lg:px-16">
+        <div className="w-full max-w-4xl font-outfit font-light text-[#1A1A1A]/80 leading-[2.1] tracking-wide text-sm md:text-base space-y-12 sm:space-y-16">
 
-          <div className="prose max-w-none">
-            <p className="text-xl md:text-2xl italic text-[#1A1A1A]/90 leading-relaxed text-center mb-16">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#D4AF37]/35 shadow-sm">
+            <p className="text-lg sm:text-xl md:text-2xl italic text-[#1A1A1A]/90 leading-relaxed text-center font-light">
               &ldquo;At The Label 18, we value and respect your privacy. This Privacy Policy explains how we collect, use, store and protect your personal information when you browse our website, make a purchase or communicate with us.&rdquo;
             </p>
           </div>
@@ -69,19 +90,18 @@ export default function PrivacyPolicy() {
               content: "For questions regarding orders, returns, privacy or personal information, customers may contact us using the details provided on our website or footer."
             }
           ].map((section, idx) => (
-            <div key={idx} className="relative pl-8 md:pl-12 border-l border-[#1A1A1A]/15 group hover:border-[#9c7d23] transition-colors duration-500">
-              <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#F8F6F0] border border-[#1A1A1A]/30 group-hover:border-[#9c7d23] group-hover:bg-[#9c7d23]/20 transition-all duration-500"></span>
-              <h2 className="text-xl md:text-2xl text-[#1A1A1A] tracking-widest mb-4 font-normal">
-                <span className="text-[#9c7d23] mr-4 font-outfit text-sm font-medium">{String(idx + 1).padStart(2, '0')}</span>
+            <div key={idx} className="relative pl-6 sm:pl-10 border-l-2 border-[#D4AF37]/30 hover:border-[#D4AF37] transition-colors duration-300">
+              <span className="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-[#F8F6F0] border-2 border-[#D4AF37] shadow-sm" />
+              <h2 className="text-lg sm:text-xl md:text-2xl text-[#1A1A1A] tracking-wide mb-2 font-normal font-outfit">
+                <span className="text-[#9c7d23] mr-3 font-mono text-sm font-semibold">{String(idx + 1).padStart(2, '0')}.</span>
                 {section.title}
               </h2>
-              <p className="text-[#1A1A1A]/70">{section.content}</p>
+              <p className="text-[#1A1A1A]/75">{section.content}</p>
             </div>
           ))}
 
         </div>
       </section>
-
     </main>
   );
 }
