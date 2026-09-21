@@ -10,8 +10,12 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const sequences: SequenceConfig[] = [
+/** Full frame config (desktop uses all, mobile skips every other frame) */
+const FULL_SEQUENCES: SequenceConfig[] = [
     { path: "/kling-webp/frame_", frameCount: 193, extension: "webp", digits: 6, startFrame: 1 },
+];
+const MOBILE_SEQUENCES: SequenceConfig[] = [
+    { path: "/kling-webp/frame_", frameCount: 97, extension: "webp", digits: 6, startFrame: 1, frameStep: 2 },
 ];
 
 export default function ClothingHero({ category }: { category: CategoryTree | undefined }) {
@@ -29,6 +33,8 @@ export default function ClothingHero({ category }: { category: CategoryTree | un
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    const sequences = isMobile ? MOBILE_SEQUENCES : FULL_SEQUENCES;
 
     const onProgress1 = useCallback((progress: number) => {
         const num = Math.min(10, Math.floor(progress * 10) + 1);

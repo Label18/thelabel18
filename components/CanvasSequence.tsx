@@ -13,6 +13,7 @@ export interface SequenceConfig {
   extension?: string; // e.g., "png" or "jpg", defaults to "jpg"
   digits?: number; // e.g., 6, defaults to 3
   startFrame?: number; // e.g., 5, defaults to 1
+  frameStep?: number; // e.g., 2 to load every 2nd frame (mobile optimization)
 }
 
 interface CanvasSequenceProps {
@@ -31,18 +32,29 @@ interface CanvasSequenceProps {
   onProgressChange?: (progress: number) => void;
 }
 
-/** How many frames to load in the initial high-priority batch */
-const PRIORITY_BATCH = 25;
-/** How many frames ahead/behind the current scroll position to proactively load */
-const LOAD_WINDOW = 100;
-/** How many frames ahead/behind the current scroll position to keep in memory (avoids unloading) */
-const CACHE_WINDOW = 250;
+/* ─── Desktop defaults ─── */
+const PRIORITY_BATCH_DESKTOP = 25;
+const LOAD_WINDOW_DESKTOP = 100;
+const CACHE_WINDOW_DESKTOP = 250;
+
+/* ─── Mobile overrides (much smaller to stay within Safari's ~300 MB budget) ─── */
+const PRIORITY_BATCH_MOBILE = 10;
+const LOAD_WINDOW_MOBILE = 30;
+const CACHE_WINDOW_MOBILE = 60;
+
 /** How many frames to load per background batch */
 const BATCH_SIZE = 15;
 /** Delay between background batches (ms) */
 const BATCH_DELAY = 10;
 /** Maximum canvas DPR — prevents oversized canvas on Retina displays */
-const MAX_DPR = 1.5;
+const MAX_DPR_DESKTOP = 1.5;
+const MAX_DPR_MOBILE = 1.0;
+
+/** Simple mobile check (runs client-side only) */
+function getIsMobile() {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 768;
+}
 
 export default function CanvasSequence({
   sequences,
@@ -75,6 +87,13 @@ export default function CanvasSequence({
   const urlsRef = useRef<string[]>([]);
   // Cancelled flag for cleanup
   const cancelledRef = useRef(false);
+
+  // Mobile-aware constants
+  const mobile = typeof window !== "undefined" && getIsMobile();
+  const PRIORITY_BATCH = mobile ? PRIORITY_BATCH_MOBILE : PRIORITY_BATCH_DESKTOP;
+  const LOAD_WINDOW = mobile ? LOAD_WINDOW_MOBILE : LOAD_WINDOW_DESKTOP;
+  const CACHE_WINDOW = mobile ? CACHE_WINDOW_MOBILE : CACHE_WINDOW_DESKTOP;
+  const MAX_DPR = mobile ? MAX_DPR_MOBILE : MAX_DPR_DESKTOP;
 
   const totalFrames = sequences.reduce((acc, seq) => acc + seq.frameCount, 0);
 
@@ -263,8 +282,9 @@ export default function CanvasSequence({
       const ext = seq.extension || "jpg";
       const padLength = seq.digits ?? 3;
       const start = seq.startFrame ?? 1;
+      const step = seq.frameStep ?? 1;
       for (let i = 0; i < seq.frameCount; i++) {
-        const frameIndex = start + i;
+        const frameIndex = start + i * step;
         const paddedIndex = frameIndex.toString().padStart(padLength, "0");
         urls.push(`${seq.path}${paddedIndex}.${ext}`);
       }

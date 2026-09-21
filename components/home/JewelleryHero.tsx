@@ -10,10 +10,17 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const sequences2: SequenceConfig[] = [
+/** Desktop: full frame count */
+const FULL_SEQUENCES: SequenceConfig[] = [
     { path: "/sequence3/ezgif-frame-", frameCount: 240 },
     { path: "/sequence4/ezgif-frame-", frameCount: 240 },
     { path: "/sequence5/ezgif-frame-", frameCount: 240 },
+];
+/** Mobile: skip every other frame to halve memory */
+const MOBILE_SEQUENCES: SequenceConfig[] = [
+    { path: "/sequence3/ezgif-frame-", frameCount: 120, frameStep: 2 },
+    { path: "/sequence4/ezgif-frame-", frameCount: 120, frameStep: 2 },
+    { path: "/sequence5/ezgif-frame-", frameCount: 120, frameStep: 2 },
 ];
 
 export default function JewelleryHero({ category }: { category: CategoryTree | undefined }) {
@@ -31,6 +38,8 @@ export default function JewelleryHero({ category }: { category: CategoryTree | u
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    const sequences2 = isMobile ? MOBILE_SEQUENCES : FULL_SEQUENCES;
 
     const onProgress2 = useCallback((progress: number) => {
         const num = Math.min(10, Math.floor(progress * 10) + 1);
@@ -115,8 +124,8 @@ export default function JewelleryHero({ category }: { category: CategoryTree | u
                         sequences={sequences2}
                         className="hero-canvas"
                         bgColor="black"
-                        lazy={false}
-                        priority={true}
+                        lazy={isMobile}
+                        priority={!isMobile}
                         focalPointY="top"
                         scale={1}
                         offsetX={isMobile ? 120 : 0}
