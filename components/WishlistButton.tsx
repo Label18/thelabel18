@@ -22,6 +22,7 @@ export default function WishlistButton({
   productPrice,
   productImage,
   onRequireLogin,
+  className,
 }: {
   productId: string;
   variationId?: string | null;
@@ -29,6 +30,7 @@ export default function WishlistButton({
   productPrice?: number | null;
   productImage?: string | null;
   onRequireLogin?: (reason?: string) => void;
+  className?: string;
 }) {
   const { user, toggleWishlist, isInWishlist, refreshWishlist } = useAuth();
   const guest = useGuestCartWishlist();
@@ -74,11 +76,15 @@ export default function WishlistButton({
       onClick={handleClick}
       disabled={loading}
       aria-label={active ? "Remove from wishlist" : "Add to wishlist"}
-      className={`flex items-center justify-center w-14 rounded border transition-all ${
-        active
-          ? "border-[#9c7d23] text-[#9c7d23] bg-[#9c7d23]/5"
-          : "border-[#1A1A1A]/20 text-[#1A1A1A]/70 hover:border-[#9c7d23] hover:text-[#9c7d23]"
-      } ${loading ? "opacity-70 cursor-wait" : ""}`}
+      title={active ? "Saved in wishlist" : "Add to wishlist"}
+      className={
+        className ??
+        `flex items-center justify-center w-14 h-14 rounded-full border transition-all duration-300 ${
+          active
+            ? "border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/15 shadow-[0_0_15px_rgba(212,175,55,0.25)]"
+            : "border-[#D4AF37]/35 text-[#1A1A1A]/70 hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 bg-white shadow-sm"
+        } ${loading ? "opacity-70 cursor-wait" : "active:scale-95"}`
+      }
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +92,7 @@ export default function WishlistButton({
         strokeWidth={1.5}
         stroke="currentColor"
         fill={active ? "currentColor" : "none"}
-        className="w-5 h-5"
+        className="w-5 h-5 transition-transform group-hover:scale-110"
       >
         <path
           strokeLinecap="round"

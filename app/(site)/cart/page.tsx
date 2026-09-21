@@ -9,6 +9,7 @@ import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { createClient } from "@/lib/supabase/client";
 import LoginModal from "@/components/LoginModal";
 import toast from "react-hot-toast";
+import { Sparkles, ArrowRight, ShoppingBag, ShieldCheck, Truck } from "lucide-react";
 
 type CartRow = {
   id: string;
@@ -34,10 +35,8 @@ type CartRow = {
   } | null;
 };
 
-// Both logged-in (Supabase) and guest (localStorage) rows get normalized
-// into this shape so the render logic below doesn't need to branch.
 type DisplayCartItem = {
-  key: string; // cart_items.id for users, `${productId}-${variationId}` for guests
+  key: string;
   productId: string;
   variationId: string | null;
   quantity: number;
@@ -47,7 +46,7 @@ type DisplayCartItem = {
   size: string | null;
   sku: string | null;
   price: number;
-  stockQuantity: number | null; // null = unknown
+  stockQuantity: number | null;
 };
 
 export default function CartPage() {
@@ -68,9 +67,6 @@ export default function CartPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
-  // Login modal for checkout — opened locally on this page instead of
-  // relying on a global openLoginModal, so we can redirect to /checkout
-  // as soon as login succeeds.
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const redirectToCheckoutRef = useRef(false);
 
@@ -112,105 +108,64 @@ export default function CartPage() {
       const validData = (data ?? []).filter((item) => {
         const p = item.products as any;
         if (!p || p.is_visible === false) return false;
-        if (!isVis(p.category || p.categories, p.category_id)) return false;
-        if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
-        if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+        if (!isVis(p.category, p.category_id)) return false;
+        if (!isVis(p.sub_category, p.sub_category_id)) return false;
+        if (!isVis(p.sub_sub_category, p.sub_sub_category_id)) return false;
         return true;
       });
+
       setRows(validData as unknown as CartRow[]);
     }
     setLoading(false);
   }, [user, supabase]);
 
-  // Guests: merge the cached localStorage entries with fresh price/stock
-  // from Supabase so displayed prices and stock are never stale.
   const loadGuestCart = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    const localItems = guest.cart ?? [];
-    if (localItems.length === 0) {
+    if (guest.cart.length === 0) {
       setGuestDisplayItems([]);
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
 
-    const variationIds = [
-      ...new Set(localItems.map((i) => i.variationId).filter(Boolean)),
-    ] as string[];
+    const productIds = [...new Set(guest.cart.map((i) => i.productId))];
+    const variationIds = guest.cart
+      .map((i) => i.variationId)
+      .filter((id): id is string => !!id);
 
-    let freshById = new Map<string, any>();
-    const productIds = [...new Set(localItems.map((i) => i.productId))];
-    const visibleProductIds = new Set<string>();
+    const [{ data: productsData }, { data: variationsData }] = await Promise.all([
+      supabase.from("products").select("id, name, sku, image_url").in("id", productIds),
+      variationIds.length > 0
+        ? supabase
+            .from("product_variations")
+            .select("id, size, color, price, stock_quantity, sku, image_url")
+            .in("id", variationIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-    if (productIds.length > 0) {
-      const { data } = await supabase
-        .from("products")
-        .select(`
-          id, is_visible,
-          category_id, sub_category_id, sub_sub_category_id,
-          category:categories(is_visible),
-          sub_category:sub_categories(is_visible),
-          sub_sub_category:sub_sub_categories(is_visible)
-        `)
-        .in("id", productIds);
+    const productsMap = new Map((productsData ?? []).map((p) => [p.id, p]));
+    const variationsMap = new Map((variationsData ?? []).map((v) => [v.id, v]));
 
-      if (data) {
-        const isVis = (cat: any, id: string | null) => {
-          if (id && !cat) return false;
-          if (!cat) return true;
-          if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
-          return cat.is_visible !== false;
-        };
-
-        data.forEach((p: any) => {
-          if (
-            p.is_visible !== false &&
-            isVis(p.category || p.categories, p.category_id) &&
-            isVis(p.sub_category || p.sub_categories, p.sub_category_id) &&
-            isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)
-          ) {
-            visibleProductIds.add(p.id);
-          }
-        });
-      }
-    }
-
-    if (variationIds.length > 0) {
-      const { data, error } = await supabase
-        .from("product_variations")
-        .select("id, size, color, color_hex, price, compare_at_price, stock_quantity, sku, image_url")
-        .in("id", variationIds);
-
-      if (error) {
-        setError(error.message);
-      } else {
-        freshById = new Map((data ?? []).map((v: any) => [v.id, v]));
-      }
-    }
-
-    const display: DisplayCartItem[] = localItems
-      .filter((item) => visibleProductIds.has(item.productId))
-      .map((item) => {
-      const fresh = item.variationId ? freshById.get(item.variationId) : null;
+    const display: DisplayCartItem[] = guest.cart.map((item) => {
+      const dbProduct = productsMap.get(item.productId);
+      const dbVar = item.variationId ? variationsMap.get(item.variationId) : null;
       return {
-        key: `${item.productId}-${item.variationId ?? "default"}`,
+        key: `${item.productId}-${item.variationId ?? "none"}`,
         productId: item.productId,
-        variationId: item.variationId ?? null,
+        variationId: item.variationId,
         quantity: item.quantity,
-        name: item.name,
-        image: fresh?.image_url ?? item.image ?? null,
-        color: fresh?.color ?? item.color ?? null,
-        size: fresh?.size ?? item.size ?? null,
-        sku: fresh?.sku ?? null,
-        price: fresh?.price != null ? Number(fresh.price) : item.price,
-        stockQuantity: fresh?.stock_quantity ?? null,
+        name: dbProduct?.name ?? item.name,
+        image: dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null,
+        color: dbVar?.color ?? item.color ?? null,
+        size: dbVar?.size ?? item.size ?? null,
+        sku: dbVar?.sku ?? dbProduct?.sku ?? null,
+        price: Number(dbVar?.price ?? item.price),
+        stockQuantity: dbVar?.stock_quantity ?? null,
       };
     });
 
     setGuestDisplayItems(display);
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guest.cart, supabase]);
 
   useEffect(() => {
@@ -222,8 +177,6 @@ export default function CartPage() {
     }
   }, [authLoading, user, loadCart, loadGuestCart]);
 
-  // Once login succeeds while the modal was opened for checkout, close it
-  // and go straight to /checkout instead of leaving the user on /cart.
   useEffect(() => {
     if (user && redirectToCheckoutRef.current) {
       redirectToCheckoutRef.current = false;
@@ -273,7 +226,7 @@ export default function CartPage() {
         await loadCart();
         await refreshCart();
       } else {
-        guest.updateQuantity(item.productId, item.variationId, next); // ← was guest.updateCartQuantity
+        guest.updateQuantity(item.productId, item.variationId, next);
         await loadGuestCart();
       }
     } catch (err: any) {
@@ -317,36 +270,78 @@ export default function CartPage() {
   const hasOutOfStockItem = displayItems.some((item) => (item.stockQuantity ?? 1) <= 0);
 
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pt-24 md:pt-32 pb-16 px-6 lg:px-16">
-      <div className="max-w-[1000px] mx-auto">
-        <h1
-          className="text-2xl md:text-3xl uppercase tracking-[0.15em] mb-10"
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Banner Header */}
+      <div className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-12 sm:py-16 mb-8 sm:mb-12 text-white">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full blur-[140px] bg-[#D4AF37]/12" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
 
-        >
-          Your Cart
-        </h1>
+        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            <span>The Label 18 • Shopping Bag</span>
+          </div>
 
+          <h1 className="mb-2">
+            <span className="block font-outfit text-base sm:text-xl md:text-2xl font-light tracking-[0.18em] uppercase text-white/80">
+              Your Curated Bag
+            </span>
+            <span className="block font-outfit text-2xl sm:text-4xl md:text-5xl font-bold tracking-[0.08em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_15px_rgba(212,175,55,0.35)] mt-1">
+              Shopping Cart
+            </span>
+          </h1>
+
+          <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
+
+          <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
+            Complimentary Express Delivery on All Exclusive Orders
+          </p>
+
+          <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/70 text-[10px] font-mono tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span>{displayItems.length} {displayItems.length === 1 ? "PIECE" : "PIECES"} IN CART</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Cart Area */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">
         {error && (
-          <p className="text-[12px] font-outfit text-red-600/90 mb-6">{error}</p>
+          <p className="text-xs font-outfit text-red-600/90 mb-6 text-center">{error}</p>
         )}
 
         {authLoading || loading ? (
-          <p className="text-sm text-[#1A1A1A]/50 font-outfit font-light">Loading cart...</p>
+          <div className="py-20 text-center">
+            <div className="w-6 h-6 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs text-[#1A1A1A]/60 font-outfit uppercase tracking-widest">Loading cart...</p>
+          </div>
         ) : displayItems.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-sm text-[#1A1A1A]/60 font-outfit font-light mb-6">
-              Your cart is empty.
+          <div className="text-center py-20 px-6 max-w-md mx-auto rounded-2xl bg-white border border-[#D4AF37]/35 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mx-auto mb-4 text-[#D4AF37]">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <p className="font-outfit text-sm text-[#1A1A1A]/70 mb-6">
+              Your shopping bag is currently empty. Discover our new arrivals and curated collections.
             </p>
             <Link
               href="/shop"
-              className="inline-block px-8 py-3 rounded bg-[#1A1A1A] text-[#F8F6F0] text-[11px] tracking-[0.3em] uppercase font-outfit font-medium hover:bg-[#9c7d23] transition-all"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-semibold text-xs tracking-[0.15em] uppercase shadow hover:shadow-md transition-all active:scale-95"
             >
-              Continue Shopping
+              <span>Explore The Edit</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            {/* Items */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            {/* Items Column */}
             <div className="lg:col-span-8 space-y-4">
               {displayItems.map((item) => {
                 const isPending = pendingIds.has(item.key);
@@ -355,13 +350,13 @@ export default function CartPage() {
                 return (
                   <div
                     key={item.key}
-                    className="flex gap-4 bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 rounded-lg p-4 md:p-5"
+                    className="flex gap-4 sm:gap-5 bg-white border border-[#D4AF37]/35 rounded-2xl p-4 sm:p-5 shadow-sm transition-all hover:border-[#D4AF37]/60"
                   >
-                    <div className="relative w-20 h-24 md:w-24 md:h-28 flex-shrink-0 rounded overflow-hidden bg-white border border-[#1A1A1A]/10">
+                    <div className="relative w-20 h-24 sm:w-24 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-[#F8F6F0] border border-neutral-100">
                       {item.image ? (
                         <Image src={item.image} alt={item.name} fill className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[9px] uppercase tracking-widest text-[#1A1A1A]/30">
+                        <div className="w-full h-full flex items-center justify-center text-[9px] uppercase tracking-widest text-neutral-400">
                           No Image
                         </div>
                       )}
@@ -369,99 +364,119 @@ export default function CartPage() {
 
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
-                        <Link
-                          href={`/product/${item.productId}`}
-                          className="text-sm md:text-base font-outfit font-medium uppercase tracking-wide hover:text-[#9c7d23] transition-colors line-clamp-2"
-                        >
-                          {item.name}
-                        </Link>
-                        <p className="text-[11px] text-[#1A1A1A]/50 font-outfit font-light mt-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/product/${item.productId}`}
+                            className="text-xs sm:text-sm md:text-base font-outfit font-medium uppercase tracking-wide text-[#1A1A1A] hover:text-[#9c7d23] transition-colors line-clamp-1"
+                          >
+                            {item.name}
+                          </Link>
+                          <button
+                            onClick={() => handleRemove(item)}
+                            disabled={isPending}
+                            className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/40 hover:text-red-600 transition-colors disabled:opacity-40"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <p className="text-[10px] sm:text-[11px] text-[#1A1A1A]/50 font-outfit tracking-wide mt-0.5">
                           {[item.color, item.size].filter(Boolean).join(" / ") || item.sku}
                         </p>
                         {outOfStock && (
-                          <p className="text-[10px] uppercase tracking-widest text-red-600/80 font-outfit font-medium mt-1">
+                          <p className="text-[9px] uppercase tracking-widest text-red-600 font-outfit font-semibold mt-1">
                             Out of stock
                           </p>
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center border border-[#1A1A1A]/20 rounded">
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-neutral-100">
+                        {/* Quantity Pill */}
+                        <div className="flex items-center border border-[#D4AF37]/40 rounded-full bg-[#F8F6F0]/60 overflow-hidden">
                           <button
                             onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             disabled={isPending || item.quantity <= 1}
-                            className="w-8 h-8 flex items-center justify-center text-[#1A1A1A]/70 hover:text-[#9c7d23] disabled:opacity-40"
+                            className="w-7 h-7 flex items-center justify-center text-[#1A1A1A]/70 hover:text-[#9c7d23] disabled:opacity-30 transition-colors"
                           >
                             −
                           </button>
-                          <span className="w-8 text-center text-sm font-outfit">{item.quantity}</span>
+                          <span className="w-7 text-center text-xs font-outfit font-semibold">{item.quantity}</span>
                           <button
                             onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             disabled={isPending}
-                            className="w-8 h-8 flex items-center justify-center text-[#1A1A1A]/70 hover:text-[#9c7d23] disabled:opacity-40"
+                            className="w-7 h-7 flex items-center justify-center text-[#1A1A1A]/70 hover:text-[#9c7d23] disabled:opacity-30 transition-colors"
                           >
                             +
                           </button>
                         </div>
 
-                        <p
-                          className="text-base font-outfit font-medium text-[#9c7d23]"
-
-                        >
+                        <p className="text-sm sm:text-base font-outfit font-bold text-[#9c7d23]">
                           ₹{(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
-
-                      <button
-                        onClick={() => handleRemove(item)}
-                        disabled={isPending}
-                        className="self-start mt-2 text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 hover:text-red-600/80 font-outfit transition-colors disabled:opacity-40"
-                      >
-                        Remove
-                      </button>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Summary */}
+            {/* Order Summary Column */}
             <div className="lg:col-span-4">
-              <div className="bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 rounded-lg p-6 sticky top-28">
-                <h2
-                  className="text-[11px] tracking-[0.3em] uppercase font-outfit font-medium text-[#9c7d23] mb-5"
-
-                >
-                  Order Summary
-                </h2>
-                <div className="flex justify-between text-sm font-outfit font-light mb-2">
-                  <span className="text-[#1A1A1A]/60">Subtotal</span>
-                  <span className="font-bold text-red-600">₹{subtotal.toLocaleString()}</span>
+              <div className="bg-white border border-[#D4AF37]/40 rounded-2xl p-5 sm:p-6 shadow-sm sticky top-28 space-y-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <h2 className="text-xs uppercase tracking-[0.2em] font-outfit font-semibold text-[#1A1A1A]">
+                    Order Summary
+                  </h2>
                 </div>
-                <p className="text-[10px] text-[#1A1A1A]/40 font-outfit font-light mb-5">
-                  Shipping and taxes calculated at checkout.
-                </p>
+
+                <div className="space-y-2 text-xs sm:text-sm font-outfit font-light">
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-[#1A1A1A]">₹{subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Express Shipping</span>
+                    <span className="text-[#9c7d23] font-medium uppercase tracking-wider text-[11px]">Complimentary</span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-neutral-100 flex justify-between items-baseline font-outfit">
+                  <span className="text-xs tracking-widest uppercase font-medium text-[#1A1A1A]">Total</span>
+                  <span className="text-xl sm:text-2xl font-bold text-[#9c7d23]">₹{subtotal.toLocaleString()}</span>
+                </div>
 
                 {hasOutOfStockItem && (
-                  <p className="text-[11px] text-red-600/90 font-outfit mb-3">
-                    Remove out-of-stock items before checking out.
+                  <p className="text-[11px] text-red-600 font-outfit font-medium">
+                    Remove out-of-stock items before checkout.
                   </p>
                 )}
 
                 {!user && (
-                  <p className="text-[11px] text-[#1A1A1A]/50 font-outfit mb-3">
-                    You&apos;ll need to sign in to check out.
+                  <p className="text-[10px] text-[#1A1A1A]/60 font-outfit">
+                    You will be prompted to sign in to secure your order.
                   </p>
                 )}
 
                 <button
                   onClick={handleCheckout}
                   disabled={hasOutOfStockItem}
-                  className="w-full py-4 rounded bg-[#1A1A1A] text-[#F8F6F0] text-[11px] tracking-[0.3em] uppercase font-outfit font-medium hover:bg-[#9c7d23] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black font-bold text-xs tracking-[0.15em] uppercase shadow-[0_4px_20px_rgba(212,175,55,0.4)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.6)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {user ? "Checkout" : "Login to Checkout"}
+                  <span>{user ? "Proceed To Checkout" : "Sign In To Checkout"}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
+
+                {/* Trust Badges */}
+                <div className="pt-4 border-t border-neutral-100 grid grid-cols-2 gap-2 text-[10px] text-[#1A1A1A]/60 font-outfit">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Hallmarked Purity</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Insured Delivery</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

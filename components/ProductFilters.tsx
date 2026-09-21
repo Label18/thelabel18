@@ -103,14 +103,15 @@ export default function ProductFilters({
   }
 
   const inputClass =
-    "bg-white/90 border border-[#D4AF37]/40 rounded-full px-4 py-2.5 text-[#1A1A1A] text-[11px] font-outfit font-medium tracking-[0.08em] uppercase placeholder:text-[#1A1A1A]/50 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-colors cursor-pointer appearance-none shadow-sm";
+    "bg-white border border-[#D4AF37]/40 rounded-full px-3.5 py-2 text-[#1A1A1A] text-[11px] font-outfit font-medium tracking-[0.05em] uppercase placeholder:text-[#1A1A1A]/50 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all cursor-pointer appearance-none shadow-sm shrink-0";
 
   return (
-    <div className="w-full flex flex-col items-center space-y-4">
-      <div className="grid grid-cols-2 md:flex md:flex-wrap items-center md:justify-center gap-3 md:gap-4 w-full">
+    <div className="w-full">
+      {/* Single Row Container with Horizontal Scroll Support */}
+      <div className="flex items-center justify-start lg:justify-center gap-2 sm:gap-3 w-full overflow-x-auto flex-nowrap scrollbar-none py-1">
 
         {/* Search */}
-        <div className="relative shrink-0 col-span-2 md:col-span-1 w-full md:w-auto">
+        <div className="relative shrink-0 w-36 sm:w-48">
           <input
             value={searchVal}
             onChange={(e) => {
@@ -118,9 +119,16 @@ export default function ProductFilters({
               updateParams({ q: e.target.value || null });
             }}
             placeholder="Search..."
-            className={`${inputClass} w-full md:w-52 pl-11`}
+            className={`${inputClass} w-full pl-9`}
           />
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37]">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
         </div>
@@ -130,7 +138,7 @@ export default function ProductFilters({
           <select
             value={categoryId}
             onChange={(e) => updateParams({ category: e.target.value || null, sub: null, subsub: null })}
-            className={`${inputClass} w-full md:w-52 shrink-0 col-span-1 md:col-span-auto`}
+            className={`${inputClass} w-36 sm:w-44`}
           >
             <option value="">All Categories</option>
             {categories.map(c => (
@@ -144,7 +152,7 @@ export default function ProductFilters({
           <select
             value={subCategoryId}
             onChange={(e) => updateParams({ sub: e.target.value || null, subsub: null })}
-            className={`${inputClass} w-full md:w-52 shrink-0 col-span-1 md:col-span-auto`}
+            className={`${inputClass} w-36 sm:w-44`}
           >
             <option value="">All Sub-categories</option>
             {categories.find(c => c.id === categoryId)?.sub_categories.map((sub: any) => (
@@ -158,7 +166,7 @@ export default function ProductFilters({
           <select
             value={subSubCategoryId}
             onChange={(e) => updateParams({ subsub: e.target.value || null })}
-            className={`${inputClass} w-full md:w-52 shrink-0 col-span-1 md:col-span-auto`}
+            className={`${inputClass} w-36 sm:w-44`}
           >
             <option value="">All Deep Categories</option>
             {categories
@@ -171,7 +179,7 @@ export default function ProductFilters({
         )}
 
         {/* Price Range */}
-        <div className="flex items-center gap-2 shrink-0 col-span-2 md:col-span-1 w-full md:w-auto">
+        <div className="flex items-center gap-1.5 shrink-0">
           <input
             type="number"
             value={minVal}
@@ -180,9 +188,9 @@ export default function ProductFilters({
               updateParams({ min: e.target.value || null });
             }}
             placeholder="Min ₹"
-            className={`${inputClass} w-full md:w-28 text-center px-3`}
+            className={`${inputClass} w-20 sm:w-24 text-center px-2`}
           />
-          <span className="text-[#D4AF37]/60">-</span>
+          <span className="text-[#D4AF37] font-semibold text-xs">-</span>
           <input
             type="number"
             value={maxVal}
@@ -191,7 +199,7 @@ export default function ProductFilters({
               updateParams({ max: e.target.value || null });
             }}
             placeholder="Max ₹"
-            className={`${inputClass} w-full md:w-28 text-center px-3`}
+            className={`${inputClass} w-20 sm:w-24 text-center px-2`}
           />
         </div>
 
@@ -199,7 +207,7 @@ export default function ProductFilters({
         <select
           value={sort}
           onChange={(e) => updateParams({ sort: e.target.value })}
-          className={`${inputClass} w-full md:w-56 shrink-0 col-span-2 md:col-span-1`}
+          className={`${inputClass} w-36 sm:w-44`}
         >
           <option value="newest">Sort: Newest</option>
           <option value="price_asc">Price: Low to High</option>
@@ -212,12 +220,12 @@ export default function ProductFilters({
           <button
             type="button"
             onClick={clearAllFilters}
-            className="shrink-0 col-span-2 md:col-span-1 mx-auto inline-flex items-center justify-center gap-1.5 text-[#9c7d23] hover:text-[#1A1A1A] text-[11px] font-outfit font-medium tracking-[0.1em] uppercase transition-all px-3 py-2 w-full md:w-auto"
+            className="shrink-0 inline-flex items-center gap-1 text-[#9c7d23] hover:text-[#1A1A1A] text-[11px] font-outfit font-medium tracking-[0.08em] uppercase transition-all px-2.5 py-2 whitespace-nowrap"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
-            Clear All
+            Clear
           </button>
         )}
 

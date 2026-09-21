@@ -85,11 +85,13 @@ async function getDashboardData(): Promise<DashboardData> {
       supabase
         .from('orders')
         .select('id, total, status, ship_full_name, created_at, order_items(id)')
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false })
+        .limit(100),
       supabase
         .from('pos_orders')
         .select('id, order_number, total, status, cashier_name, payment_method, created_at, pos_order_items(id)')
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false })
+        .limit(100),
       supabase
         .from('products')
         .select('id', { count: 'exact', head: true }),

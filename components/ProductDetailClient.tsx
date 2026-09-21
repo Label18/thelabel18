@@ -6,6 +6,8 @@ import ProductVariantSelector from "@/components/ProductVariantSelector";
 import { Product, ProductVariation } from "@/lib/supabase/products";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { Sparkles, CheckCircle2, Shield, Award, Scissors } from "lucide-react";
+
 export default function ProductDetailClient({ product, initialColor }: { product: Product, initialColor?: string | null }) {
   const { openLoginModal } = useAuth();
 
@@ -83,38 +85,38 @@ export default function ProductDetailClient({ product, initialColor }: { product
   const currentImage = images[activeImageIndex]?.src || product.image_url;
 
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] py-12 px-6 lg:px-16 selection:bg-[#d4af37]/30 selection:text-[#1A1A1A]">
-      <div className="max-w-[1400px] mx-auto space-y-10">
+    <div className="w-full space-y-12">
+      {/* Top Section: Gallery & Variant Selector Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-        {/* Top Section: Gallery & Variant Selector Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-
-          {/* Left Column: Gallery & Mobile Title */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
-            
-            {/* Mobile Title & SKU (Visible only on lg and below) */}
-            <div className="block lg:hidden mb-2">
-              <p className="text-[10px] sm:text-[10.5px] tracking-[0.4em] uppercase font-outfit font-medium text-[#9c7d23] mb-2">
-                SKU: {product.sku}
-              </p>
-              <h1 className="font-normal text-2xl sm:text-3xl md:text-4xl tracking-[0.05em] uppercase text-[#1A1A1A]">
-                {product.name}
-              </h1>
+        {/* Left Column: Gallery */}
+        <div className="lg:col-span-7 flex flex-col gap-4">
+          
+          {/* Mobile Title & SKU (Visible on mobile/tablet) */}
+          <div className="block lg:hidden mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-2">
+              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              <span>SKU: {product.sku}</span>
             </div>
+            <h1 className="font-serif text-2xl sm:text-3xl tracking-wide uppercase text-[#1A1A1A] font-normal leading-tight">
+              {product.name}
+            </h1>
+          </div>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-4 items-start">
 
             {/* Small Thumbnails Column */}
             {images.length > 1 && (
-              <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] max-w-full pb-2 sm:pb-0 scrollbar-thin">
+              <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] max-w-full pb-2 sm:pb-0 scrollbar-thin">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleThumbnailClick(idx)}
-                    className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded overflow-hidden border transition-all ${activeImageIndex === idx
-                      ? "border-[#9c7d23] ring-2 ring-[#9c7d23]/30 opacity-100"
-                      : "border-[#1A1A1A]/15 opacity-60 hover:opacity-100"
-                      }`}
+                    className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-300 ${
+                      activeImageIndex === idx
+                        ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/50 shadow-md scale-[1.02]"
+                        : "border-[#D4AF37]/25 opacity-65 hover:opacity-100 hover:border-[#D4AF37]/60"
+                    }`}
                   >
                     <Image
                       src={img.src}
@@ -128,15 +130,21 @@ export default function ProductDetailClient({ product, initialColor }: { product
             )}
 
             {/* Main Big Image Container */}
-            <div className="relative flex-1 aspect-[4/5] max-h-[520px] w-full rounded-lg overflow-hidden bg-white border border-[#1A1A1A]/10 shadow-sm">
+            <div className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group">
+              {/* Luxury Hallmark Overlay Badge */}
+              <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md">
+                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                <span>Pure Mulberry Silk</span>
+              </div>
+
               {currentImage ? (
                 <Image
                   src={currentImage}
                   alt={product.name}
                   fill
                   priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover transition-all duration-500 ease-out"
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#1A1A1A]/40 text-xs uppercase tracking-[0.3em]">
@@ -147,71 +155,98 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
           </div>
 
-          </div>
-
-          {/* Right Column: Title & Selector */}
-          <div className="lg:col-span-5 bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 p-6 sm:p-8 md:p-10 rounded-lg shadow-sm">
-            
-            {/* Desktop Title & SKU (Hidden on lg and below) */}
-            <div className="hidden lg:block">
-              <p className="text-[10.5px] tracking-[0.4em] uppercase font-outfit font-medium text-[#9c7d23] mb-2">
-                SKU: {product.sku}
-              </p>
-              <h1 className="font-normal text-3xl md:text-4xl tracking-[0.05em] uppercase text-[#1A1A1A] mb-6">
-                {product.name}
-              </h1>
-            </div>
-
-            {hasNoVariations ? (
-              <p className="text-xs tracking-[0.2em] uppercase font-outfit font-light text-[#1A1A1A]/50 py-4">
-                This product has no purchasable options yet.
-              </p>
-            ) : (
-              <ProductVariantSelector
-                productId={product.id}
-                productName={product.name}
-                productImage={product.image_url}
-                variations={variations}
-                selectedColorProp={selectedColor}
-                onColorChange={handleColorChange}
-                onVariantChange={handleVariantChange}
-                onRequireLogin={openLoginModal}
-              />
-            )}
-          </div>
-
         </div>
 
-        {/* Bottom Section: Description & Active Reference Boxes Sitting Below the Image */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-17 space-y-6">
-
-            {/* Description Box */}
-            {product.description && (
-              <div className="bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 p-6 md:p-8 rounded-lg shadow-sm">
-                <h2 className="text-[11px] tracking-[0.3em] uppercase font-outfit font-medium text-[#9c7d23] mb-3">
-                  Description
-                </h2>
-                <p className="text-[#1A1A1A]/80 font-outfit font-light text-sm leading-[1.9] tracking-wide whitespace-pre-line">
-                  {product.description}
-                </p>
-              </div>
-            )}
-
-            {/* Active Reference Box */}
-            <div className="bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 p-6 md:p-8 rounded-lg shadow-sm flex justify-between items-center">
-              <span className="text-[10px] tracking-[0.3em] uppercase font-outfit font-medium text-[#1A1A1A]/50">
-                Active Reference
-              </span>
-              <span className="text-[11px] tracking-[0.2em] uppercase font-outfit font-medium text-[#9c7d23]">
-                {(activeVariation as any)?.sku || product.sku}
-              </span>
+        {/* Right Column: Title & Selector Card */}
+        <div className="lg:col-span-5 bg-white border border-[#D4AF37]/35 p-6 sm:p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgba(212,175,55,0.12)] transition-all">
+          
+          {/* Desktop Title & SKU (Hidden on mobile/tablet) */}
+          <div className="hidden lg:block mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-3">
+              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              <span>SKU: {product.sku}</span>
             </div>
-
+            <h1 className="font-serif text-3xl md:text-4xl tracking-wide uppercase text-[#1A1A1A] font-normal leading-tight">
+              {product.name}
+            </h1>
           </div>
+
+          {hasNoVariations ? (
+            <p className="text-xs tracking-[0.2em] uppercase font-outfit font-light text-[#1A1A1A]/50 py-4">
+              This product has no purchasable options currently.
+            </p>
+          ) : (
+            <ProductVariantSelector
+              productId={product.id}
+              productName={product.name}
+              productImage={product.image_url}
+              variations={variations}
+              selectedColorProp={selectedColor}
+              onColorChange={handleColorChange}
+              onVariantChange={handleVariantChange}
+              onRequireLogin={openLoginModal}
+            />
+          )}
         </div>
 
       </div>
-    </main>
+
+      {/* Bottom Section: Description & Craftsmanship Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Description Box */}
+        {product.description && (
+          <div className="lg:col-span-8 bg-white border border-[#D4AF37]/35 p-6 sm:p-8 md:p-10 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#D4AF37]/25">
+              <Sparkles className="w-4 h-4 text-[#9c7d23]" />
+              <h2 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
+                Atelier Narrative &amp; Craftsmanship
+              </h2>
+            </div>
+            <p className="text-[#1A1A1A]/85 font-outfit font-light text-sm sm:text-[15px] leading-[2.1] tracking-wide whitespace-pre-line">
+              {product.description}
+            </p>
+          </div>
+        )}
+
+        {/* Heritage Specs & Reference Box */}
+        <div className={`space-y-6 ${product.description ? "lg:col-span-4" : "lg:col-span-12"}`}>
+          <div className="bg-white border border-[#D4AF37]/35 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#D4AF37]/25">
+              <Award className="w-4 h-4 text-[#9c7d23]" />
+              <h3 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
+                Heritage Assurance
+              </h3>
+            </div>
+            <ul className="space-y-3 text-xs font-outfit text-[#1A1A1A]/80">
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
+                <span>100% Pure Mulberry Silk Mark</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
+                <span>Authentic Handloom Gold Zari Checks</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
+                <span>Handcrafted by Master Artisans</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
+                <span>Care: Professional Dry Clean Only</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-white border border-[#D4AF37]/35 p-5 sm:p-6 rounded-2xl shadow-sm flex items-center justify-between">
+            <span className="text-[10.5px] tracking-[0.25em] uppercase font-outfit font-medium text-[#1A1A1A]/60">
+              Atelier Ref SKU
+            </span>
+            <span className="text-xs tracking-[0.2em] uppercase font-outfit font-bold text-[#9c7d23]">
+              {(activeVariation as any)?.sku || product.sku}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -145,12 +145,12 @@ export default async function ShopPage({
       </div>
 
       {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Catalog Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+      <div className="w-full max-w-[1650px] mx-auto px-2 sm:px-4 lg:px-6">
         <Breadcrumbs crumbs={crumbs} />
 
         {/* Filters Top Bar */}
-        <div className="mb-8 sm:mb-10 w-full">
-          <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-[#D4AF37]/35 p-4 sm:p-5 shadow-[0_4px_25px_rgba(0,0,0,0.04)]">
+        <div className="mb-6 sm:mb-8 w-full">
+          <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-[#D4AF37]/35 p-2 sm:p-3 shadow-[0_4px_25px_rgba(0,0,0,0.04)]">
             <ProductFilters categories={categories} />
           </div>
         </div>
@@ -170,7 +170,7 @@ export default async function ShopPage({
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {items.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

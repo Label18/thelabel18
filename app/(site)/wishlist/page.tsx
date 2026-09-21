@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
+import { Sparkles, ArrowRight, Heart } from "lucide-react";
 
 type WishlistRow = {
   id: string;
@@ -45,7 +46,6 @@ export default function WishlistPage() {
   const {
     user,
     loading: authLoading,
-    toggleWishlist,
     addToCart,
     refreshWishlist,
     refreshCart,
@@ -98,103 +98,62 @@ export default function WishlistPage() {
       const validData = (data ?? []).filter((item) => {
         const p = item.products as any;
         if (!p || p.is_visible === false) return false;
-        if (!isVis(p.category || p.categories, p.category_id)) return false;
-        if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
-        if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+        if (!isVis(p.category, p.category_id)) return false;
+        if (!isVis(p.sub_category, p.sub_category_id)) return false;
+        if (!isVis(p.sub_sub_category, p.sub_sub_category_id)) return false;
         return true;
       });
+
       setRows(validData as unknown as WishlistRow[]);
     }
     setLoading(false);
   }, [user, supabase]);
 
-  // Guests: merge cached localStorage entries with fresh price/stock from
-  // Supabase so displayed data is never stale.
   const loadGuestWishlist = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    const localItems = guest.wishlist ?? [];
-    if (localItems.length === 0) {
+    if (guest.wishlist.length === 0) {
       setGuestDisplayItems([]);
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
 
-    const variationIds = [
-      ...new Set(localItems.map((i) => i.variationId).filter(Boolean)),
-    ] as string[];
+    const productIds = [...new Set(guest.wishlist.map((i) => i.productId))];
+    const variationIds = guest.wishlist
+      .map((i) => i.variationId)
+      .filter((id): id is string => !!id);
 
-    let freshById = new Map<string, any>();
-    const productIds = [...new Set(localItems.map((i) => i.productId))];
-    const visibleProductIds = new Set<string>();
+    const [{ data: productsData }, { data: variationsData }] = await Promise.all([
+      supabase.from("products").select("id, name, image_url").in("id", productIds),
+      variationIds.length > 0
+        ? supabase
+            .from("product_variations")
+            .select("id, price, color, size, stock_quantity, image_url")
+            .in("id", variationIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-    if (productIds.length > 0) {
-      const { data } = await supabase
-        .from("products")
-        .select(`
-          id, is_visible,
-          category_id, sub_category_id, sub_sub_category_id,
-          category:categories(is_visible),
-          sub_category:sub_categories(is_visible),
-          sub_sub_category:sub_sub_categories(is_visible)
-        `)
-        .in("id", productIds);
+    const productsMap = new Map((productsData ?? []).map((p) => [p.id, p]));
+    const variationsMap = new Map((variationsData ?? []).map((v) => [v.id, v]));
 
-      if (data) {
-        const isVis = (cat: any, id: string | null) => {
-          if (id && !cat) return false;
-          if (!cat) return true;
-          if (Array.isArray(cat)) return cat.length > 0 ? cat[0].is_visible !== false : true;
-          return cat.is_visible !== false;
-        };
-
-        data.forEach((p: any) => {
-          if (
-            p.is_visible !== false &&
-            isVis(p.category || p.categories, p.category_id) &&
-            isVis(p.sub_category || p.sub_categories, p.sub_category_id) &&
-            isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)
-          ) {
-            visibleProductIds.add(p.id);
-          }
-        });
-      }
-    }
-
-    if (variationIds.length > 0) {
-      const { data, error } = await supabase
-        .from("product_variations")
-        .select("id, price, compare_at_price, stock_quantity, color, size, image_url")
-        .in("id", variationIds);
-
-      if (error) {
-        setError(error.message);
-      } else {
-        freshById = new Map((data ?? []).map((v: any) => [v.id, v]));
-      }
-    }
-
-    const display: DisplayWishlistItem[] = localItems
-      .filter((item) => visibleProductIds.has(item.productId))
-      .map((item) => {
-      const fresh = item.variationId ? freshById.get(item.variationId) : null;
+    const display: DisplayWishlistItem[] = guest.wishlist.map((item) => {
+      const dbProduct = productsMap.get(item.productId);
+      const dbVar = item.variationId ? variationsMap.get(item.variationId) : null;
       return {
-        key: `${item.productId}-${item.variationId ?? "default"}`,
+        key: `${item.productId}-${item.variationId ?? "none"}`,
         productId: item.productId,
-        variationId: item.variationId ?? null,
-        name: item.name,
-        image: fresh?.image_url ?? item.image ?? null,
-        color: fresh?.color ?? null,
-        size: fresh?.size ?? null,
-        price: fresh?.price != null ? Number(fresh.price) : item.price,
-        stockQuantity: fresh?.stock_quantity ?? null,
+        variationId: item.variationId,
+        name: dbProduct?.name ?? item.name ?? "Product",
+        image: dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null,
+        color: dbVar?.color ?? item.color ?? null,
+        size: dbVar?.size ?? item.size ?? null,
+        price: dbVar?.price != null ? Number(dbVar.price) : item.price ?? null,
+        stockQuantity: dbVar?.stock_quantity ?? null,
       };
     });
 
     setGuestDisplayItems(display);
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guest.wishlist, supabase]);
 
   useEffect(() => {
@@ -259,7 +218,7 @@ export default function WishlistPage() {
   }
 
   async function handleMoveToCart(item: DisplayWishlistItem) {
-    if (!item.variationId) return; // no specific variation saved — send them to the product page instead
+    if (!item.variationId) return;
     setPending(item.key, true);
     try {
       if (user) {
@@ -291,35 +250,77 @@ export default function WishlistPage() {
   }
 
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pt-24 md:pt-32 pb-16 px-6 lg:px-16">
-      <div className="max-w-[1400px] mx-auto">
-        <h1
-          className="text-2xl md:text-3xl uppercase tracking-[0.15em] mb-10"
-         
-        >
-          Your Wishlist
-        </h1>
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Banner Header */}
+      <div className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-12 sm:py-16 mb-8 sm:mb-12 text-white">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full blur-[140px] bg-[#D4AF37]/12" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
 
+        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            <span>The Label 18 • Private Edit</span>
+          </div>
+
+          <h1 className="mb-2">
+            <span className="block font-outfit text-base sm:text-xl md:text-2xl font-light tracking-[0.18em] uppercase text-white/80">
+              Curated Favorites
+            </span>
+            <span className="block font-outfit text-2xl sm:text-4xl md:text-5xl font-bold tracking-[0.08em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_15px_rgba(212,175,55,0.35)] mt-1">
+              Your Wishlist
+            </span>
+          </h1>
+
+          <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
+
+          <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
+            Saved Heirloom Pieces &amp; Bespoke Silks Awaiting You
+          </p>
+
+          <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/70 text-[10px] font-mono tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span>{displayItems.length} {displayItems.length === 1 ? "PIECE" : "PIECES"} SAVED</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Items Area */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
         {error && (
-          <p className="text-[12px] font-outfit text-red-600/90 mb-6">{error}</p>
+          <p className="text-xs font-outfit text-red-600/90 mb-6 text-center">{error}</p>
         )}
 
         {authLoading || loading ? (
-          <p className="text-sm text-[#1A1A1A]/50 font-outfit font-light">Loading wishlist...</p>
+          <div className="py-20 text-center">
+            <div className="w-6 h-6 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs text-[#1A1A1A]/60 font-outfit uppercase tracking-widest">Loading wishlist...</p>
+          </div>
         ) : displayItems.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-sm text-[#1A1A1A]/60 font-outfit font-light mb-6">
-              Your wishlist is empty.
+          <div className="text-center py-20 px-6 max-w-md mx-auto rounded-2xl bg-white border border-[#D4AF37]/35 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mx-auto mb-4 text-[#D4AF37]">
+              <Heart className="w-5 h-5" />
+            </div>
+            <p className="font-outfit text-sm text-[#1A1A1A]/70 mb-6">
+              Your wishlist is currently empty. Explore our curated collections to add your favorites.
             </p>
             <Link
               href="/shop"
-              className="inline-block px-8 py-3 rounded bg-[#1A1A1A] text-[#F8F6F0] text-[11px] tracking-[0.3em] uppercase font-outfit font-medium hover:bg-[#9c7d23] transition-all"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-semibold text-xs tracking-[0.15em] uppercase shadow hover:shadow-md transition-all active:scale-95"
             >
-              Continue Shopping
+              <span>Explore The Edit</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {displayItems.map((item) => {
               const isPending = pendingIds.has(item.key);
               const outOfStock = item.stockQuantity != null ? item.stockQuantity <= 0 : false;
@@ -328,19 +329,19 @@ export default function WishlistPage() {
               return (
                 <div
                   key={item.key}
-                  className="bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 rounded-lg overflow-hidden group"
+                  className="group flex flex-col rounded-2xl border border-[#D4AF37]/35 bg-white hover:border-[#D4AF37] hover:shadow-xl hover:shadow-[#D4AF37]/5 transition-all duration-500 overflow-hidden"
                 >
-                  <Link href={`/product/${item.productId}`} className="relative block aspect-[4/5] bg-white">
+                  <Link href={`/product/${item.productId}`} className="relative aspect-[4/5] bg-[#F8F6F0] overflow-hidden block w-full">
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] uppercase tracking-widest text-[#1A1A1A]/30">
+                      <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs uppercase tracking-widest font-light">
                         No Image
                       </div>
                     )}
@@ -351,57 +352,56 @@ export default function WishlistPage() {
                       }}
                       disabled={isPending}
                       title="Remove from wishlist"
-                      className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-[#1A1A1A]/60 hover:text-red-600 shadow-sm disabled:opacity-40"
+                      className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-[#1A1A1A]/10 text-[#1A1A1A]/60 hover:text-red-600 hover:border-red-200 shadow-sm transition-all active:scale-90"
                     >
                       ✕
                     </button>
                   </Link>
 
-                  <div className="p-4">
+                  <div className="p-4 flex flex-col flex-1">
                     <Link
                       href={`/product/${item.productId}`}
-                      className="block text-sm font-outfit font-medium uppercase tracking-wide hover:text-[#9c7d23] transition-colors line-clamp-2"
+                      className="font-outfit font-medium text-xs sm:text-[13px] tracking-wide text-[#1A1A1A] line-clamp-1 uppercase hover:text-[#9c7d23] transition-colors"
                     >
                       {item.name}
                     </Link>
 
                     {(item.color || item.size) && (
-                      <p className="text-[11px] text-[#1A1A1A]/50 font-outfit font-light mt-1">
+                      <p className="text-[10px] text-[#1A1A1A]/50 font-outfit uppercase tracking-wider mt-0.5">
                         {[item.color, item.size].filter(Boolean).join(" / ")}
                       </p>
                     )}
 
                     {item.price !== null && (
-                      <p
-                        className="text-base font-outfit font-medium text-[#9c7d23] mt-2"
-                       
-                      >
+                      <p className="font-outfit font-bold text-sm text-[#9c7d23] mt-1.5">
                         ₹{item.price.toLocaleString()}
                       </p>
                     )}
 
                     {outOfStock && (
-                      <p className="text-[10px] uppercase tracking-widest text-red-600/80 font-outfit font-medium mt-1">
+                      <p className="text-[9px] uppercase tracking-widest text-red-600 font-outfit font-semibold mt-1">
                         Out of stock
                       </p>
                     )}
 
-                    {item.variationId ? (
-                      <button
-                        onClick={() => handleMoveToCart(item)}
-                        disabled={isPending || outOfStock || moved}
-                        className="w-full mt-3 py-2.5 rounded text-[10px] tracking-[0.25em] uppercase font-outfit font-medium bg-[#1A1A1A] text-[#F8F6F0] hover:bg-[#9c7d23] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {moved ? "Added ✓" : outOfStock ? "Unavailable" : "Move to Cart"}
-                      </button>
-                    ) : (
-                      <Link
-                        href={`/product/${item.productId}`}
-                        className="block w-full mt-3 py-2.5 rounded text-[10px] tracking-[0.25em] uppercase font-outfit font-medium bg-[#1A1A1A] text-[#F8F6F0] hover:bg-[#9c7d23] transition-all text-center"
-                      >
-                        Select Options
-                      </Link>
-                    )}
+                    <div className="mt-4 pt-3 border-t border-neutral-100">
+                      {item.variationId ? (
+                        <button
+                          onClick={() => handleMoveToCart(item)}
+                          disabled={isPending || outOfStock || moved}
+                          className="w-full py-2.5 rounded-full text-[10px] tracking-[0.18em] uppercase font-outfit font-semibold bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                        >
+                          {moved ? "Added ✓" : outOfStock ? "Unavailable" : "Move to Cart"}
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/product/${item.productId}`}
+                          className="block w-full py-2.5 rounded-full text-[10px] tracking-[0.18em] uppercase font-outfit font-semibold bg-[#1A1A1A] text-white hover:bg-[#9c7d23] transition-all text-center active:scale-95"
+                        >
+                          Select Options
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

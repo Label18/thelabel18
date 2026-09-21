@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { toast } from "react-hot-toast";
 import WishlistButton from "@/components/WishlistButton";
+import { ShoppingBag, CheckCircle2, Sparkles, ShieldCheck, Truck, Clock } from "lucide-react";
 
 export default function ProductVariantSelector({
   productId,
@@ -167,38 +168,39 @@ export default function ProductVariantSelector({
     setTimeout(() => setAdded(false), 2000);
   }
 
+  const discountPercent =
+    displayComparePrice && displayPrice && displayComparePrice > displayPrice
+      ? Math.round(((displayComparePrice - displayPrice) / displayComparePrice) * 100)
+      : null;
+
   return (
     <div className="space-y-6">
       {/* Price Section */}
-      <div className="flex items-baseline gap-4 pb-2 border-b border-[#1A1A1A]/10">
+      <div className="flex flex-wrap items-baseline gap-3.5 pb-4 border-b border-[#D4AF37]/25">
         {displayPrice !== null && !isNaN(displayPrice) ? (
           <>
-            <p
-              className="font-normal text-3xl text-[#9c7d23]"
-             
-            >
+            <p className="font-serif text-3xl sm:text-4xl text-[#9c7d23] font-normal tracking-wide">
               ₹{displayPrice.toLocaleString()}
             </p>
             {displayComparePrice !== null && displayComparePrice > displayPrice && (
-              <span className="text-base text-[#1A1A1A]/40 line-through font-outfit">
+              <span className="text-base sm:text-lg text-[#1A1A1A]/40 line-through font-outfit font-light">
                 ₹{displayComparePrice.toLocaleString()}
+              </span>
+            )}
+            {discountPercent !== null && (
+              <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#9c7d23] text-[10px] tracking-widest uppercase font-bold border border-[#D4AF37]/35">
+                {discountPercent}% OFF
               </span>
             )}
           </>
         ) : priceRange ? (
-          <p
-            className="font-normal text-3xl text-[#9c7d23]"
-           
-          >
+          <p className="font-serif text-3xl sm:text-4xl text-[#9c7d23] font-normal tracking-wide">
             {priceRange.min === priceRange.max
               ? `₹${priceRange.min.toLocaleString()}`
               : `₹${priceRange.min.toLocaleString()} – ₹${priceRange.max.toLocaleString()}`}
           </p>
         ) : (
-          <p
-            className="font-normal text-3xl text-[#9c7d23]"
-           
-          >
+          <p className="font-serif text-2xl sm:text-3xl text-[#9c7d23] font-normal tracking-wide">
             Select Options
           </p>
         )}
@@ -207,27 +209,31 @@ export default function ProductVariantSelector({
       {/* Color Selector */}
       {colors.length > 0 && (
         <div>
-          <label
-            className="block text-[10.5px] tracking-[0.3em] uppercase text-[#1A1A1A]/60 font-outfit font-medium mb-3"
-           
-          >
-            Color{selectedColor ? `: ${selectedColor}` : ""}
-          </label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-[10.5px] tracking-[0.3em] uppercase text-[#1A1A1A]/70 font-outfit font-semibold">
+              Color: <span className="text-[#9c7d23] normal-case">{selectedColor || "Select Color"}</span>
+            </label>
+          </div>
           <div className="flex flex-wrap gap-3">
             {colors.map(([color, hex]) => {
               const available = isColorAvailable(color);
+              const isSelected = selectedColor === color;
               return (
                 <button
                   key={color}
                   onClick={() => handleColorSelect(color)}
                   title={color}
-                  className={`w-9 h-9 rounded-full border transition-all ${
-                    selectedColor === color
-                      ? "border-[#9c7d23] ring-2 ring-[#9c7d23]/30 scale-105"
-                      : "border-[#1A1A1A]/20 hover:border-[#1A1A1A]/60"
+                  className={`w-9 h-9 rounded-full border transition-all relative ${
+                    isSelected
+                      ? "ring-2 ring-[#D4AF37] ring-offset-2 ring-offset-white scale-110 shadow-md border-black/20"
+                      : "border-black/15 hover:scale-105 hover:border-[#D4AF37]/60"
                   } ${!available ? "opacity-35" : ""}`}
                   style={{ backgroundColor: hex ?? "#EAE5D9" }}
-                />
+                >
+                  {isSelected && (
+                    <span className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                  )}
+                </button>
               );
             })}
           </div>
@@ -237,24 +243,28 @@ export default function ProductVariantSelector({
       {/* Size Selector */}
       {sizes.length > 0 && (
         <div>
-          <label
-            className="block text-[10.5px] tracking-[0.3em] uppercase text-[#1A1A1A]/60 font-outfit font-medium mb-3"
-           
-          >
-            Size
-          </label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-[10.5px] tracking-[0.3em] uppercase text-[#1A1A1A]/70 font-outfit font-semibold">
+              Size: <span className="text-[#9c7d23] normal-case">{selectedSize || "Select Size"}</span>
+            </label>
+          </div>
           <div className="flex flex-wrap gap-2.5">
             {sizes.map((size) => {
               const available = isSizeAvailable(size);
+              const isSelected = selectedSize === size;
               return (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`min-w-[3.5rem] px-4 py-2.5 rounded border text-[11px] tracking-[0.2em] uppercase font-outfit font-light transition-all ${
-                    selectedSize === size
-                      ? "border-[#9c7d23] text-[#9c7d23] bg-[#9c7d23]/5 shadow-sm"
-                      : "border-[#1A1A1A]/20 text-[#1A1A1A]/80 hover:border-[#1A1A1A]/50 bg-white"
-                  } ${!available ? "opacity-40 line-through bg-[#1A1A1A]/5 text-[#1A1A1A]/40 border-dashed" : ""}`}
+                  className={`min-w-[3.5rem] px-4 py-2 rounded-xl text-xs tracking-wider uppercase font-outfit transition-all ${
+                    isSelected
+                      ? "border border-[#D4AF37] text-[#1A1A1A] bg-[#D4AF37]/20 font-semibold shadow-sm"
+                      : "border border-[#D4AF37]/35 text-[#1A1A1A]/80 hover:border-[#D4AF37] hover:text-[#1A1A1A] bg-white font-normal"
+                  } ${
+                    !available
+                      ? "opacity-40 line-through bg-black/[0.02] text-[#1A1A1A]/40 border-dashed border-[#1A1A1A]/20 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
                   {size}
                 </button>
@@ -264,43 +274,64 @@ export default function ProductVariantSelector({
         </div>
       )}
 
-      {/* Stock Status */}
-      <p
-        className="text-[10px] tracking-[0.25em] uppercase font-outfit font-medium text-[#1A1A1A]/60"
-       
-      >
-        {activeVariation
-          ? inStock
-            ? activeVariation.stock_quantity <= 5
-              ? `Only ${activeVariation.stock_quantity} left in stock`
-              : "In Stock & Ready"
-            : "Out of Stock"
-          : "Combination unavailable"}
-      </p>
+      {/* Stock Status Indicator */}
+      <div className="flex items-center gap-2 text-[10.5px] tracking-[0.2em] uppercase font-outfit font-medium">
+        {activeVariation ? (
+          inStock ? (
+            activeVariation.stock_quantity <= 5 ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-amber-700">
+                  Only {activeVariation.stock_quantity} left in private atelier
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-emerald-700">In Stock • Ready to Dispatch</span>
+              </>
+            )
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="text-rose-700">Currently Sold Out</span>
+            </>
+          )
+        ) : (
+          <span className="text-[#1A1A1A]/50">Please select an option</span>
+        )}
+      </div>
 
       {cartError && (
         <p className="text-[11px] font-outfit text-red-600/90 tracking-wide">{cartError}</p>
       )}
 
-      {/* Add to Cart + Wishlist */}
-      <div className="flex gap-3">
+      {/* Add to Cart + Wishlist Action Bar */}
+      <div className="flex gap-3 pt-2">
         <button
           onClick={handleAddToCart}
           disabled={!activeVariation || !inStock || adding}
-          className={`flex-1 py-4 rounded text-[11px] tracking-[0.3em] uppercase font-outfit font-medium transition-all shadow-sm ${
+          className={`flex-1 py-4 px-6 rounded-full text-xs font-bold tracking-[0.2em] uppercase font-outfit transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
             activeVariation && inStock
-              ? "bg-[#1A1A1A] text-[#F8F6F0] hover:bg-[#9c7d23] hover:text-white"
-              : "bg-[#1A1A1A]/10 text-[#1A1A1A]/30 cursor-not-allowed"
-          } ${adding ? "opacity-70 cursor-wait" : ""}`}
-         
+              ? "bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black hover:brightness-105 active:scale-[0.98] shadow-[0_4px_20px_rgba(212,175,55,0.35)]"
+              : "bg-[#1A1A1A]/10 text-[#1A1A1A]/35 cursor-not-allowed"
+          } ${adding ? "opacity-75 cursor-wait" : ""}`}
         >
-          {added
-            ? "Added to Cart ✓"
-            : !activeVariation || !inStock
-            ? "Unavailable"
-            : adding
-            ? "Adding..."
-            : "Add to Cart"}
+          {added ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 text-black" />
+              <span>Added To Bag ✓</span>
+            </>
+          ) : !activeVariation || !inStock ? (
+            <span>Sold Out</span>
+          ) : adding ? (
+            <span>Adding To Bag...</span>
+          ) : (
+            <>
+              <ShoppingBag className="w-4 h-4 text-black" />
+              <span>Add To Cart</span>
+            </>
+          )}
         </button>
 
         <WishlistButton
@@ -311,6 +342,26 @@ export default function ProductVariantSelector({
           productImage={productImage}
           onRequireLogin={onRequireLogin}
         />
+      </div>
+
+      {/* Concierge Trust Pillars */}
+      <div className="pt-4 border-t border-[#D4AF37]/20 grid grid-cols-2 gap-3 text-[10px] uppercase font-outfit tracking-widest text-[#1A1A1A]/70">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />
+          <span>100% Pure Silk</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />
+          <span>Hallmarked Purity</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Truck className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />
+          <span>Insured Express Shipping</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />
+          <span>Dispatches in 24-48h</span>
+        </div>
       </div>
     </div>
   );

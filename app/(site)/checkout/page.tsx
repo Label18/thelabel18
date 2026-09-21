@@ -9,6 +9,7 @@ import { Address, getAddresses, addAddress, AddressInput } from "@/lib/supabase/
 import AddressForm from "@/components/AddressForm";
 import { decreaseStockForOrder } from "@/app/(site)/checkout/actions";
 import toast from "react-hot-toast";
+import { Sparkles, ShieldCheck, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
 type CartRow = {
   id: string;
@@ -102,50 +103,46 @@ export default function CheckoutPage() {
         .select("*")
         .eq("code", code)
         .eq("is_active", true)
-        .maybeSingle();
+        .single();
 
-      if (error) throw error;
-      if (!data) {
-        setCouponError("Invalid coupon code.");
-        setAppliedCoupon(null);
-        setDiscount(0);
+      if (error || !data) {
+        setCouponError("Invalid or inactive coupon code.");
         return;
       }
 
-      const now = new Date();
-      if (new Date(data.valid_from) > now || (data.valid_until && new Date(data.valid_until) < now)) {
-        setCouponError("This coupon is not currently valid.");
-        setAppliedCoupon(null);
-        setDiscount(0);
+      if (data.starts_at && new Date(data.starts_at) > new Date()) {
+        setCouponError("This coupon is not yet active.");
         return;
       }
-      if (data.usage_limit != null && data.used_count >= data.usage_limit) {
-        setCouponError("This coupon has reached its usage limit.");
-        setAppliedCoupon(null);
-        setDiscount(0);
+      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        setCouponError("This coupon has expired.");
         return;
       }
-      if (subtotal < Number(data.min_order_value)) {
-        setCouponError(`Minimum order value is ₹${Number(data.min_order_value).toLocaleString()}.`);
-        setAppliedCoupon(null);
-        setDiscount(0);
+      if (data.min_order_amount && subtotal < Number(data.min_order_amount)) {
+        setCouponError(`Minimum order amount is ₹${Number(data.min_order_amount).toLocaleString()}`);
+        return;
+      }
+      if (data.max_uses != null && (data.uses_count ?? 0) >= data.max_uses) {
+        setCouponError("This coupon has reached its maximum uses.");
         return;
       }
 
-      let computedDiscount = 0;
+      let d = 0;
       if (data.discount_type === "percentage") {
-        computedDiscount = Math.round((subtotal * Number(data.discount_value)) / 100 * 100) / 100;
-        if (data.max_discount_amount != null) {
-          computedDiscount = Math.min(computedDiscount, Number(data.max_discount_amount));
+        d = (subtotal * Number(data.discount_value)) / 100;
+        if (data.max_discount_amount) {
+          d = Math.min(d, Number(data.max_discount_amount));
         }
       } else {
-        computedDiscount = Math.min(Number(data.discount_value), subtotal);
+        d = Math.min(Number(data.discount_value), subtotal);
       }
 
-      setDiscount(computedDiscount);
+      setDiscount(Math.round(d));
       setAppliedCoupon(code);
+      setCouponInput("");
+      toast.success(`Coupon ${code} applied`);
     } catch (err: any) {
-      setCouponError(err?.message ?? "Couldn't apply coupon.");
+      setCouponError(err?.message ?? "Error verifying coupon.");
     } finally {
       setCouponChecking(false);
     }
@@ -154,37 +151,79 @@ export default function CheckoutPage() {
   function handleRemoveCoupon() {
     setAppliedCoupon(null);
     setDiscount(0);
-    setCouponInput("");
     setCouponError(null);
   }
 
   async function handlePlaceOrder() {
-    if (!selectedAddressId) {
-      const msg = "Please select or add a shipping address.";
-      setPlaceError(msg);
-      toast.error(msg);
-      return;
-    }
-    setPlaceError(null);
+    if (!user || !selectedAddressId) return;
     setPlacing(true);
+    setPlaceError(null);
+
     try {
-      const itemsToDeduct = items.map((i) => ({
-        variation_id: i.variation_id,
-        quantity: i.quantity,
+      const address = addresses.find((a) => a.id === selectedAddressId);
+      if (!address) throw new Error("Please select a shipping address.");
+
+      for (const item of items) {
+        const stock = item.product_variations?.stock_quantity ?? 0;
+        if (stock < item.quantity) {
+          throw new Error(
+            `"${item.products?.name}" only has ${stock} left in stock. Please adjust your cart.`
+          );
+        }
+      }
+
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          total: total,
+          subtotal,
+          discount_amount: discount,
+          coupon_code: appliedCoupon,
+          ship_full_name: address.full_name,
+          ship_phone: address.phone,
+          ship_line1: address.line1,
+          ship_line2: address.line2 || null,
+          ship_city: address.city,
+          ship_state: address.state,
+          ship_postal_code: address.postal_code,
+          ship_country: address.country,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (orderErr) throw orderErr;
+
+      const orderItems = items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        variation_id: item.variation_id,
+        quantity: item.quantity,
+        price_at_purchase: Number(item.product_variations?.price ?? 0),
+        product_name: item.products?.name ?? "Product",
+        color: item.product_variations?.color ?? null,
+        size: item.product_variations?.size ?? null,
       }));
 
-      const { data: orderId, error } = await supabase.rpc("place_order", {
-        p_address_id: selectedAddressId,
-        p_coupon_code: appliedCoupon,
-      });
-      if (error) throw error;
+      const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
+      if (itemsErr) throw itemsErr;
 
-      toast.success("Order placed successfully!");
-      router.push(`/orders/${orderId}`);
+      await decreaseStockForOrder(
+        items.map((i) => ({ variation_id: i.variation_id, quantity: i.quantity }))
+      );
+
+      await supabase.from("cart_items").delete().eq("user_id", user.id);
+
+      if (appliedCoupon) {
+        await supabase.rpc("increment_coupon_uses", { coupon_code: appliedCoupon });
+      }
+
+      toast.success("Order placed successfully");
+      router.push(`/orders/${order.id}`);
     } catch (err: any) {
-      const msg = err?.message ?? "Couldn't place your order. Please try again.";
-      setPlaceError(msg);
-      toast.error(msg);
+      setPlaceError(err?.message ?? "Failed to place order.");
+      toast.error(err?.message ?? "Failed to place order.");
     } finally {
       setPlacing(false);
     }
@@ -192,22 +231,22 @@ export default function CheckoutPage() {
 
   if (!authLoading && !user) {
     return (
-      <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pt-32 pb-16 px-6 flex items-center justify-center">
-        <div className="text-center max-w-sm">
-          <h1
-            className="text-2xl uppercase tracking-[0.15em] mb-4"
-           
-          >
-            Checkout
+      <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pt-28 pb-20 px-6 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-8 bg-white border border-[#D4AF37]/35 rounded-2xl shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mx-auto mb-4 text-[#D4AF37]">
+            <Lock className="w-5 h-5" />
+          </div>
+          <h1 className="text-xl uppercase tracking-[0.15em] mb-2 font-outfit font-semibold text-[#1A1A1A]">
+            Sign In Required
           </h1>
-          <p className="text-sm text-[#1A1A1A]/60 font-outfit font-light mb-6">
-            Sign in to continue to checkout.
+          <p className="text-xs text-[#1A1A1A]/70 font-outfit mb-6">
+            Please sign in to your Label 18 account to continue with your bespoke checkout.
           </p>
           <button
             onClick={openLoginModal}
-            className="px-8 py-3 rounded bg-[#1A1A1A] text-[#F8F6F0] text-[11px] tracking-[0.3em] uppercase font-outfit font-medium hover:bg-[#9c7d23] transition-all"
+            className="w-full py-3 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-semibold text-xs tracking-[0.15em] uppercase shadow transition-all active:scale-95"
           >
-            Login
+            Sign In To Continue
           </button>
         </div>
       </main>
@@ -215,95 +254,144 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pt-24 md:pt-32 pb-16 px-6 lg:px-16">
-      <div className="max-w-[1100px] mx-auto">
-        <h1
-          className="text-2xl md:text-3xl uppercase tracking-[0.15em] mb-10"
-         
-        >
-          Checkout
-        </h1>
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
+      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Banner Header */}
+      <div className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-12 sm:py-16 mb-8 sm:mb-12 text-white">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full blur-[140px] bg-[#D4AF37]/12" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
 
-        {loading ? (
-          <p className="text-sm text-[#1A1A1A]/50 font-outfit font-light">Loading checkout...</p>
-        ) : items.length === 0 ? (
-          <p className="text-sm text-[#1A1A1A]/60 font-outfit font-light">
-            Your cart is empty. Add items before checking out.
+        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
+            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            <span>The Label 18 • Secure Concierge</span>
+          </div>
+
+          <h1 className="mb-2">
+            <span className="block font-outfit text-base sm:text-xl md:text-2xl font-light tracking-[0.18em] uppercase text-white/80">
+              Complete Your Order
+            </span>
+            <span className="block font-outfit text-2xl sm:text-4xl md:text-5xl font-bold tracking-[0.08em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_15px_rgba(212,175,55,0.35)] mt-1">
+              Bespoke Checkout
+            </span>
+          </h1>
+
+          <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
+
+          <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
+            256-Bit Encrypted Payment • Insured Global Delivery
           </p>
+        </div>
+      </div>
+
+      {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Checkout Area */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">
+        {loading ? (
+          <div className="py-20 text-center">
+            <div className="w-6 h-6 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs text-[#1A1A1A]/60 font-outfit uppercase tracking-widest">Loading checkout...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-20 px-6 max-w-md mx-auto rounded-2xl bg-white border border-[#D4AF37]/35 shadow-sm">
+            <p className="text-sm text-[#1A1A1A]/70 font-outfit mb-4">
+              Your cart is empty. Please add pieces before checking out.
+            </p>
+            <button
+              onClick={() => router.push("/shop")}
+              className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-semibold text-xs tracking-wider uppercase shadow"
+            >
+              Explore Shop
+            </button>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Left: Address + Items */}
-            <div className="lg:col-span-7 space-y-8">
-              {/* Address */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2
-                    className="text-[11px] tracking-[0.3em] uppercase font-outfit font-medium text-[#9c7d23]"
-                   
-                  >
-                    Shipping Address
-                  </h2>
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+              {/* Address Selection */}
+              <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-5 sm:p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                    <h2 className="text-xs tracking-[0.2em] uppercase font-outfit font-semibold text-[#1A1A1A]">
+                      Shipping Address
+                    </h2>
+                  </div>
                   <button
                     onClick={() => setIsAddressFormOpen(true)}
-                    className="text-[10px] tracking-[0.2em] uppercase font-outfit font-medium text-[#1A1A1A]/60 hover:text-[#9c7d23]"
+                    className="text-[10px] tracking-[0.15em] uppercase font-outfit font-semibold text-[#9c7d23] hover:text-[#1A1A1A] transition-colors"
                   >
-                    + Add New
+                    + Add New Address
                   </button>
                 </div>
 
                 {addresses.length === 0 ? (
-                  <p className="text-sm text-[#1A1A1A]/50 font-outfit font-light">
-                    No saved addresses yet. Add one to continue.
-                  </p>
+                  <div className="text-center py-6">
+                    <p className="text-xs text-[#1A1A1A]/60 font-outfit mb-3">
+                      No saved addresses found. Add your shipping details to proceed.
+                    </p>
+                    <button
+                      onClick={() => setIsAddressFormOpen(true)}
+                      className="px-5 py-2 rounded-full border border-[#D4AF37] text-[#9c7d23] text-xs font-semibold uppercase tracking-wider hover:bg-[#D4AF37]/10"
+                    >
+                      + Add Address
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-3">
-                    {addresses.map((addr) => (
-                      <label
-                        key={addr.id}
-                        className={`block p-4 rounded-lg border cursor-pointer transition-all ${
-                          selectedAddressId === addr.id
-                            ? "border-[#9c7d23] bg-[#9c7d23]/5"
-                            : "border-[#1A1A1A]/15 bg-white/60 hover:border-[#1A1A1A]/30"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <input
-                            type="radio"
-                            name="address"
-                            checked={selectedAddressId === addr.id}
-                            onChange={() => setSelectedAddressId(addr.id)}
-                            className="mt-1 accent-[#9c7d23]"
-                          />
-                          <div className="text-sm font-outfit font-light">
-                            <p className="font-medium uppercase tracking-wide text-[13px]">
-                              {addr.full_name}
-                              {addr.is_default && (
-                                <span className="ml-2 text-[9px] tracking-widest uppercase text-[#9c7d23]">
-                                  Default
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-[#1A1A1A]/60 mt-0.5">
-                              {addr.line1}
-                              {addr.line2 ? `, ${addr.line2}` : ""}, {addr.city}, {addr.state}{" "}
-                              {addr.postal_code}, {addr.country}
-                            </p>
-                            <p className="text-[#1A1A1A]/50 mt-0.5">{addr.phone}</p>
+                    {addresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id;
+                      return (
+                        <label
+                          key={addr.id}
+                          className={`block p-4 rounded-xl border cursor-pointer transition-all ${
+                            isSelected
+                              ? "border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm"
+                              : "border-neutral-200 bg-[#F8F6F0]/40 hover:border-[#D4AF37]/50"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="radio"
+                              name="address"
+                              checked={isSelected}
+                              onChange={() => setSelectedAddressId(addr.id)}
+                              className="mt-1 accent-[#D4AF37]"
+                            />
+                            <div className="text-xs font-outfit">
+                              <p className="font-semibold uppercase tracking-wider text-[#1A1A1A] text-[13px]">
+                                {addr.full_name}
+                                {addr.is_default && (
+                                  <span className="ml-2 text-[9px] tracking-widest uppercase text-[#9c7d23] font-medium border border-[#9c7d23]/30 px-1.5 py-0.2 rounded-full">
+                                    Default
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-[#1A1A1A]/70 mt-1 leading-relaxed">
+                                {addr.line1}
+                                {addr.line2 ? `, ${addr.line2}` : ""}, {addr.city}, {addr.state}{" "}
+                                {addr.postal_code}, {addr.country}
+                              </p>
+                              <p className="text-[#1A1A1A]/60 mt-0.5 font-mono text-[11px]">{addr.phone}</p>
+                            </div>
                           </div>
-                        </div>
-                      </label>
-                    ))}
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
-              {/* Items */}
-              <div>
-                <h2
-                  className="text-[11px] tracking-[0.3em] uppercase font-outfit font-medium text-[#9c7d23] mb-4"
-                 
-                >
-                  Items ({items.length})
+              {/* Order Items Review */}
+              <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-5 sm:p-6 shadow-sm">
+                <h2 className="text-xs tracking-[0.2em] uppercase font-outfit font-semibold text-[#1A1A1A] mb-4 pb-3 border-b border-neutral-100">
+                  Ensemble Items ({items.length})
                 </h2>
                 <div className="space-y-3">
                   {items.map((item) => {
@@ -315,20 +403,20 @@ export default function CheckoutPage() {
                     return (
                       <div
                         key={item.id}
-                        className="flex gap-4 bg-white/60 border border-[#1A1A1A]/10 rounded-lg p-3"
+                        className="flex items-center gap-4 bg-[#F8F6F0]/50 border border-neutral-100 rounded-xl p-3"
                       >
-                        <div className="relative w-14 h-16 flex-shrink-0 rounded overflow-hidden bg-white border border-[#1A1A1A]/10">
+                        <div className="relative w-14 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-white border border-neutral-200">
                           {image && <Image src={image} alt={product?.name ?? ""} fill className="object-cover" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-outfit font-medium uppercase tracking-wide truncate">
+                          <p className="text-xs sm:text-[13px] font-outfit font-semibold uppercase tracking-wide text-[#1A1A1A] truncate">
                             {product?.name}
                           </p>
-                          <p className="text-[11px] text-[#1A1A1A]/50 font-outfit font-light">
+                          <p className="text-[10px] text-[#1A1A1A]/60 font-outfit mt-0.5">
                             {[variation?.color, variation?.size].filter(Boolean).join(" / ")} · Qty {item.quantity}
                           </p>
                         </div>
-                        <p className="text-sm font-outfit font-medium text-[#9c7d23] whitespace-nowrap">
+                        <p className="text-xs sm:text-sm font-outfit font-bold text-[#9c7d23] whitespace-nowrap">
                           ₹{(price * item.quantity).toLocaleString()}
                         </p>
                       </div>
@@ -338,26 +426,26 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Right: Summary */}
+            {/* Right: Order Summary & Placement */}
             <div className="lg:col-span-5">
-              <div className="bg-white/70 backdrop-blur-md border border-[#1A1A1A]/10 rounded-lg p-6 sticky top-28">
-                <h2
-                  className="text-[11px] tracking-[0.3em] uppercase font-outfit font-medium text-[#9c7d23] mb-5"
-                 
-                >
-                  Order Summary
-                </h2>
+              <div className="bg-white border border-[#D4AF37]/40 rounded-2xl p-5 sm:p-6 shadow-sm sticky top-28 space-y-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <h2 className="text-xs uppercase tracking-[0.2em] font-outfit font-semibold text-[#1A1A1A]">
+                    Payment Summary
+                  </h2>
+                </div>
 
-                {/* Coupon */}
-                <div className="mb-5">
+                {/* Coupon Box */}
+                <div>
                   {appliedCoupon ? (
-                    <div className="flex items-center justify-between bg-[#9c7d23]/10 border border-[#9c7d23]/30 rounded px-3 py-2.5">
-                      <span className="text-[12px] font-outfit font-medium text-[#9c7d23] tracking-wide">
-                        {appliedCoupon} applied
+                    <div className="flex items-center justify-between bg-[#D4AF37]/10 border border-[#D4AF37]/40 rounded-full px-4 py-2">
+                      <span className="text-xs font-outfit font-semibold text-[#9c7d23] tracking-wide">
+                        ✦ {appliedCoupon} APPLIED
                       </span>
                       <button
                         onClick={handleRemoveCoupon}
-                        className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/50 hover:text-red-600"
+                        className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/60 hover:text-red-600 font-semibold"
                       >
                         Remove
                       </button>
@@ -367,51 +455,57 @@ export default function CheckoutPage() {
                       <input
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value)}
-                        placeholder="Coupon code"
-                        className="flex-1 bg-white border border-[#1A1A1A]/15 rounded px-3 py-2.5 text-[13px] font-outfit font-light focus:outline-none focus:border-[#9c7d23]/60"
+                        placeholder="Enter Promo / Coupon"
+                        className="flex-1 bg-[#F8F6F0]/80 border border-[#D4AF37]/30 rounded-full px-4 py-2 text-xs font-outfit uppercase tracking-wider placeholder:text-[#1A1A1A]/40 focus:outline-none focus:border-[#D4AF37]"
                       />
                       <button
                         onClick={handleApplyCoupon}
                         disabled={couponChecking || !couponInput.trim()}
-                        className="px-4 py-2.5 rounded border border-[#1A1A1A]/20 text-[10px] tracking-[0.2em] uppercase font-outfit font-medium hover:border-[#9c7d23] hover:text-[#9c7d23] disabled:opacity-40"
+                        className="px-5 py-2 rounded-full bg-[#1A1A1A] text-white hover:bg-[#9c7d23] text-[10px] tracking-[0.2em] uppercase font-outfit font-semibold transition-all disabled:opacity-40"
                       >
                         {couponChecking ? "..." : "Apply"}
                       </button>
                     </div>
                   )}
                   {couponError && (
-                    <p className="text-[11px] text-red-600/90 font-outfit mt-1.5">{couponError}</p>
+                    <p className="text-[10px] text-red-600 font-outfit mt-1.5 pl-2">{couponError}</p>
                   )}
                 </div>
 
-                <div className="space-y-2 text-sm font-outfit font-light border-t border-[#1A1A1A]/10 pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-[#1A1A1A]/60">Subtotal</span>
-                    <span className="font-bold text-red-600">₹{subtotal.toLocaleString()}</span>
+                {/* Cost Breakdown */}
+                <div className="space-y-2 text-xs sm:text-sm font-outfit font-light border-t border-neutral-100 pt-3">
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-[#1A1A1A]">₹{subtotal.toLocaleString()}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-[#9c7d23]">
-                      <span>Discount</span>
+                    <div className="flex justify-between text-[#9c7d23] font-medium">
+                      <span>Exclusive Discount</span>
                       <span>−₹{discount.toLocaleString()}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-base font-medium pt-2 border-t border-[#1A1A1A]/10">
-                    <span>Total</span>
-                    <span className="font-bold text-red-600">₹{total.toLocaleString()}</span>
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Express Delivery</span>
+                    <span className="text-[#9c7d23] font-semibold uppercase tracking-wider text-[11px]">Complimentary</span>
                   </div>
                 </div>
 
+                <div className="pt-3 border-t border-neutral-100 flex justify-between items-baseline font-outfit">
+                  <span className="text-xs tracking-widest uppercase font-semibold text-[#1A1A1A]">Total Payable</span>
+                  <span className="text-xl sm:text-2xl font-bold text-[#9c7d23]">₹{total.toLocaleString()}</span>
+                </div>
+
                 {placeError && (
-                  <p className="text-[12px] text-red-600/90 font-outfit mt-4">{placeError}</p>
+                  <p className="text-xs text-red-600 font-outfit">{placeError}</p>
                 )}
 
                 <button
                   onClick={handlePlaceOrder}
                   disabled={placing || !selectedAddressId}
-                  className="w-full mt-6 py-4 rounded bg-[#1A1A1A] text-[#F8F6F0] text-[11px] tracking-[0.3em] uppercase font-outfit font-medium hover:bg-[#9c7d23] transition-all disabled:opacity-50"
-                 
+                  className="w-full py-4 rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black font-bold text-xs tracking-[0.18em] uppercase shadow-[0_4px_20px_rgba(212,175,55,0.4)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.6)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {placing ? "Placing Order..." : "Place Order"}
+                  <span>{placing ? "Securing Order..." : "Place Order & Pay"}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

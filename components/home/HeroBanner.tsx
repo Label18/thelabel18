@@ -18,69 +18,72 @@ interface HeroBannerProps {
 
 const slides = [
   {
-    id: "saree",
-    badge: "THE LABEL 18 • HANDLOOM SILKS",
+    id: "clothing",
+    category: "clothing",
+    badge: "THE LABEL 18 • CLOTHING EDIT",
     slideNumber: "01",
-    totalSlides: "03",
-    line1: "ROYAL HERITAGE",
-    line2: "SILK SAREES",
-    subtitle: "Pure Mulberry Silk • Authentic Gold Zari",
-    description: "Timeless royal drapes woven with metallic gold zari checks and an authentic heirloom pallu.",
-    image: "/images/thelabel18_saree_clean.jpg",
-    objectPosition: "object-top",
-    modelTag: "Brand Shoot",
-    lookTitle: "Royal Sapphire Silk Drape",
-    lookSubtitle: "Pure Handloom Zari with Artisanal Blouse",
-    tabLabel: "Sarees",
-    craftBadges: ["Pure Silk", "Gold Zari", "Handloom"],
-    ctaPrimary: "Explore Sarees",
-    ctaSecondary: "View Clothing",
-    glowColor: "rgba(212, 175, 55, 0.22)",
+    totalSlides: "02",
+    line1: "ROYAL ARTISANAL",
+    line2: "CLOTHING",
+    subtitle: "Handloom Silk Sarees • Imperial Zardozi Couture",
+    description: "Step into royal grandeur with handwoven mulberry silk sarees and bespoke ceremonial couture crafted with authentic gold zari.",
+    tabLabel: "Clothing",
+    ctaPrimary: "Explore Clothing",
+    ctaSecondary: "View Catalog",
+    glowColor: "rgba(212, 175, 55, 0.25)",
+    looks: [
+      {
+        title: "Royal Heritage Silk Saree",
+        subtitle: "Pure Handloom Mulberry Silk & Gold Zari",
+        image: "/images/thelabel18_saree_perfect.jpg",
+        objectPosition: "object-top",
+        pill: "Silk Saree",
+      },
+      {
+        title: "Imperial Zardozi Couture",
+        subtitle: "Sage Embroidered Raw Silk with Dupatta",
+        image: "/images/thelabel18_couture_model.jpg",
+        objectPosition: "object-top",
+        pill: "Couture Suit",
+      },
+    ],
   },
   {
     id: "jewellery",
+    category: "jewellery",
     badge: "THE LABEL 18 • HEIRLOOM EDITIONS",
     slideNumber: "02",
-    totalSlides: "03",
+    totalSlides: "02",
     line1: "FINE HEIRLOOM",
     line2: "JEWELLERY",
     subtitle: "Polki Diamonds • Colombian Emeralds • 22K Gold",
-    description: "Mastercrafted heirloom ornaments forged with uncut diamonds and precious gemstones.",
-    image: "/images/jellwerys.jpg",
-    objectPosition: "object-[85%_center]",
-    modelTag: "Heirloom Edition",
-    lookTitle: "Royal Gold Choker & Earrings",
-    lookSubtitle: "22K Gold Bridal Heritage Set",
+    description: "Mastercrafted heirloom ornaments forged with uncut polki stones, emerald accents, and traditional temple gold.",
     tabLabel: "Jewellery",
-    craftBadges: ["22K Gold", "Certified Gems", "Hand-set Polki"],
     ctaPrimary: "Explore Jewellery",
-    ctaSecondary: "View Ornaments",
+    ctaSecondary: "View Catalog",
     glowColor: "rgba(220, 160, 60, 0.25)",
-  },
-  {
-    id: "couture",
-    badge: "THE LABEL 18 • HAUTE COUTURE",
-    slideNumber: "03",
-    totalSlides: "03",
-    line1: "IMPERIAL ZARDOZI",
-    line2: "COUTURE",
-    subtitle: "Sage Raw Silk • Intricate Pearl Needlework",
-    description: "Hand-embroidered by veteran karigars using pearls, sequins, and metallic needlework.",
-    image: "/images/thelabel18_couture_clean.jpg",
-    objectPosition: "object-top",
-    modelTag: "Brand Shoot",
-    lookTitle: "Sage Green Zardozi Ensemble",
-    lookSubtitle: "Embroidered Raw Silk with Chiffon Dupatta",
-    tabLabel: "Couture",
-    craftBadges: ["Zardozi Work", "Raw Silk", "Bespoke Fit"],
-    ctaPrimary: "Explore Couture",
-    ctaSecondary: "Bespoke Fitting",
-    glowColor: "rgba(180, 195, 140, 0.22)",
+    looks: [
+      {
+        title: "Imperial Emerald & Polki Choker",
+        subtitle: "Handcrafted Heritage Bridal Choker",
+        image: "/images/thelabel18_jewellery_clean.jpg",
+        objectPosition: "object-center",
+        pill: "Emerald Polki",
+      },
+      {
+        title: "Royal Gold Choker & Earrings",
+        subtitle: "22K Traditional Gold Bridal Heritage Set",
+        image: "/images/jellwerys.jpg",
+        objectPosition: "object-[80%_center]",
+        pill: "Royal Gold",
+      },
+    ],
   },
 ];
 
 export default function HeroBanner({ clothingCategory, jewelleryCategory }: HeroBannerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeLookIndex, setActiveLookIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const slideDuration = 3000; // Exact 3-second cycle
@@ -88,11 +91,13 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setActiveLookIndex(0);
     setProgress(0);
   }, []);
 
   const prevSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setActiveLookIndex(0);
     setProgress(0);
   }, []);
 
@@ -116,15 +121,19 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
   const active = slides[currentSlide];
 
   const getPrimaryHref = (idx: number) => {
-    if (idx === 1) {
+    const s = slides[idx];
+    if (s.category === "jewellery") {
       return jewelleryCategory ? `/categories/${jewelleryCategory.id}` : "/shop?category=jewellery";
     }
     return clothingCategory ? `/categories/${clothingCategory.id}` : "/shop?category=clothing";
   };
 
   const getSecondaryHref = (idx: number) => {
-    if (idx === 1) return "/shop?category=jewellery";
-    return "/shop?category=clothing";
+    const s = slides[idx];
+    if (s.category === "jewellery") {
+      return jewelleryCategory ? `/shop?category=${jewelleryCategory.id}` : "/shop";
+    }
+    return clothingCategory ? `/shop?category=${clothingCategory.id}` : "/shop";
   };
 
   return (
@@ -210,19 +219,6 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
               {active.description}
             </p>
 
-            {/* Compact Craft Highlight Badges */}
-            <div className="flex flex-wrap items-center gap-1.5 mb-3.5 sm:mb-4">
-              {active.craftBadges.map((craft, i) => (
-                <div
-                  key={i}
-                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/75 text-[9px] sm:text-[10px] tracking-wider"
-                >
-                  <Sparkles className="w-2 h-2 text-[#D4AF37]" />
-                  <span>{craft}</span>
-                </div>
-              ))}
-            </div>
-
             {/* Dedicated Row 1: ACTION BUTTONS ONLY */}
             <div className="grid grid-cols-2 sm:flex items-center gap-2.5 sm:gap-3.5 mb-3 sm:mb-4">
               <Link
@@ -307,27 +303,41 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                 
                 {/* Image Aspect Ratio Box (Compact & Elegant) */}
                 <div className="relative w-full aspect-[3/3.8] overflow-hidden bg-neutral-950">
-                  {slides.map((s, idx) => {
-                    const isActive = idx === currentSlide;
+                  {slides.map((s, sIdx) => {
+                    const isSlideActive = sIdx === currentSlide;
                     return (
                       <div
                         key={s.id}
-                        className={`absolute inset-0 transition-all duration-700 ease-out ${
-                          isActive
-                            ? "opacity-100 scale-100 pointer-events-auto"
-                            : "opacity-0 scale-105 pointer-events-none"
+                        className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+                          isSlideActive
+                            ? "opacity-100 pointer-events-auto"
+                            : "opacity-0 pointer-events-none"
                         }`}
                       >
-                        <Image
-                          src={s.image}
-                          alt={`${s.line1} ${s.line2} - The Label 18`}
-                          fill
-                          priority={idx === 0}
-                          sizes="(max-width: 640px) 210px, (max-width: 1024px) 260px, 320px"
-                          className={`object-cover ${s.objectPosition} transition-transform duration-[3000ms] group-hover:scale-105`}
-                        />
-                        {/* Gentle bottom gradient for caption clarity */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                        {s.looks.map((look, lIdx) => {
+                          const isLookActive = lIdx === activeLookIndex;
+                          return (
+                            <div
+                              key={look.title}
+                              className={`absolute inset-0 transition-all duration-700 ease-out ${
+                                isLookActive
+                                  ? "opacity-100 scale-100 pointer-events-auto"
+                                  : "opacity-0 scale-105 pointer-events-none"
+                              }`}
+                            >
+                              <Image
+                                src={look.image}
+                                alt={`${look.title} - The Label 18`}
+                                fill
+                                priority={sIdx === 0 && lIdx === 0}
+                                sizes="(max-width: 640px) 210px, (max-width: 1024px) 260px, 320px"
+                                className={`object-cover ${look.objectPosition} transition-transform duration-[3000ms] group-hover:scale-105`}
+                              />
+                              {/* Gentle bottom gradient for caption clarity */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}
@@ -340,22 +350,38 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                     </div>
                   </div>
 
-                  {/* Bottom Floating Look Card */}
+                  {/* Bottom Floating Look Card with Look Switcher */}
                   <div className="absolute bottom-2 left-2 right-2 z-20">
-                    <div className="p-2 rounded-lg bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 shadow-lg">
-                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <div className="p-2 rounded-lg bg-black/85 backdrop-blur-md border border-[#D4AF37]/40 shadow-lg">
+                      <div className="flex items-center justify-between gap-1 mb-1">
                         <span className="text-[8px] font-mono tracking-[0.18em] uppercase text-[#D4AF37]">
-                          ✦ {active.modelTag}
+                          ✦ {active.tabLabel}
                         </span>
-                        <span className="text-[8px] uppercase tracking-wider text-white/50">
-                          {active.tabLabel}
-                        </span>
+                        {/* Dual Look Switcher Pills */}
+                        <div className="flex items-center gap-1 bg-white/10 p-0.5 rounded-full">
+                          {active.looks.map((look, lIdx) => (
+                            <button
+                              key={look.pill}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveLookIndex(lIdx);
+                              }}
+                              className={`px-1.5 py-0.5 rounded-full text-[7.5px] uppercase tracking-wider transition-all ${
+                                activeLookIndex === lIdx
+                                  ? "bg-[#D4AF37] text-black font-bold"
+                                  : "text-white/60 hover:text-white"
+                              }`}
+                            >
+                              {look.pill}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                       <h3 className="font-outfit text-[11px] sm:text-xs font-medium text-white tracking-wide leading-tight truncate">
-                        {active.lookTitle}
+                        {active.looks[activeLookIndex]?.title}
                       </h3>
                       <p className="text-[9px] text-white/70 tracking-wide font-light truncate mt-0.5">
-                        {active.lookSubtitle}
+                        {active.looks[activeLookIndex]?.subtitle}
                       </p>
                     </div>
                   </div>
