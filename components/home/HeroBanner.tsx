@@ -55,6 +55,51 @@ export const heroSlides = [
     mobilePosition: "object-[62%_top]",
     glow: "rgba(212, 175, 55, 0.32)",
   },
+  {
+    id: "azure-palace-saree",
+    line1: "AZURE ELEGANCE",
+    line2: "PALACE SAREE",
+    subtitle:
+      "Handcrafted Blue Embroidered Silks & Palatial Elegance paired with heirloom ornaments.",
+    ctaPrimary: "EXPLORE CLOTHING",
+    ctaSecondary: "+ FINE JEWELLERY",
+    editionLabel: "+ ROYAL COUTURE EDITION",
+    desktopImage: "/hero_slide_1.jpg",
+    mobileImage: "/hero_slide_1.jpg",
+    desktopPosition: "object-[center_top]",
+    mobilePosition: "object-[75%_top]",
+    glow: "rgba(212, 175, 55, 0.32)",
+  },
+  {
+    id: "crimson-royal-couture",
+    line1: "CRIMSON PALATIAL",
+    line2: "ROYAL COUTURE",
+    subtitle:
+      "Handcrafted Crimson Lehengas, Handloom Silks & 22K Traditional Polki Jewellery curated for royal celebrations.",
+    ctaPrimary: "EXPLORE CLOTHING",
+    ctaSecondary: "+ FINE JEWELLERY",
+    editionLabel: "+ ROYAL COUTURE EDITION",
+    desktopImage: "/hero_slide_4_fixed.jpg",
+    mobileImage: "/hero_slide_4_fixed.jpg",
+    desktopPosition: "object-[center_top]",
+    mobilePosition: "object-[75%_top]",
+    glow: "rgba(212, 175, 55, 0.32)",
+  },
+  {
+    id: "amethyst-regal-gown",
+    line1: "AMETHYST REGAL",
+    line2: "EVENING COUTURE",
+    subtitle:
+      "Majestic Purple Embroideries and Regal Silks capturing the essence of twilight celebrations.",
+    ctaPrimary: "EXPLORE CLOTHING",
+    ctaSecondary: "+ FINE JEWELLERY",
+    editionLabel: "+ ROYAL COUTURE EDITION",
+    desktopImage: "/hero_slide_3.jpg",
+    mobileImage: "/hero_slide_3.jpg",
+    desktopPosition: "object-[center_top]",
+    mobilePosition: "object-[75%_top]",
+    glow: "rgba(212, 175, 55, 0.32)",
+  },
 ];
 
 export default function HeroBanner({ clothingCategory, jewelleryCategory }: HeroBannerProps) {
