@@ -6,7 +6,7 @@ import ProductVariantSelector from "@/components/ProductVariantSelector";
 import { Product, ProductVariation } from "@/lib/supabase/products";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { Sparkles, CheckCircle2, Shield, Award, Scissors } from "lucide-react";
+import { Sparkles, CheckCircle2, Shield, Award, Scissors, Share2 } from "lucide-react";
 
 export default function ProductDetailClient({ product, initialColor }: { product: Product, initialColor?: string | null }) {
   const { openLoginModal } = useAuth();
@@ -81,6 +81,53 @@ export default function ProductDetailClient({ product, initialColor }: { product
     }
   }
 
+  // --- Share Logic ---
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log("Share canceled or failed", err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  // --- Magnifier Logic ---
+  const [magnifier, setMagnifier] = useState({ show: false, x: 0, y: 0, cursorX: 0, cursorY: 0 });
+
+  const handlePointerMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    const elem = e.currentTarget;
+    const { top, left, width, height } = elem.getBoundingClientRect();
+    
+    let clientX, clientY;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = ((clientX - left) / width) * 100;
+    const y = ((clientY - top) / height) * 100;
+    
+    setMagnifier({
+      show: true,
+      x,
+      y,
+      cursorX: clientX - left,
+      cursorY: clientY - top
+    });
+  };
+
+  const hideMagnifier = () => setMagnifier(prev => ({ ...prev, show: false }));
+
   const hasNoVariations = variations.length === 0;
   const currentImage = images[activeImageIndex]?.src || product.image_url;
 
@@ -94,9 +141,18 @@ export default function ProductDetailClient({ product, initialColor }: { product
           
           {/* Mobile Title & SKU (Visible on mobile/tablet) */}
           <div className="block lg:hidden mb-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-2">
-              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
-              <span>SKU: {product.sku}</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold">
+                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                <span>SKU: {product.sku}</span>
+              </div>
+              <button 
+                onClick={handleShare}
+                className="p-2 rounded-full bg-white border border-[#D4AF37]/30 text-[#9c7d23] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all shadow-sm active:scale-95"
+                aria-label="Share product"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
             </div>
             <h1 className="font-serif text-2xl sm:text-3xl tracking-wide uppercase text-[#1A1A1A] font-normal leading-tight">
               {product.name}
@@ -130,22 +186,44 @@ export default function ProductDetailClient({ product, initialColor }: { product
             )}
 
             {/* Main Big Image Container */}
-            <div className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group">
+            <div 
+              className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group cursor-crosshair touch-none"
+              onMouseMove={handlePointerMove}
+              onMouseEnter={() => setMagnifier(prev => ({ ...prev, show: true }))}
+              onMouseLeave={hideMagnifier}
+              onTouchMove={handlePointerMove}
+              onTouchStart={() => setMagnifier(prev => ({ ...prev, show: true }))}
+              onTouchEnd={hideMagnifier}
+            >
               {/* Luxury Hallmark Overlay Badge */}
-              <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md">
+              <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md pointer-events-none">
                 <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
                 <span>Pure Mulberry Silk</span>
               </div>
 
               {currentImage ? (
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
-                />
+                <>
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
+                  />
+                  {/* Full Container Magnifier */}
+                  {magnifier.show && (
+                    <div 
+                      className="absolute inset-0 z-20 bg-white pointer-events-none"
+                      style={{
+                        backgroundImage: `url(${currentImage})`,
+                        backgroundPosition: `${magnifier.x}% ${magnifier.y}%`,
+                        backgroundSize: '250%',
+                        backgroundRepeat: 'no-repeat',
+                      }}
+                    />
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#1A1A1A]/40 text-xs uppercase tracking-[0.3em]">
                   No Image Available
@@ -162,9 +240,18 @@ export default function ProductDetailClient({ product, initialColor }: { product
           
           {/* Desktop Title & SKU (Hidden on mobile/tablet) */}
           <div className="hidden lg:block mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-3">
-              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
-              <span>SKU: {product.sku}</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold">
+                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                <span>SKU: {product.sku}</span>
+              </div>
+              <button 
+                onClick={handleShare}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D4AF37]/30 text-[#9c7d23] text-xs font-medium uppercase tracking-wider hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all shadow-sm active:scale-95"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Share</span>
+              </button>
             </div>
             <h1 className="font-serif text-3xl md:text-4xl tracking-wide uppercase text-[#1A1A1A] font-normal leading-tight">
               {product.name}

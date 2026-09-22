@@ -1,7 +1,6 @@
 // app/(shop)/layout.tsx
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import GlobalLoader from "@/components/GlobalLoader";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 export default function ShopLayout({
@@ -11,7 +10,6 @@ export default function ShopLayout({
 }) {
   return (
     <>
-      <GlobalLoader />
       <Header />
       {children}
       <Footer />

@@ -205,7 +205,7 @@ export default function WishlistPage() {
         await refreshWishlist();
       } else {
         guest.removeFromWishlist(item.productId, item.variationId);
-        await loadGuestWishlist();
+        setGuestDisplayItems((prev) => prev.filter((i) => i.key !== item.key));
       }
       toast.success("Removed from wishlist");
     } catch (err: any) {

@@ -227,7 +227,9 @@ export default function CartPage() {
         await refreshCart();
       } else {
         guest.updateQuantity(item.productId, item.variationId, next);
-        await loadGuestCart();
+        setGuestDisplayItems((prev) => 
+          prev.map((i) => (i.key === item.key ? { ...i, quantity: next } : i))
+        );
       }
     } catch (err: any) {
       setError(err?.message ?? "Couldn't update quantity.");
@@ -245,7 +247,7 @@ export default function CartPage() {
         await refreshCart();
       } else {
         guest.removeFromCart(item.productId, item.variationId);
-        await loadGuestCart();
+        setGuestDisplayItems((prev) => prev.filter((i) => i.key !== item.key));
       }
       toast.success("Removed from cart");
     } catch (err: any) {
