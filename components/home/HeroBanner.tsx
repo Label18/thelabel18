@@ -37,7 +37,7 @@ export const heroSlides = [
     desktopImage: "/bannersections1.jpeg",
     mobileImage: "/bannersections1.jpeg",
     desktopPosition: "object-[center_top]",
-    mobilePosition: "object-[55%_top]",
+    mobilePosition: "object-[85%_top]",
     glow: "rgba(212, 175, 55, 0.32)",
   },
   {
