@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 
 export default function PrivacyPolicy() {
   return (
@@ -19,7 +18,7 @@ export default function PrivacyPolicy() {
 
         <div className="relative z-10 text-center flex flex-col items-center px-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            
             <span>Legal &amp; Transparency</span>
           </div>
 

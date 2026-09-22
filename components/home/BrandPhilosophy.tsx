@@ -1,11 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, Gem, Scissors, Globe, ArrowRight } from "lucide-react";
+import { Gem, Scissors, Globe, ArrowRight } from "lucide-react";
 
 const pillars = [
   {
-    icon: Sparkles,
-    title: "Handcrafted Luxury",
+    icon: Globe, title: "Handcrafted Luxury",
     tagline: "Curated Master Weavers",
     description:
       "Handcrafted by generational artisans across India, preserving the royal heritage of pure Banarasi, Kanjivaram silks, and intricate zardozi.",
@@ -40,7 +39,7 @@ export default function BrandPhilosophy() {
         {/* Section Header */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-4 sm:mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#9c7d23]/10 border border-[#9c7d23]/30 text-[#9c7d23] text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-medium mb-1.5">
-            <Sparkles className="w-3 h-3 text-[#9c7d23]" />
+            
             The Label 18 Philosophy
           </div>
 

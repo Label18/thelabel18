@@ -9,7 +9,7 @@ import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { createClient } from "@/lib/supabase/client";
 import LoginModal from "@/components/LoginModal";
 import toast from "react-hot-toast";
-import { Sparkles, ArrowRight, ShoppingBag, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, ShoppingBag, ShieldCheck, Truck } from "lucide-react";
 
 type CartRow = {
   id: string;
@@ -288,7 +288,7 @@ export default function CartPage() {
 
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            
             <span>The Label 18 • Shopping Bag</span>
           </div>
 
@@ -425,7 +425,7 @@ export default function CartPage() {
             <div className="lg:col-span-4">
               <div className="bg-white border border-[#D4AF37]/40 rounded-2xl p-5 sm:p-6 shadow-sm sticky top-28 space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  
                   <h2 className="text-xs uppercase tracking-[0.2em] font-outfit font-semibold text-[#1A1A1A]">
                     Order Summary
                   </h2>

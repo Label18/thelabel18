@@ -12,7 +12,6 @@ import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import LoginModal from "@/components/LoginModal";
 import SearchModal from "@/components/SearchModal";
 import {
-  Sparkles,
   Phone,
   Search,
   Heart,
@@ -98,7 +97,7 @@ export default function Header() {
       <div className="bg-[#12100c] text-white/80 border-b border-[#d4af37]/20 py-1.5 px-4 text-[10px] sm:text-[11px] font-light tracking-wider">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <div className="hidden sm:flex items-center gap-2">
-            <Sparkles className="w-3 h-3 text-[#d4af37]" />
+            
             <span>Complimentary Insured Express Shipping & Bespoke Bridal Tailoring</span>
           </div>
 

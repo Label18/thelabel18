@@ -5,7 +5,6 @@ import { getProducts } from "@/lib/supabase/products";
 import ProductFilters from "@/components/ProductFilters";
 import ProductCard from "@/components/ProductCard";
 import ExpandableCategoryDescription from "@/components/ExpandableCategoryDescription";
-import { Sparkles } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -71,7 +70,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           {/* Content */}
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              
               <span>The Label 18 • Collection</span>
             </div>
 
@@ -111,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
           <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-              <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+              
               <span>The Label 18 • Category</span>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, Sparkles, MessageCircle } from "lucide-react";
+import { Crown, MessageCircle } from "lucide-react";
 
 function InstagramIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
   return (
@@ -39,7 +39,7 @@ export default function VipClubSection() {
               {/* VIP Benefits */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="p-3.5 rounded-xl bg-black/40 border border-white/10">
-                  <Sparkles className="w-4 h-4 text-[#d4af37] mb-1.5" />
+                  
                   <h4 className="text-xs uppercase tracking-wider font-semibold text-white">Private Previews</h4>
                   <p className="text-[10px] text-white/50 font-light mt-0.5">Early access to exclusive drops</p>
                 </div>

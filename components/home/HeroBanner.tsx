@@ -157,7 +157,7 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
       className="relative w-full overflow-hidden bg-[#060606] text-white border-b border-[#222] select-none
                  mt-[88px] sm:mt-[96px] lg:mt-[104px]
                  h-[480px] sm:h-[510px] md:h-[530px] lg:h-[540px] xl:h-[580px]
-                 flex flex-col justify-end lg:justify-center"
+                 flex flex-col justify-end"
       aria-label="The Label 18 Cinematic Showcase"
     >
       {/* ========================================================================= */}
@@ -236,7 +236,7 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
       {/* ========================================================================= */}
       {/* 2. FOREGROUND CONTENT: LEFT SIDE ON DESKTOP, PERFECTLY TUNED ON MOBILE   */}
       {/* ========================================================================= */}
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 w-full pb-6 sm:pb-8 lg:pb-0 pt-20 lg:pt-0">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 w-full pb-6 sm:pb-8 lg:pb-12 pt-20">
         <div className="max-w-md lg:max-w-lg">
 
           {/* ELEMENT 1: TITLE (Small, refined luxury text) */}

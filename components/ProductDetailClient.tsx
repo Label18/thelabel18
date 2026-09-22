@@ -6,7 +6,7 @@ import ProductVariantSelector from "@/components/ProductVariantSelector";
 import { Product, ProductVariation } from "@/lib/supabase/products";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { Sparkles, CheckCircle2, Shield, Award, Scissors, Share2 } from "lucide-react";
+import { CheckCircle2, Shield, Award, Scissors, Share2 } from "lucide-react";
 
 export default function ProductDetailClient({ product, initialColor }: { product: Product, initialColor?: string | null }) {
   const { openLoginModal } = useAuth();
@@ -28,17 +28,17 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
   const images = useMemo(() => {
     const list: { src: string; color: string | null }[] = [];
+    const seen = new Set<string>();
 
-    if (product.image_url) {
-      list.push({ src: product.image_url, color: null });
-    }
-
-    const seen = new Set(list.map((i) => i.src));
     for (const v of variations as ProductVariation[]) {
       if (v.image_url && !seen.has(v.image_url)) {
         seen.add(v.image_url);
         list.push({ src: v.image_url, color: v.color });
       }
+    }
+
+    if (list.length === 0 && product.image_url) {
+      list.push({ src: product.image_url, color: null });
     }
 
     return list;
@@ -151,7 +151,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
           <div className="block lg:hidden mb-2">
             <div className="flex items-center justify-between mb-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold">
-                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                
                 <span>SKU: {product.sku}</span>
               </div>
               <button 
@@ -205,7 +205,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
             >
               {/* Luxury Hallmark Overlay Badge */}
               <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md pointer-events-none">
-                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                
                 <span>Pure Mulberry Silk</span>
               </div>
 
@@ -250,7 +250,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
           <div className="hidden lg:block mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold">
-                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                
                 <span>SKU: {product.sku}</span>
               </div>
               <button 
@@ -292,7 +292,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
         {product.description && (
           <div className="lg:col-span-8 bg-white border border-[#D4AF37]/35 p-6 sm:p-8 md:p-10 rounded-2xl shadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#D4AF37]/25">
-              <Sparkles className="w-4 h-4 text-[#9c7d23]" />
+              
               <h2 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
                 Atelier Narrative &amp; Craftsmanship
               </h2>

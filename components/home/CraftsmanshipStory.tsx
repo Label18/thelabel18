@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function CraftsmanshipStory() {
   return (
@@ -9,7 +9,7 @@ export default function CraftsmanshipStory() {
         {/* Section Header */}
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-4 sm:mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-white text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-medium mb-1.5">
-            <Sparkles className="w-3 h-3 text-[#9c7d23]" />
+            
             Behind The Label 18
           </div>
           <h2 className="font-outfit text-2xl sm:text-3xl font-light tracking-tight text-white mb-1.5">

@@ -6,12 +6,12 @@ import {
   Phone,
   Mail,
   Clock,
-  Sparkles,
   ShieldCheck,
   Gem,
   Truck,
   ArrowUpRight,
   MessageCircle,
+  Award,
 } from "lucide-react";
 
 function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -23,7 +23,7 @@ function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 const trustBadges = [
-  { icon: Sparkles, title: "Curated Master Weavers", sub: "Authentic Pure Silks" },
+  { icon: Award, title: "Curated Master Weavers", sub: "Authentic Pure Silks" },
   { icon: Gem, title: "Certified Purity", sub: "Hallmarked Ornaments" },
   { icon: ShieldCheck, title: "Bespoke Bridal Tailoring", sub: "Personalized Fitting" },
   { icon: Truck, title: "Worldwide Express", sub: "Insured Global Delivery" },
@@ -104,7 +104,7 @@ export default async function Footer() {
 
               {/* Tagline */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#e5c158] text-[10px] tracking-[0.2em] uppercase font-medium">
-                <Sparkles className="w-3 h-3 text-[#d4af37]" />
+                
                 Wear Your Energy • Express Your Essence
               </div>
             </div>
@@ -239,19 +239,6 @@ export default async function Footer() {
                   Mon – Sat: 10:30 AM – 8:00 PM
                 </span>
               </div>
-
-              {/* Direct WhatsApp Assistance Button */}
-              <div className="pt-2">
-                <a
-                  href="https://wa.me/919886823456?text=Hello%20The%20Label%2018%2C%20I%20would%20like%20to%20inquire%20about%20your%20couture%20and%20jewellery%20collections."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-all text-xs font-medium tracking-wide shadow-sm"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
             </div>
           </div>
 
@@ -274,7 +261,7 @@ export default async function Footer() {
           </div>
 
           <div className="flex items-center gap-2 text-white/40">
-            <span>Crafted by</span>
+            <span>Developed by</span>
             <a
               href="https://rakvih.in/"
               target="_blank"

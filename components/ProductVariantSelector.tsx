@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import { toast } from "react-hot-toast";
 import WishlistButton from "@/components/WishlistButton";
-import { ShoppingBag, CheckCircle2, Sparkles, ShieldCheck, Truck, Clock } from "lucide-react";
+import { ShoppingBag, CheckCircle2, ShieldCheck, Truck, Clock } from "lucide-react";
 
 export default function ProductVariantSelector({
   productId,
@@ -347,7 +347,7 @@ export default function ProductVariantSelector({
       {/* Trust Pillars */}
       <div className="pt-4 border-t border-[#D4AF37]/20 grid grid-cols-2 gap-3 text-[10px] uppercase font-outfit tracking-widest text-[#1A1A1A]/70">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />
+          
           <span>100% Pure Silk</span>
         </div>
         <div className="flex items-center gap-2">

@@ -4,7 +4,7 @@ import { getProductById, getRelatedProducts } from "@/lib/supabase/products";
 import { getCategoriesTree } from "@/lib/categories";
 import ProductCard from "@/components/ProductCard";
 import ProductDetailClient from "@/components/ProductDetailClient";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -72,7 +72,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <div className="mt-20 pt-16 border-t border-[#D4AF37]/25">
             <div className="flex flex-col items-center text-center mb-12">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-3">
-                <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                
                 <span>The Label 18 • Complete The Ensemble</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#1A1A1A] tracking-wider uppercase font-normal">

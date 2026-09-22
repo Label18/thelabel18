@@ -6,7 +6,7 @@ import ExpandableCategoryDescription from "@/components/ExpandableCategoryDescri
 import ProductCard from "@/components/ProductCard";
 import { CategoryTree } from "@/lib/categories";
 import { ProductWithPrice } from "@/lib/supabase/products";
-import { Sparkles, ArrowRight, Layers, Tag } from "lucide-react";
+import { ArrowRight, Layers, Tag } from "lucide-react";
 
 
 
@@ -67,7 +67,7 @@ export default function ClothingShowcase({ category, products }: ClothingShowcas
         {/* Section Header */}
         <div className="flex flex-col items-center text-center mb-4 sm:mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/5 border border-black/10 text-[#1A1A1A] text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-medium mb-1.5">
-            <Sparkles className="w-3 h-3 text-[#1A1A1A]" />
+            
             Haute Couture Collection
           </div>
 

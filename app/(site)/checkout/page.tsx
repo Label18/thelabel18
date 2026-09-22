@@ -254,42 +254,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
-      {/* 1. DUAL COMPOSITION: Luxury Dark Hero Banner Header */}
-      <div className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-12 sm:py-16 mb-8 sm:mb-12 text-white">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full blur-[140px] bg-[#D4AF37]/12" />
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
-              backgroundSize: "28px 28px",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
-            <span>The Label 18 • Secure Checkout</span>
-          </div>
-
-          <h1 className="mb-2">
-            <span className="block font-outfit text-base sm:text-xl md:text-2xl font-light tracking-[0.18em] uppercase text-white/80">
-              Complete Your Order
-            </span>
-            <span className="block font-outfit text-2xl sm:text-4xl md:text-5xl font-bold tracking-[0.08em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_15px_rgba(212,175,55,0.35)] mt-1">
-              Bespoke Checkout
-            </span>
-          </h1>
-
-          <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
-
-          <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
-            256-Bit Encrypted Payment • Insured Global Delivery
-          </p>
-        </div>
-      </div>
+    <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] pb-24 selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-32 sm:pt-36">
 
       {/* 2. DUAL COMPOSITION: Warm Cream & Gold Luxury Checkout Area */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">

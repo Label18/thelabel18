@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import {
-  Sparkles,
   CheckCircle2,
   Clock,
   Truck,
@@ -235,7 +234,7 @@ export default function OrderDetailPage() {
 
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-            <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+            
             <span>The Label 18 • Bespoke Confirmation</span>
           </div>
 
@@ -270,7 +269,7 @@ export default function OrderDetailPage() {
             {/* Ordered Items Card */}
             <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-6 sm:p-7 shadow-sm">
               <div className="flex items-center gap-2 pb-4 mb-4 border-b border-[#D4AF37]/25">
-                <Sparkles className="w-4 h-4 text-[#9c7d23]" />
+                
                 <h2 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
                   Handcrafted Pieces in Order
                 </h2>
