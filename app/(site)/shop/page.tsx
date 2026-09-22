@@ -78,11 +78,31 @@ export default async function ShopPage({
   const categories = await getCategoriesTree();
 
   const page = params.page ? parseInt(params.page) : 1;
+
+  // Safely parse params: if category is a string like "jewellery", try to resolve its UUID or convert to search
+  const isUUID = (str?: string) => !str || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  
+  let resolvedCategoryId = params.category;
+  let resolvedSearch = params.q;
+
+  if (resolvedCategoryId && !isUUID(resolvedCategoryId)) {
+    const foundCat = categories.find((c) => c.name.toLowerCase() === resolvedCategoryId?.toLowerCase());
+    if (foundCat) {
+      resolvedCategoryId = foundCat.id;
+    } else {
+      resolvedSearch = resolvedSearch ? `${resolvedSearch} ${resolvedCategoryId}` : resolvedCategoryId;
+      resolvedCategoryId = undefined;
+    }
+  }
+
+  const resolvedSub = isUUID(params.sub) ? params.sub : undefined;
+  const resolvedSubSub = isUUID(params.subsub) ? params.subsub : undefined;
+
   const { items, total, pageSize } = await getProducts({
-    categoryId: params.category,
-    subCategoryId: params.sub,
-    subSubCategoryId: params.subsub,
-    search: params.q,
+    categoryId: resolvedCategoryId,
+    subCategoryId: resolvedSub,
+    subSubCategoryId: resolvedSubSub,
+    search: resolvedSearch,
     minPrice: params.min ? Number(params.min) : undefined,
     maxPrice: params.max ? Number(params.max) : undefined,
     sort: (params.sort as any) ?? "newest",
@@ -91,9 +111,9 @@ export default async function ShopPage({
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const crumbs = buildBreadcrumbs(categories, {
-    category: params.category,
-    sub: params.sub,
-    subsub: params.subsub,
+    category: resolvedCategoryId,
+    sub: resolvedSub,
+    subsub: resolvedSubSub,
   });
 
   return (

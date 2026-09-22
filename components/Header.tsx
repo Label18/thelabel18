@@ -386,7 +386,7 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
               className="py-3 border-b border-white/5 text-white/90 hover:text-[#d4af37] transition-colors font-light"
             >
-              About The Maison
+              About Us
             </Link>
 
             <Link

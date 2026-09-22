@@ -224,8 +224,8 @@ export default function AboutUs() {
           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
 
             {/* Left Column: Title & Founders Photo */}
-            <div className="lg:w-1/3 lg:sticky lg:top-28 h-fit space-y-6">
-              <div>
+            <div className="w-full lg:w-1/3 lg:sticky lg:top-28 h-fit space-y-6">
+              <div className="text-center lg:text-left">
                 <span className="font-outfit font-medium text-[10px] sm:text-[11px] tracking-[0.4em] uppercase text-[#9c7d23] mb-2 block">
                   The People Behind
                 </span>
@@ -233,14 +233,14 @@ export default function AboutUs() {
                   MEET THE <br />
                   <span className="font-semibold text-[#9c7d23]">FOUNDERS</span>
                 </h2>
-                <div className="w-10 h-[1.5px] bg-[#9c7d23]/60 mb-3" />
+                <div className="w-10 h-[1.5px] bg-[#9c7d23]/60 mb-3 mx-auto lg:mx-0" />
                 <p className="font-outfit font-medium text-xs tracking-[0.25em] uppercase text-[#1A1A1A]/75">
                   Priyanka &amp; Harish
                 </p>
               </div>
 
               {/* Founders Photo Collage (2 crossing polaroids) */}
-              <div className="relative w-full max-w-xs h-[320px] sm:h-[360px] pt-14">
+              <div className="relative w-full max-w-xs mx-auto lg:mx-0 h-[320px] sm:h-[360px] pt-14">
 
                 {/* Label + spring-style hand-drawn arrow */}
                 <div className="absolute -top-3 right-0 z-40 text-right">
@@ -257,11 +257,11 @@ export default function AboutUs() {
                 <div className="absolute top-10 left-0 w-[62%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-4 z-10 border border-neutral-200">
                   <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                     <Image
-                      src="/aboutusphoto.jpg"
-                      alt="Priyanka & Harish - Founders of The Label 18"
+                      src="/founder-photo-2.jpg"
+                      alt="The Founders"
                       fill
                       sizes="(max-width: 1024px) 62vw, 20vw"
-                      className="object-cover"
+                      className="object-cover object-center"
                     />
                   </div>
                 </div>
@@ -270,18 +270,17 @@ export default function AboutUs() {
                 <div className="absolute bottom-0 right-0 w-[56%] aspect-[4/5] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-5 z-20 border border-neutral-200">
                   <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                     <Image
-                      src="/aboutusphoto.jpg"
+                      src="/DSC06680.jpg"
                       alt="Priyanka & Harish - Founders of The Label 18"
                       fill
                       sizes="(max-width: 1024px) 56vw, 18vw"
-                      className="object-cover"
-                      style={{ objectPosition: "center 20%" }}
+                      className="object-cover object-center sm:object-[center_20%]"
                     />
                   </div>
 
                   {/* Instagram icon badge */}
                   <Link
-                    href="https://www.instagram.com/thelabel18"
+                    href="https://www.instagram.com/thelabel_18?igsi=c3E5YW8weXNrajJo&utm_source=qr"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="The Label 18 on Instagram"
