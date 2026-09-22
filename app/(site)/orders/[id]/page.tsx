@@ -358,12 +358,12 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* Styling Support Card */}
+            {/* Support Card */}
             <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] font-outfit flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-[#9c7d23]" />
-                  Need Bespoke Alterations or Styling Advice?
+                  Need Bespoke Alterations or Advice?
                 </p>
                 <p className="text-[11px] text-[#1A1A1A]/60 font-outfit">
                   Connect directly with our master atelier stylist on WhatsApp quoting Order #{order.id.slice(0, 8).toUpperCase()}.

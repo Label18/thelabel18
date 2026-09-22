@@ -249,7 +249,7 @@ export default async function Footer() {
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-all text-xs font-medium tracking-wide shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp Styling</span>
+                  <span>WhatsApp</span>
                 </a>
               </div>
             </div>

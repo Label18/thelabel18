@@ -45,7 +45,7 @@ export default function VipClubSection() {
                 </div>
                 <div className="p-3.5 rounded-xl bg-black/40 border border-white/10">
                   <MessageCircle className="w-4 h-4 text-[#d4af37] mb-1.5" />
-                  <h4 className="text-xs uppercase tracking-wider font-semibold text-white">WhatsApp Styling</h4>
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-white">WhatsApp</h4>
                   <p className="text-[10px] text-white/50 font-light mt-0.5">1-on-1 virtual or in-person guidance</p>
                 </div>
               </div>
