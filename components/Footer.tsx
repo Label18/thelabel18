@@ -240,7 +240,7 @@ export default async function Footer() {
                 </span>
               </div>
 
-              {/* Direct WhatsApp Concierge Button */}
+              {/* Direct WhatsApp Assistance Button */}
               <div className="pt-2">
                 <a
                   href="https://wa.me/919886823456?text=Hello%20The%20Label%2018%2C%20I%20would%20like%20to%20inquire%20about%20your%20couture%20and%20jewellery%20collections."
@@ -249,7 +249,7 @@ export default async function Footer() {
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-all text-xs font-medium tracking-wide shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp Styling Concierge</span>
+                  <span>WhatsApp Styling</span>
                 </a>
               </div>
             </div>

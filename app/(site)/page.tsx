@@ -104,7 +104,7 @@ export default function Home() {
       {/* 5. Brand Identity & 4 Pillars (Handcrafted Luxury, Hallmarked Purity, Bespoke Fitting, Express Shipping) - Completely at the bottom */}
       <BrandPhilosophy />
 
-      {/* 6. VIP Circle Concierge & Social Highlights */}
+      {/* 6. VIP Circle & Social Highlights */}
       <VipClubSection />
 
     </main>

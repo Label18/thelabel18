@@ -24,7 +24,7 @@ export default function VipClubSection() {
             <div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#e5c158] text-[11px] uppercase tracking-[0.25em] font-medium mb-3">
                 <Crown className="w-3.5 h-3.5 text-[#d4af37]" />
-                Private Concierge
+                Private Support
               </div>
 
               <h2 className="font-outfit text-3xl sm:text-4xl font-light tracking-tight leading-tight text-white mb-3">
@@ -74,21 +74,21 @@ export default function VipClubSection() {
               </div>
             </div>
 
-            {/* Right Column: Concierge & Direct Assistance Card */}
+            {/* Right Column: Direct Assistance Card */}
             <div className="p-6 sm:p-8 rounded-2xl bg-black/60 border border-[#d4af37]/30 backdrop-blur-xl flex flex-col justify-between">
               <div>
                 <span className="text-[11px] uppercase tracking-[0.2em] text-[#d4af37] font-medium block mb-1">
                   Bespoke Assistance
                 </span>
                 <h3 className="font-outfit text-xl font-light text-white mb-2">
-                  Personal Concierge Service
+                  Personal Service
                 </h3>
                 <p className="text-white/60 text-xs font-light mb-6 leading-relaxed">
-                  Have questions about our royal collections, custom fits, or bespoke orders? Our luxury concierge is here to assist you instantly.
+                  Have questions about our royal collections, custom fits, or bespoke orders? Our luxury support team is here to assist you instantly.
                 </p>
               </div>
 
-              {/* Direct WhatsApp Concierge CTA */}
+              {/* Direct WhatsApp CTA */}
               <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <span className="text-[10px] text-white/50 block font-light">Need Immediate Assistance?</span>
@@ -101,7 +101,7 @@ export default function VipClubSection() {
                   className="w-full sm:w-auto px-6 py-3 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] text-xs font-medium tracking-wider flex items-center justify-center gap-2 hover:bg-[#25D366] hover:text-black transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp Concierge</span>
+                  <span>WhatsApp Assistance</span>
                 </a>
               </div>
             </div>

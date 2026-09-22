@@ -358,7 +358,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* Styling Concierge Card */}
+            {/* Styling Support Card */}
             <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] font-outfit flex items-center gap-2">
@@ -375,7 +375,7 @@ export default function OrderDetailPage() {
                 rel="noreferrer"
                 className="shrink-0 px-4 py-2 rounded-full border border-[#D4AF37] text-[#9c7d23] hover:bg-[#D4AF37] hover:text-black transition-all text-[10.5px] uppercase tracking-wider font-semibold font-outfit"
               >
-                Chat Concierge
+                Chat Support
               </a>
             </div>
           </div>

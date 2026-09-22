@@ -94,8 +94,8 @@ export const heroSlides = [
     ctaPrimary: "EXPLORE CLOTHING",
     ctaSecondary: "+ FINE JEWELLERY",
     editionLabel: "+ ROYAL COUTURE EDITION",
-    desktopImage: "/hero_slide_3.jpg",
-    mobileImage: "/hero_slide_3.jpg",
+    desktopImage: "/hero_slide_3.png",
+    mobileImage: "/hero_slide_3.png",
     desktopPosition: "object-[center_top]",
     mobilePosition: "object-[75%_top]",
     glow: "rgba(212, 175, 55, 0.32)",
@@ -169,9 +169,8 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
           return (
             <div
               key={s.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isActive ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0 pointer-events-none"
-              }`}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${isActive ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0 pointer-events-none"
+                }`}
             >
               {/* DESKTOP BANNER (Top anchored, large panoramic view) */}
               <div className="hidden sm:block absolute inset-0">
@@ -180,7 +179,8 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                   alt={`${s.line1} ${s.line2} — The Label 18`}
                   fill
                   priority={true}
-                  quality={95}
+                  quality={100}
+                  unoptimized={true}
                   sizes="100vw"
                   className={`object-cover ${s.desktopPosition} transition-transform duration-[7000ms] ${
                     isActive ? "scale-100" : "scale-105"
@@ -195,7 +195,8 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                   alt={`${s.line1} ${s.line2} — The Label 18`}
                   fill
                   priority={true}
-                  quality={95}
+                  quality={100}
+                  unoptimized={true}
                   sizes="100vw"
                   className={`object-cover ${s.mobilePosition} transition-transform duration-[7000ms] ${
                     isActive ? "scale-100" : "scale-105"
@@ -237,7 +238,7 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
       {/* ========================================================================= */}
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 w-full pb-6 sm:pb-8 lg:pb-0 pt-20 lg:pt-0">
         <div className="max-w-md lg:max-w-lg">
-          
+
           {/* ELEMENT 1: TITLE (Small, refined luxury text) */}
           <h1 className="font-outfit uppercase leading-[1.12] mb-2 sm:mb-2.5">
             <span className="block text-xs sm:text-sm md:text-base font-light tracking-[0.2em] text-white/90">
@@ -273,57 +274,29 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
             </Link>
           </div>
 
-          {/* ELEMENT 4: PHOTO SCROLLING (Tucked directly beneath buttons) */}
-          <div className="flex items-center gap-3 max-w-sm pt-2 sm:pt-2.5 border-t border-white/15">
-            {/* 2-Story Progress Bars & Counter */}
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 mb-1">
-                {heroSlides.map((s, idx) => {
-                  const isPast = idx < currentSlide;
-                  const isCurrent = idx === currentSlide;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => goToSlide(idx)}
-                      className="flex-1 h-1 rounded-full bg-white/20 overflow-hidden cursor-pointer group py-1 -my-1"
-                      aria-label={`Jump to slide ${idx + 1}`}
-                    >
-                      <div
-                        className="h-1 rounded-full bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] transition-all duration-75 ease-linear shadow-[0_0_6px_rgba(212,175,55,0.6)]"
-                        style={{
-                          width: isPast ? "100%" : isCurrent ? `${progress}%` : "0%",
-                        }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex items-center justify-between text-[8.5px] sm:text-[9.5px] uppercase tracking-widest text-white/60 font-mono">
-                <span>PHOTO 0{currentSlide + 1} OF 0{heroSlides.length}</span>
-                <span className="text-[#D4AF37] font-medium">{active.editionLabel}</span>
-              </div>
-            </div>
 
-            {/* Prev / Next Slide Chevrons */}
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={prevSlide}
-                aria-label="Previous Slide"
-                className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:border-[#D4AF37] flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={nextSlide}
-                aria-label="Next Slide"
-                className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:border-[#D4AF37] flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
 
         </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. SIDE NAVIGATION ARROWS (Perfectly centered on the edges)              */}
+      {/* ========================================================================= */}
+      <div className="absolute inset-y-0 left-0 right-0 z-30 flex items-center justify-between pointer-events-none px-3 sm:px-6 lg:px-10">
+        <button
+          onClick={prevSlide}
+          aria-label="Previous Slide"
+          className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-sm border border-white/10 hover:border-[#D4AF37] text-white/70 hover:text-[#D4AF37] flex items-center justify-center transition-all duration-300 active:scale-90 shadow-sm"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          aria-label="Next Slide"
+          className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-sm border border-white/10 hover:border-[#D4AF37] text-white/70 hover:text-[#D4AF37] flex items-center justify-center transition-all duration-300 active:scale-90 shadow-sm"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
       </div>
     </section>
   );

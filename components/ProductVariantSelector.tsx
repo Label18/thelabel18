@@ -344,7 +344,7 @@ export default function ProductVariantSelector({
         />
       </div>
 
-      {/* Concierge Trust Pillars */}
+      {/* Trust Pillars */}
       <div className="pt-4 border-t border-[#D4AF37]/20 grid grid-cols-2 gap-3 text-[10px] uppercase font-outfit tracking-widest text-[#1A1A1A]/70">
         <div className="flex items-center gap-2">
           <Sparkles className="w-3.5 h-3.5 text-[#9c7d23] flex-shrink-0" />

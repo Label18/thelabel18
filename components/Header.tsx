@@ -113,7 +113,7 @@ export default function Header() {
               className="hidden md:inline-flex items-center gap-1.5 text-[#25D366] hover:text-white transition-colors font-medium"
             >
               <MessageCircle className="w-3 h-3" />
-              <span>WhatsApp Concierge: +91 98868 23456</span>
+              <span>WhatsApp: +91 98868 23456</span>
             </a>
             <span className="hidden lg:inline text-white/30">•</span>
             <span className="hidden lg:inline text-white/60">Boutique: Jayanagar, Bengaluru</span>
@@ -426,7 +426,7 @@ export default function Header() {
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] text-xs font-medium tracking-wide shadow-sm"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Styling Concierge</span>
+              <span>WhatsApp Styling</span>
             </a>
           </div>
 
