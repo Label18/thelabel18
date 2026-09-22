@@ -83,17 +83,25 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
   // --- Share Logic ---
   const handleShare = async () => {
+    const url = new URL(window.location.href);
+    if (selectedColor) {
+      url.searchParams.set("color", selectedColor);
+    } else {
+      url.searchParams.delete("color");
+    }
+    const shareUrl = url.toString();
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: product.name,
-          url: window.location.href,
+          url: shareUrl,
         });
       } catch (err) {
         console.log("Share canceled or failed", err);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       alert("Link copied to clipboard!");
     }
   };
