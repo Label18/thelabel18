@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
       // before your action's own validation/error handling ever ran —
       // that's why you were seeing a generic "Failed to fetch" instead of
       // a message from actions.ts.
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "50mb",
     },
   },
 };

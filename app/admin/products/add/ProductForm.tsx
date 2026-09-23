@@ -667,6 +667,26 @@ export default function ProductForm({
       return
     }
 
+    // Calculate total image size to prevent server payload errors
+    const MAX_PAYLOAD_MB = 45;
+    const MAX_PAYLOAD_BYTES = MAX_PAYLOAD_MB * 1024 * 1024;
+    let totalSize = 0;
+    
+    if (mainImage) totalSize += mainImage.size;
+    variations.forEach(v => {
+      v.images.forEach(img => {
+        totalSize += img.size;
+      });
+    });
+
+    if (totalSize > MAX_PAYLOAD_BYTES) {
+      const currentMB = (totalSize / (1024 * 1024)).toFixed(1);
+      const msg = `Total image size (${currentMB}MB) exceeds the ${MAX_PAYLOAD_MB}MB limit. Please remove some images.`;
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
     if (mainImage) formData.set('image', mainImage)
     if (isEdit && product) {
       formData.set('existing_image_url', product.image_url || '')
