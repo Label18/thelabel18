@@ -163,7 +163,12 @@ function EditSubSubCategoryModal({
                         setError(null)
                         formData.set('existingImageUrl', subSubCategory.image_url ?? '')
                         try {
-                            await updateSubSubCategory(subSubCategory.id, formData)
+                            const res = await updateSubSubCategory(subSubCategory.id, formData)
+                            if (res && !res.success) {
+                                setError(res.error || 'Failed to update sub-sub-category')
+                                toast.error(res.error || 'Failed to update sub-sub-category')
+                                return
+                            }
                             toast.success('Sub-sub-category updated successfully')
                             onClose()
                         } catch (err) {
@@ -335,7 +340,13 @@ function AddSubSubCategoryModal({
                         action={async (formData) => {
                             setError(null)
                             try {
-                                await addSubSubCategory(formData)
+                                const res = await addSubSubCategory(formData)
+                                if (res && !res.success) {
+                                    setError(res.error || 'Failed to add sub-sub-category')
+                                    toast.error(res.error || 'Failed to add sub-sub-category')
+                                    return
+                                }
+                                toast.success('Sub-sub-category added successfully')
                                 onClose()
                             } catch (err) {
                                 setError(err instanceof Error ? err.message : 'Something went wrong')

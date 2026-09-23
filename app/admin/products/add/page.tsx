@@ -1,15 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { getAdminSupabase } from '@/lib/supabase/admin'
 import ProductForm from './ProductForm'
 
 export const dynamic = 'force-dynamic'
 
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export default async function AddProductPage(props: { searchParams?: any }) {
+  const supabase = getAdminSupabase()
   const searchParams = await (props.searchParams || Promise.resolve({}))
   const editId = searchParams.edit_id
 

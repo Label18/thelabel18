@@ -573,6 +573,7 @@ export default function ProductForm({
   const isEdit = !!product
   const [categoryId, setCategoryId] = useState(product?.category_id || '')
   const [subCategoryId, setSubCategoryId] = useState(product?.sub_category_id || '')
+  const [subSubCategoryId, setSubSubCategoryId] = useState(product?.sub_sub_category_id || '')
   const [mainImage, setMainImage] = useState<File | null>(null)
   const [variations, setVariations] = useState<Variation[]>(
     isEdit && product && product.variations.length > 0
@@ -643,11 +644,13 @@ export default function ProductForm({
       setMainImage(null)
       setCategoryId(product.category_id || '')
       setSubCategoryId(product.sub_category_id || '')
+      setSubSubCategoryId(product.sub_sub_category_id || '')
     } else {
       setVariations([emptyVariation()])
       setMainImage(null)
       setCategoryId('')
       setSubCategoryId('')
+      setSubSubCategoryId('')
       setSkuLabel('')
     }
     setError(null)
@@ -695,12 +698,22 @@ export default function ProductForm({
     startTransition(async () => {
       try {
         if (isEdit && product) {
-          await updateProduct(product.id, formData)
+          const res = await updateProduct(product.id, formData)
+          if (res && !res.success) {
+            setError(res.error || 'Failed to update product')
+            toast.error(res.error || 'Failed to update product')
+            return
+          }
           toast.success('Product updated successfully')
           setSuccess(true)
           window.location.href = '/admin/products/list'
         } else {
-          await createProduct(formData)
+          const res = await createProduct(formData)
+          if (res && !res.success) {
+            setError(res.error || 'Failed to create product')
+            toast.error(res.error || 'Failed to create product')
+            return
+          }
           commitSkuNumber(normalizedLabel, skuNumber)
           toast.success('Product created successfully')
           setSuccess(true)
@@ -709,6 +722,7 @@ export default function ProductForm({
           setMainImage(null)
           setCategoryId('')
           setSubCategoryId('')
+          setSubSubCategoryId('')
           setSkuLabel('')
             ; (document.getElementById('add-product-form') as HTMLFormElement)?.reset()
         }
@@ -812,6 +826,7 @@ export default function ProductForm({
                 onChange={(e) => {
                   setCategoryId(e.target.value)
                   setSubCategoryId('')
+                  setSubSubCategoryId('')
                 }}
                 className={inputClass}
               >
@@ -829,7 +844,10 @@ export default function ProductForm({
               <select
                 name="sub_category_id"
                 value={subCategoryId}
-                onChange={(e) => setSubCategoryId(e.target.value)}
+                onChange={(e) => {
+                  setSubCategoryId(e.target.value)
+                  setSubSubCategoryId('')
+                }}
                 disabled={!categoryId}
                 className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
               >
@@ -848,7 +866,8 @@ export default function ProductForm({
               <label className={labelClass}>Sub Sub Category</label>
               <select
                 name="sub_sub_category_id"
-                defaultValue={product?.sub_sub_category_id || ""}
+                value={subSubCategoryId}
+                onChange={(e) => setSubSubCategoryId(e.target.value)}
                 disabled={!subCategoryId}
                 className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50 sm:max-w-xs`}
               >

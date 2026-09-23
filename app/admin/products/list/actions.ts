@@ -2,20 +2,17 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { getAdminSupabase } from '@/lib/supabase/admin'
 
 export async function toggleProductVisibility(id: string, nextValue: boolean) {
+  const supabase = getAdminSupabase()
   const { error } = await supabase.from('products').update({ is_visible: nextValue }).eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/admin/products/list')
 }
 
 export async function toggleVariationVisibility(id: string, nextValue: boolean) {
+  const supabase = getAdminSupabase()
   const { error } = await supabase
     .from('product_variations')
     .update({ is_visible: nextValue })
@@ -25,6 +22,7 @@ export async function toggleVariationVisibility(id: string, nextValue: boolean) 
 }
 
 export async function deleteProduct(id: string, imageUrl: string | null) {
+  const supabase = getAdminSupabase()
   if (imageUrl) {
     const path = imageUrl.split('product-images/')[1]
     if (path) await supabase.storage.from('product-images').remove([path])

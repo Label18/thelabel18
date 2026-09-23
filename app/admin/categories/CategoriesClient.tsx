@@ -146,7 +146,12 @@ function EditCategoryModal({
                         setError(null)
                         formData.set('existingImageUrl', category.image_url ?? '')
                         try {
-                            await updateCategory(category.id, formData)
+                            const res = await updateCategory(category.id, formData)
+                            if (res && !res.success) {
+                                setError(res.error || 'Failed to update category')
+                                toast.error(res.error || 'Failed to update category')
+                                return
+                            }
                             toast.success('Category updated successfully')
                             onClose()
                         } catch (err) {
@@ -290,7 +295,12 @@ function AddCategoryModal({ onClose }: { onClose: () => void }) {
                     action={async (formData) => {
                         setError(null)
                         try {
-                            await addCategory(formData)
+                            const res = await addCategory(formData)
+                            if (res && !res.success) {
+                                setError(res.error || 'Failed to add category')
+                                toast.error(res.error || 'Failed to add category')
+                                return
+                            }
                             toast.success('Category added successfully')
                             onClose()
                         } catch (err) {

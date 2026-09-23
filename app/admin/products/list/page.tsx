@@ -1,16 +1,11 @@
 // app/admin/products/list/page.tsx
-import { createClient } from '@supabase/supabase-js'
+import { getAdminSupabase } from '@/lib/supabase/admin'
 import ProductsListClient, { type ProductRow } from './ProductsListClient'
 
 export const dynamic = 'force-dynamic'
 
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export default async function ProductsListPage() {
+  const supabase = getAdminSupabase()
   const { data, error } = await supabase
     .from('products')
     .select(
