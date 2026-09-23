@@ -55,7 +55,7 @@ type OrderItem = {
   unit_price: number;
   quantity: number;
   line_total: number;
-  product_variations?: { image_url: string | null; color?: string; size?: string } | null;
+  product_variations?: { image_url: string | null; image_urls: string[] | null; color?: string; size?: string } | null;
 };
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; icon: any }> = {
@@ -121,7 +121,7 @@ export default function OrderDetailPage() {
         supabase.from("orders").select("*").eq("id", orderId).single(),
         supabase
           .from("order_items")
-          .select("id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total, product_variations(image_url, color, size)")
+          .select("id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total, product_variations(image_url, image_urls, color, size)")
           .eq("order_id", orderId),
       ]);
 
@@ -277,7 +277,7 @@ export default function OrderDetailPage() {
 
               <div className="divide-y divide-[#D4AF37]/15">
                 {items.map((item) => {
-                  const itemImg = item.product_variations?.image_url;
+                  const itemImg = (item.product_variations?.image_urls && item.product_variations.image_urls.length > 0) ? item.product_variations.image_urls[0] : item.product_variations?.image_url;
                   const itemPrice = Number(item.line_total ?? (Number(item.unit_price ?? 0) * item.quantity));
                   const variantInfo = [
                     item.product_variations?.color,

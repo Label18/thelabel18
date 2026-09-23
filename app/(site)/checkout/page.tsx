@@ -23,6 +23,7 @@ type CartRow = {
     color: string | null;
     size: string | null;
     image_url: string | null;
+    image_urls: string[] | null;
     stock_quantity: number;
   } | null;
 };
@@ -58,7 +59,7 @@ export default function CheckoutPage() {
       supabase
         .from("cart_items")
         .select(
-          "id, quantity, product_id, variation_id, products(id, name, image_url), product_variations(id, price, color, size, image_url, stock_quantity)"
+          "id, quantity, product_id, variation_id, products(id, name, image_url), product_variations(id, price, color, size, image_url, image_urls, stock_quantity)"
         )
         .eq("user_id", user.id),
       getAddresses(user.id),
@@ -362,7 +363,7 @@ export default function CheckoutPage() {
                   {items.map((item) => {
                     const variation = item.product_variations;
                     const product = item.products;
-                    const image = variation?.image_url || product?.image_url;
+                    const image = (variation?.image_urls && variation?.image_urls.length > 0) ? variation.image_urls[0] : (variation?.image_url || product?.image_url);
                     const price = Number(variation?.price ?? 0);
 
                     return (

@@ -84,9 +84,9 @@ export async function createProduct(formData: FormData) {
     const price = Number(formData.get(`variations[${i}][price]`) || 0)
     const compareRaw = formData.get(`variations[${i}][compare_at_price]`)
     const compare_at_price = compareRaw && String(compareRaw).trim() !== '' ? Number(compareRaw) : null
-    const variationImageFile = formData.get(`variations[${i}][image]`) as File | null
-
-    const variationImageUrl = await uploadImage(variationImageFile)
+    const variationImageFiles = formData.getAll(`variations[${i}][images][]`) as File[]
+    const uploadedUrls = await Promise.all(variationImageFiles.map(f => uploadImage(f)))
+    const validVariationImageUrls = uploadedUrls.filter(Boolean) as string[]
 
     const suffix = [slug(color || ''), slug(size || '')].filter(Boolean).join('-')
     const variationSku = suffix ? `${sku}-${suffix}` : `${sku}-${i + 1}`
@@ -100,7 +100,8 @@ export async function createProduct(formData: FormData) {
       stock_quantity,
       price,
       compare_at_price,
-      image_url: variationImageUrl,
+      image_url: validVariationImageUrls.length > 0 ? validVariationImageUrls[0] : null,
+      image_urls: validVariationImageUrls,
     })
 
     if (varError) throw new Error(`Variation ${i + 1}: ${varError.message}`)
@@ -145,11 +146,13 @@ export async function updateProduct(productId: string, formData: FormData) {
     const price = Number(formData.get(`variations[${i}][price]`) || 0)
     const compareRaw = formData.get(`variations[${i}][compare_at_price]`)
     const compare_at_price = compareRaw && String(compareRaw).trim() !== '' ? Number(compareRaw) : null
-    const variationImageFile = formData.get(`variations[${i}][image]`) as File | null
-    const existingVariationImage = String(formData.get(`variations[${i}][existing_image_url]`) || '') || null
+    const variationImageFiles = formData.getAll(`variations[${i}][images][]`) as File[]
+    const existingVariationImages = formData.getAll(`variations[${i}][existing_image_urls][]`) as string[]
 
-    const uploadedUrl = await uploadImage(variationImageFile)
-    const variationImageUrl = uploadedUrl ?? existingVariationImage
+    const uploadedUrls = await Promise.all(variationImageFiles.map(f => uploadImage(f)))
+    const validUploadedUrls = uploadedUrls.filter(Boolean) as string[]
+    
+    const variationImageUrls = [...existingVariationImages, ...validUploadedUrls]
 
     const suffix = [slug(color || ''), slug(size || '')].filter(Boolean).join('-')
     const variationSku = suffix ? `${sku}-${suffix}` : `${sku}-${i + 1}`
@@ -163,7 +166,8 @@ export async function updateProduct(productId: string, formData: FormData) {
       stock_quantity,
       price,
       compare_at_price,
-      image_url: variationImageUrl,
+      image_url: variationImageUrls.length > 0 ? variationImageUrls[0] : null,
+      image_urls: variationImageUrls,
     })
 
     if (varError) throw new Error(`Variation ${i + 1}: ${varError.message}`)

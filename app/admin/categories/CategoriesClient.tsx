@@ -133,19 +133,17 @@ function EditCategoryModal({
                 </div>
 
                 <form
-                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
+                    action={async (formData) => {
                         setError(null)
                         formData.set('existingImageUrl', category.image_url ?? '')
-                        startTransition(async () => {
-                            try {
-                                await updateCategory(category.id, formData)
-                                toast.success('Category updated successfully')
-                                onClose()
-                            } catch (err) {
-                                setError(err instanceof Error ? err.message : 'Something went wrong')
-                                toast.error('Failed to update category')
-                            }
-                        })
+                        try {
+                            await updateCategory(category.id, formData)
+                            toast.success('Category updated successfully')
+                            onClose()
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Something went wrong')
+                            toast.error('Failed to update category')
+                        }
                     }}
                     className="space-y-4"
                 >
@@ -272,18 +270,16 @@ function AddCategoryModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <form
-                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
+                    action={async (formData) => {
                         setError(null)
-                        startTransition(async () => {
-                            try {
-                                await addCategory(formData)
-                                toast.success('Category added successfully')
-                                onClose()
-                            } catch (err) {
-                                setError(err instanceof Error ? err.message : 'Something went wrong')
-                                toast.error('Failed to add category')
-                            }
-                        })
+                        try {
+                            await addCategory(formData)
+                            toast.success('Category added successfully')
+                            onClose()
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Something went wrong')
+                            toast.error('Failed to add category')
+                        }
                     }}
                     className="space-y-4"
                 >

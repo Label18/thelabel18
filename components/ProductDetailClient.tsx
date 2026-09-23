@@ -31,9 +31,12 @@ export default function ProductDetailClient({ product, initialColor }: { product
     const seen = new Set<string>();
 
     for (const v of variations as ProductVariation[]) {
-      if (v.image_url && !seen.has(v.image_url)) {
-        seen.add(v.image_url);
-        list.push({ src: v.image_url, color: v.color });
+      const urls = v.image_urls && v.image_urls.length > 0 ? v.image_urls : (v.image_url ? [v.image_url] : []);
+      for (const url of urls) {
+        if (!seen.has(url)) {
+          seen.add(url);
+          list.push({ src: url, color: v.color });
+        }
       }
     }
 

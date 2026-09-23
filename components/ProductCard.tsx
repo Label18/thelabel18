@@ -8,7 +8,7 @@ import MiniWishlistButton from "./MiniWishlistButton";
 import MiniCartButton from "./MiniCartButton";
 
 export default function ProductCard({ product }: { product: ProductWithPrice }) {
-  const defaultImage = product.image_url || product.product_variations[0]?.image_url;
+  const defaultImage = product.image_url || product.product_variations[0]?.image_urls?.[0] || product.product_variations[0]?.image_url;
 
   // Extract unique colors that have an associated image or hex code
   const colorVariations = useMemo(() => {
@@ -19,7 +19,7 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
       if (v.color && v.color_hex && !uniqueColors.has(v.color)) {
         uniqueColors.set(v.color, {
           hex: v.color_hex,
-          img: v.image_url || null
+          img: (v.image_urls && v.image_urls.length > 0) ? v.image_urls[0] : (v.image_url || null)
         });
       }
     });

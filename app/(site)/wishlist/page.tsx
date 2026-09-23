@@ -27,6 +27,7 @@ type WishlistRow = {
     color: string | null;
     size: string | null;
     image_url: string | null;
+    image_urls: string[] | null;
   } | null;
 };
 
@@ -79,7 +80,7 @@ export default function WishlistPage() {
           sub_category:sub_categories(is_visible),
           sub_sub_category:sub_sub_categories(is_visible)
         ), 
-        product_variations(id, price, compare_at_price, stock_quantity, color, size, image_url)
+        product_variations(id, price, compare_at_price, stock_quantity, color, size, image_url, image_urls)
       `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -128,7 +129,7 @@ export default function WishlistPage() {
       variationIds.length > 0
         ? supabase
             .from("product_variations")
-            .select("id, price, color, size, stock_quantity, image_url")
+            .select("id, price, color, size, stock_quantity, image_url, image_urls")
             .in("id", variationIds)
         : Promise.resolve({ data: [] }),
     ]);
@@ -144,7 +145,7 @@ export default function WishlistPage() {
         productId: item.productId,
         variationId: item.variationId,
         name: dbProduct?.name ?? item.name ?? "Product",
-        image: dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null,
+        image: (dbVar?.image_urls && dbVar?.image_urls.length > 0) ? dbVar.image_urls[0] : (dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null),
         color: dbVar?.color ?? item.color ?? null,
         size: dbVar?.size ?? item.size ?? null,
         price: dbVar?.price != null ? Number(dbVar.price) : item.price ?? null,
@@ -184,7 +185,7 @@ export default function WishlistPage() {
           productId: item.product_id,
           variationId: item.variation_id,
           name: product?.name ?? "Product",
-          image: variation?.image_url || product?.image_url || null,
+          image: (variation?.image_urls && variation?.image_urls.length > 0) ? variation.image_urls[0] : (variation?.image_url || product?.image_url || null),
           color: variation?.color ?? null,
           size: variation?.size ?? null,
           price: variation?.price != null ? Number(variation.price) : null,

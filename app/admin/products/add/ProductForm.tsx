@@ -39,6 +39,7 @@ type ExistingProduct = {
     price: number
     compare_at_price: number | null
     image_url: string | null
+    image_urls?: string[]
   }[]
 }
 
@@ -50,8 +51,8 @@ type Variation = {
   stock: string
   price: string
   compare_at_price: string
-  image: File | null
-  existing_image_url?: string | null
+  images: File[]
+  existing_image_urls: string[]
 }
 
 function emptyVariation(): Variation {
@@ -63,7 +64,8 @@ function emptyVariation(): Variation {
     stock: '0',
     price: '',
     compare_at_price: '',
-    image: null,
+    images: [],
+    existing_image_urls: [],
   }
 }
 
@@ -280,6 +282,91 @@ function ImagePicker({
   )
 }
 
+function MultiImagePicker({
+  files,
+  existingUrls,
+  onChange,
+  label,
+}: {
+  files: File[]
+  existingUrls: string[]
+  onChange: (files: File[], urls: string[]) => void
+  label: string
+}) {
+  const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files])
+
+  const handleAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+      onChange([...files, ...newFiles], existingUrls)
+    }
+  }
+
+  const handleRemoveFile = (index: number) => {
+    const newFiles = [...files]
+    newFiles.splice(index, 1)
+    onChange(newFiles, existingUrls)
+  }
+
+  const handleRemoveExisting = (index: number) => {
+    const newUrls = [...existingUrls]
+    newUrls.splice(index, 1)
+    onChange(files, newUrls)
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-3">
+        {existingUrls.map((url, i) => (
+          <div key={`existing-${i}`} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt={`${label} existing ${i}`} className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => handleRemoveExisting(i)}
+              className="absolute top-1 right-1 rounded-full bg-white/80 p-0.5 text-stone-600 hover:text-rose-500 backdrop-blur"
+              aria-label="Remove image"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ))}
+        {previews.map((preview, i) => (
+          <div key={`new-${i}`} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt={`${label} new ${i}`} className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => handleRemoveFile(i)}
+              className="absolute top-1 right-1 rounded-full bg-white/80 p-0.5 text-stone-600 hover:text-rose-500 backdrop-blur"
+              aria-label="Remove image"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ))}
+        {existingUrls.length === 0 && files.length === 0 && (
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">
+            <ImageOff size={18} />
+          </div>
+        )}
+      </div>
+      <div>
+        <label className="inline-block cursor-pointer rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-stone-700 transition-colors hover:border-black hover:text-black">
+          Add images
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleAdd}
+          />
+        </label>
+      </div>
+    </div>
+  )
+}
+
 // ---- Color picker (Family -> Shade) ---------------------------------------
 // Search-friendly: picking "Pink" as the family, then a specific shade,
 // stores both the exact shade (color/color_hex) and the broader family
@@ -469,8 +556,10 @@ export default function ProductForm({
         stock: String(v.stock_quantity),
         price: String(v.price),
         compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
-        image: null,
-        existing_image_url: v.image_url,
+        images: [],
+        existing_image_urls: v.image_urls && v.image_urls.length > 0 
+          ? v.image_urls 
+          : v.image_url ? [v.image_url] : [],
       }))
       : [emptyVariation()]
   )
@@ -516,8 +605,10 @@ export default function ProductForm({
             stock: String(v.stock_quantity),
             price: String(v.price),
             compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
-            image: null,
-            existing_image_url: v.image_url,
+            images: [],
+            existing_image_urls: v.image_urls && v.image_urls.length > 0 
+              ? v.image_urls 
+              : v.image_url ? [v.image_url] : [],
           }))
           : [emptyVariation()]
       )
@@ -561,10 +652,16 @@ export default function ProductForm({
       formData.set(`variations[${i}][stock]`, v.stock)
       formData.set(`variations[${i}][price]`, v.price)
       formData.set(`variations[${i}][compare_at_price]`, v.compare_at_price)
+      
       if (isEdit) {
-        formData.set(`variations[${i}][existing_image_url]`, v.existing_image_url || '')
+        v.existing_image_urls.forEach((url, imgIndex) => {
+          formData.append(`variations[${i}][existing_image_urls][]`, url)
+        })
       }
-      if (v.image) formData.set(`variations[${i}][image]`, v.image)
+      
+      v.images.forEach((img, imgIndex) => {
+        formData.append(`variations[${i}][images][]`, img)
+      })
     })
 
     startTransition(async () => {
@@ -864,12 +961,12 @@ export default function ProductForm({
                   </div>
                   <div className="col-span-2 space-y-1 sm:col-span-2">
                     <label className="text-[11px] font-medium text-stone-500">
-                      Image for this variation
+                      Images for this variation
                     </label>
-                    <ImagePicker
-                      file={v.image}
-                      existingUrl={v.existing_image_url}
-                      onChange={(f) => updateVariation(v.key, { image: f })}
+                    <MultiImagePicker
+                      files={v.images}
+                      existingUrls={v.existing_image_urls}
+                      onChange={(files, urls) => updateVariation(v.key, { images: files, existing_image_urls: urls })}
                       label={`${v.color || 'No Color'} image`}
                     />
                   </div>

@@ -32,6 +32,7 @@ type CartRow = {
     stock_quantity: number;
     sku: string;
     image_url: string | null;
+    image_urls: string[] | null;
   } | null;
 };
 
@@ -89,7 +90,7 @@ export default function CartPage() {
           sub_category:sub_categories(is_visible),
           sub_sub_category:sub_sub_categories(is_visible)
         ), 
-        product_variations(id, size, color, color_hex, price, compare_at_price, stock_quantity, sku, image_url)
+        product_variations(id, size, color, color_hex, price, compare_at_price, stock_quantity, sku, image_url, image_urls)
       `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -138,7 +139,7 @@ export default function CartPage() {
       variationIds.length > 0
         ? supabase
             .from("product_variations")
-            .select("id, size, color, price, stock_quantity, sku, image_url")
+            .select("id, size, color, price, stock_quantity, sku, image_url, image_urls")
             .in("id", variationIds)
         : Promise.resolve({ data: [] }),
     ]);
@@ -155,7 +156,7 @@ export default function CartPage() {
         variationId: item.variationId,
         quantity: item.quantity,
         name: dbProduct?.name ?? item.name,
-        image: dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null,
+        image: (dbVar?.image_urls && dbVar?.image_urls.length > 0) ? dbVar.image_urls[0] : (dbVar?.image_url ?? dbProduct?.image_url ?? item.image ?? null),
         color: dbVar?.color ?? item.color ?? null,
         size: dbVar?.size ?? item.size ?? null,
         sku: dbVar?.sku ?? dbProduct?.sku ?? null,
@@ -205,7 +206,7 @@ export default function CartPage() {
           variationId: item.variation_id,
           quantity: item.quantity,
           name: product?.name ?? "Product",
-          image: variation?.image_url || product?.image_url || null,
+          image: (variation?.image_urls && variation?.image_urls.length > 0) ? variation.image_urls[0] : (variation?.image_url || product?.image_url || null),
           color: variation?.color ?? null,
           size: variation?.size ?? null,
           sku: variation?.sku ?? null,

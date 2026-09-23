@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
 import { Poppins } from 'next/font/google'
 import { Plus, Trash2, ImageOff, X, Pencil, Search, Layers, CheckCircle2, EyeOff } from 'lucide-react'
@@ -116,6 +117,19 @@ function PriorityInput({
     )
 }
 
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+    const { pending } = useFormStatus()
+    return (
+        <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-xl bg-[#141414] py-3 text-xs font-bold uppercase tracking-widest text-[#F5F1E8] transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+            {pending ? pendingLabel : label}
+        </button>
+    )
+}
+
 function EditSubCategoryModal({
     subCategory,
     categoryOptions,
@@ -125,7 +139,6 @@ function EditSubCategoryModal({
     categoryOptions: CategoryOption[]
     onClose: () => void
 }) {
-    const [pending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
     // Preview shown in the modal: starts as the existing image, swaps to the
     // newly picked file's preview once the user selects one. An image is
@@ -151,19 +164,17 @@ function EditSubCategoryModal({
                 </div>
 
                 <form
-                    onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
+                    action={async (formData) => {
                         setError(null)
                         formData.set('existingImageUrl', subCategory.image_url ?? '')
-                        startTransition(async () => {
-                            try {
-                                await updateSubCategory(subCategory.id, formData)
-                                toast.success('Sub-category updated successfully')
-                                onClose()
-                            } catch (err) {
-                                setError(err instanceof Error ? err.message : 'Something went wrong')
-                                toast.error('Operation failed')
-                            }
-                        })
+                        try {
+                            await updateSubCategory(subCategory.id, formData)
+                            toast.success('Sub-category updated successfully')
+                            onClose()
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Something went wrong')
+                            toast.error('Operation failed')
+                        }
                     }}
                     className="space-y-4"
                 >
@@ -269,13 +280,7 @@ function EditSubCategoryModal({
                         </div>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={pending}
-                        className="w-full rounded-xl bg-[#141414] py-3 text-xs font-bold uppercase tracking-widest text-[#F5F1E8] transition-opacity hover:opacity-90 disabled:opacity-50"
-                    >
-                        {pending ? 'Saving…' : 'Save Changes'}
-                    </button>
+                    <SubmitButton label="Save Changes" pendingLabel="Saving…" />
                 </form>
             </div>
         </div>
@@ -289,7 +294,6 @@ function AddSubCategoryModal({
     categoryOptions: CategoryOption[]
     onClose: () => void
 }) {
-    const [pending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
@@ -319,17 +323,15 @@ function AddSubCategoryModal({
                     </div>
                 ) : (
                     <form
-                        onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget);
+                        action={async (formData) => {
                             setError(null)
-                            startTransition(async () => {
-                                try {
-                                    await addSubCategory(formData)
-                                    onClose()
-                                } catch (err) {
-                                    setError(err instanceof Error ? err.message : 'Something went wrong')
-                                    toast.error('Operation failed')
-                                }
-                            })
+                            try {
+                                await addSubCategory(formData)
+                                onClose()
+                            } catch (err) {
+                                setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Operation failed')
+                            }
                         }}
                         className="space-y-4"
                     >
@@ -431,13 +433,7 @@ function AddSubCategoryModal({
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={pending}
-                            className="w-full rounded-xl bg-[#141414] py-3 text-xs font-bold uppercase tracking-widest text-[#F5F1E8] transition-opacity hover:opacity-90 disabled:opacity-50"
-                        >
-                            {pending ? 'Saving…' : 'Save Sub-Category'}
-                        </button>
+                        <SubmitButton label="Save Sub-Category" pendingLabel="Saving…" />
                     </form>
                 )}
             </div>

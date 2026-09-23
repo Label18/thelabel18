@@ -6,6 +6,7 @@ export type ProductVariation = {
   color: string | null;
   color_hex: string | null;
   image_url: string | null;
+  image_urls?: string[];
   stock_quantity: number;
   price: number;
   compare_at_price: number | null;

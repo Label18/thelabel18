@@ -150,21 +150,17 @@ function EditSubSubCategoryModal({
                 </div>
 
                 <form
-                    onSubmit={(e) => {
-                        e.preventDefault()
+                    action={async (formData) => {
                         setError(null)
-                        const formData = new FormData(e.currentTarget)
                         formData.set('existingImageUrl', subSubCategory.image_url ?? '')
-                        startTransition(async () => {
-                            try {
-                                await updateSubSubCategory(subSubCategory.id, formData)
-                                toast.success('Sub-sub-category updated successfully')
-                                onClose()
-                            } catch (err) {
-                                setError(err instanceof Error ? err.message : 'Something went wrong')
-                                toast.error('Operation failed')
-                            }
-                        })
+                        try {
+                            await updateSubSubCategory(subSubCategory.id, formData)
+                            toast.success('Sub-sub-category updated successfully')
+                            onClose()
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Something went wrong')
+                            toast.error('Operation failed')
+                        }
                     }}
                     className="space-y-4"
                 >
@@ -319,21 +315,15 @@ function AddSubSubCategoryModal({
                     </div>
                 ) : (
                     <form
-                        onSubmit={(e) => {
-                            e.preventDefault()
+                        action={async (formData) => {
                             setError(null)
-                            const formData = new FormData(e.currentTarget)
-                            startTransition(async () => {
-                                try {
-                                    await addSubSubCategory(formData)
-                                    onClose()
-                                } catch (err) {
-                                    // Fields stay filled in — we no longer let React's
-                                    // form-action auto-reset wipe them on failure.
-                                    setError(err instanceof Error ? err.message : 'Something went wrong')
-                                    toast.error('Operation failed')
-                                }
-                            })
+                            try {
+                                await addSubSubCategory(formData)
+                                onClose()
+                            } catch (err) {
+                                setError(err instanceof Error ? err.message : 'Something went wrong')
+                                toast.error('Operation failed')
+                            }
                         }}
                         className="space-y-4"
                     >

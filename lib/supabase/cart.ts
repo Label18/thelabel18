@@ -14,6 +14,7 @@ export type CartItem = {
     color: string | null;
     price: number;
     image_url: string | null;
+    image_urls: string[] | null;
     stock_quantity: number;
     products?: { id: string; name: string; sku: string; image_url: string | null };
   } | null;
