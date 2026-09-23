@@ -6,7 +6,8 @@ import ProductVariantSelector from "@/components/ProductVariantSelector";
 import { Product, ProductVariation } from "@/lib/supabase/products";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { CheckCircle2, Shield, Award, Scissors, Share2 } from "lucide-react";
+import { CheckCircle2, Shield, Award, Scissors, Share2, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import ProductImageModal from "@/components/ProductImageModal";
 
 export default function ProductDetailClient({ product, initialColor }: { product: Product, initialColor?: string | null }) {
   const { openLoginModal } = useAuth();
@@ -54,6 +55,29 @@ export default function ProductDetailClient({ product, initialColor }: { product
   }, [images, firstColor]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(initialImageIndex);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleNavigateImage = useCallback((newIndex: number) => {
+    setActiveImageIndex(newIndex);
+    const targetColor = images[newIndex]?.color;
+    if (targetColor) {
+      setSelectedColor(targetColor);
+    }
+  }, [images]);
+
+  const handlePrevImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (images.length <= 1) return;
+    const prevIdx = (activeImageIndex - 1 + images.length) % images.length;
+    handleNavigateImage(prevIdx);
+  }, [activeImageIndex, images.length, handleNavigateImage]);
+
+  const handleNextImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (images.length <= 1) return;
+    const nextIdx = (activeImageIndex + 1) % images.length;
+    handleNavigateImage(nextIdx);
+  }, [activeImageIndex, images.length, handleNavigateImage]);
 
   const handleColorChange = useCallback((color: string | null) => {
     setSelectedColor((prev) => (prev === color ? prev : color));
@@ -77,11 +101,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
   }, [images]);
 
   function handleThumbnailClick(index: number) {
-    setActiveImageIndex(index);
-    const targetColor = images[index]?.color;
-    if (targetColor) {
-      setSelectedColor(targetColor);
-    }
+    handleNavigateImage(index);
   }
 
   // --- Share Logic ---
@@ -109,36 +129,6 @@ export default function ProductDetailClient({ product, initialColor }: { product
     }
   };
 
-  // --- Magnifier Logic ---
-  const [magnifier, setMagnifier] = useState({ show: false, x: 0, y: 0, cursorX: 0, cursorY: 0 });
-
-  const handlePointerMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    const elem = e.currentTarget;
-    const { top, left, width, height } = elem.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const x = ((clientX - left) / width) * 100;
-    const y = ((clientY - top) / height) * 100;
-    
-    setMagnifier({
-      show: true,
-      x,
-      y,
-      cursorX: clientX - left,
-      cursorY: clientY - top
-    });
-  };
-
-  const hideMagnifier = () => setMagnifier(prev => ({ ...prev, show: false }));
-
   const hasNoVariations = variations.length === 0;
   const currentImage = images[activeImageIndex]?.src || product.image_url;
 
@@ -159,7 +149,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
               </div>
               <button 
                 onClick={handleShare}
-                className="p-2 rounded-full bg-white border border-[#D4AF37]/30 text-[#9c7d23] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all shadow-sm active:scale-95"
+                className="p-2 rounded-full bg-white border border-[#D4AF37]/30 text-[#9c7d23] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all shadow-sm active:scale-95 cursor-pointer"
                 aria-label="Share product"
               >
                 <Share2 className="w-4 h-4" />
@@ -179,7 +169,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
                   <button
                     key={idx}
                     onClick={() => handleThumbnailClick(idx)}
-                    className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-300 ${
+                    className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-300 cursor-pointer ${
                       activeImageIndex === idx
                         ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/50 shadow-md scale-[1.02]"
                         : "border-[#D4AF37]/25 opacity-65 hover:opacity-100 hover:border-[#D4AF37]/60"
@@ -196,21 +186,45 @@ export default function ProductDetailClient({ product, initialColor }: { product
               </div>
             )}
 
-            {/* Main Big Image Container */}
+            {/* Main Big Image Container with Pop & Zoom Click */}
             <div 
-              className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group cursor-crosshair touch-none"
-              onMouseMove={handlePointerMove}
-              onMouseEnter={() => setMagnifier(prev => ({ ...prev, show: true }))}
-              onMouseLeave={hideMagnifier}
-              onTouchMove={handlePointerMove}
-              onTouchStart={() => setMagnifier(prev => ({ ...prev, show: true }))}
-              onTouchEnd={hideMagnifier}
+              onClick={() => setIsModalOpen(true)}
+              className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group cursor-zoom-in select-none"
             >
               {/* Luxury Hallmark Overlay Badge */}
               <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md pointer-events-none">
-                
                 <span>Pure Mulberry Silk</span>
               </div>
+
+              {/* Pop & Zoom Button Badge (Top Right) */}
+              <div className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[10px] uppercase tracking-[0.15em] font-outfit shadow-md transition-all group-hover:scale-105 group-hover:border-[#D4AF37] pointer-events-none">
+                <ZoomIn className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="hidden sm:inline">Click to Zoom</span>
+              </div>
+
+              {/* Navigation Arrow LEFT (<) on Main Image */}
+              {images.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  aria-label="Previous image"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-[#D4AF37] border border-[#D4AF37]/40 text-[#F5E6C8] hover:text-black opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-xl backdrop-blur-sm hover:scale-110 active:scale-95 cursor-pointer focus:outline-none"
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              )}
+
+              {/* Navigation Arrow RIGHT (>) on Main Image */}
+              {images.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  aria-label="Next image"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-[#D4AF37] border border-[#D4AF37]/40 text-[#F5E6C8] hover:text-black opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-xl backdrop-blur-sm hover:scale-110 active:scale-95 cursor-pointer focus:outline-none"
+                >
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              )}
 
               {currentImage ? (
                 <>
@@ -220,20 +234,14 @@ export default function ProductDetailClient({ product, initialColor }: { product
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 55vw"
-                    className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
+                    className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.03]"
                   />
-                  {/* Full Container Magnifier */}
-                  {magnifier.show && (
-                    <div 
-                      className="absolute inset-0 z-20 bg-white pointer-events-none"
-                      style={{
-                        backgroundImage: `url(${currentImage})`,
-                        backgroundPosition: `${magnifier.x}% ${magnifier.y}%`,
-                        backgroundSize: '250%',
-                        backgroundRepeat: 'no-repeat',
-                      }}
-                    />
-                  )}
+                  {/* Subtle expand cue at bottom */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-sm border border-[#D4AF37]/35 text-white/90 text-[9.5px] tracking-[0.2em] uppercase font-outfit shadow-md">
+                      <span>Click to Pop &amp; Zoom</span>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#1A1A1A]/40 text-xs uppercase tracking-[0.3em]">
@@ -345,6 +353,17 @@ export default function ProductDetailClient({ product, initialColor }: { product
           </div>
         </div>
       </div>
+
+      {/* Lightbox Pop-up Zoom & Fullscreen Viewer Modal */}
+      <ProductImageModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        images={images}
+        activeIndex={activeImageIndex}
+        onNavigate={handleNavigateImage}
+        productName={product.name}
+        productSku={(activeVariation as any)?.sku || product.sku}
+      />
     </div>
   );
 }

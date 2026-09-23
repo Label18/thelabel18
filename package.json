@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.112.4",
     "bcryptjs": "^3.0.3",
     "gsap": "^3.15.0",
+    "heic2any": "^0.0.4",
     "jsbarcode": "^3.12.3",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.37.0",

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createProduct, updateProduct } from './actions'
+import { handleFileSelection } from '@/lib/utils/image-helpers'
 
 type Category = { id: string; name: string }
 type SubCategory = { id: string; name: string; category_id: string }
@@ -265,7 +266,14 @@ function ImagePicker({
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? [])
+            if (files.length > 0) {
+              handleFileSelection(files, (processed) => onChange(processed[0]))
+            } else {
+              onChange(null)
+            }
+          }}
         />
       </label>
       {file && (
@@ -296,9 +304,11 @@ function MultiImagePicker({
   const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files])
 
   const handleAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
-      onChange([...files, ...newFiles], existingUrls)
+    if (e.target.files && e.target.files.length > 0) {
+      const rawFiles = Array.from(e.target.files)
+      handleFileSelection(rawFiles, (processedNewFiles) => {
+        onChange([...files, ...processedNewFiles], existingUrls)
+      })
     }
   }
 

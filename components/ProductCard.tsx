@@ -141,8 +141,8 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
                 }}
                 title={variant.color}
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border transition-all ${activeColor === variant.color
-                    ? "border-[#9c7d23] ring-1 ring-[#9c7d23]/30 scale-110"
-                    : "border-[#1A1A1A]/20 hover:border-[#1A1A1A]/60"
+                  ? "border-[#9c7d23] ring-1 ring-[#9c7d23]/30 scale-110"
+                  : "border-[#1A1A1A]/20 hover:border-[#1A1A1A]/60"
                   }`}
                 style={{ backgroundColor: variant.hex }}
               />

@@ -12,6 +12,7 @@ import {
     updateSubSubCategory,
     deleteSubSubCategory,
 } from './actions'
+import { handleFileSelection } from '@/lib/utils/image-helpers'
 
 const poppins = Poppins({
     subsets: ['latin'],
@@ -134,8 +135,16 @@ function EditSubSubCategoryModal({
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (file) {
-            const objectUrl = URL.createObjectURL(file)
-            setPreviewUrl(objectUrl)
+            handleFileSelection([file], (processed) => {
+                const processedFile = processed[0]
+                const objectUrl = URL.createObjectURL(processedFile)
+                setPreviewUrl(objectUrl)
+                
+                // Inject the converted file back into the input for form submission
+                const dt = new DataTransfer()
+                dt.items.add(processedFile)
+                e.target.files = dt.files
+            })
         }
     }
 
@@ -292,8 +301,16 @@ function AddSubSubCategoryModal({
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (file) {
-            const objectUrl = URL.createObjectURL(file)
-            setPreviewUrl(objectUrl)
+            handleFileSelection([file], (processed) => {
+                const processedFile = processed[0]
+                const objectUrl = URL.createObjectURL(processedFile)
+                setPreviewUrl(objectUrl)
+                
+                // Inject the converted file back into the input for form submission
+                const dt = new DataTransfer()
+                dt.items.add(processedFile)
+                e.target.files = dt.files
+            })
         } else {
             setPreviewUrl(null)
         }
