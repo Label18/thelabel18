@@ -27,82 +27,123 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
   const [activeVariation, setActiveVariation] = useState<ProductVariation | null>(initialVariation);
 
-  const images = useMemo(() => {
-    const list: { src: string; color: string | null }[] = [];
-    const seen = new Set<string>();
+  // Group variations by color/variation so the left-side ONLY shows distinct variations (1 cover photo per variation)
+  const variationGroups = useMemo(() => {
+    const groups: {
+      key: string;
+      variation: ProductVariation;
+      color: string | null;
+      color_hex: string | null;
+      primaryImage: string;
+      images: string[];
+    }[] = [];
+
+    const seenKeys = new Set<string>();
 
     for (const v of variations as ProductVariation[]) {
-      const urls = v.image_urls && v.image_urls.length > 0 ? v.image_urls : (v.image_url ? [v.image_url] : []);
-      for (const url of urls) {
-        if (!seen.has(url)) {
-          seen.add(url);
-          list.push({ src: url, color: v.color });
+      const groupKey = v.color ? v.color.trim().toLowerCase() : v.id;
+      const allUrls = v.image_urls && v.image_urls.length > 0
+        ? v.image_urls
+        : (v.image_url ? [v.image_url] : []);
+
+      if (v.color && seenKeys.has(groupKey)) {
+        const existing = groups.find(g => g.key === groupKey);
+        if (existing) {
+          for (const u of allUrls) {
+            if (!existing.images.includes(u)) {
+              existing.images.push(u);
+            }
+          }
         }
+      } else {
+        seenKeys.add(groupKey);
+        const primary = allUrls[0] || v.image_url || product.image_url || "";
+        groups.push({
+          key: groupKey,
+          variation: v,
+          color: v.color,
+          color_hex: v.color_hex,
+          primaryImage: primary,
+          images: allUrls.length > 0 ? allUrls : (primary ? [primary] : []),
+        });
       }
     }
 
-    if (list.length === 0 && product.image_url) {
-      list.push({ src: product.image_url, color: null });
+    if (groups.length === 0 && product.image_url) {
+      groups.push({
+        key: 'default',
+        variation: {} as ProductVariation,
+        color: null,
+        color_hex: null,
+        primaryImage: product.image_url,
+        images: [product.image_url],
+      });
     }
 
-    return list;
+    return groups;
   }, [product, variations]);
 
-  const initialImageIndex = useMemo(() => {
-    if (!firstColor) return 0;
-    const idx = images.findIndex((img) => img.color === firstColor);
-    return idx !== -1 ? idx : 0;
-  }, [images, firstColor]);
+  // Find active variation group
+  const activeGroup = useMemo(() => {
+    if (selectedColor) {
+      const match = variationGroups.find(
+        g => g.color && g.color.trim().toLowerCase() === selectedColor.trim().toLowerCase()
+      );
+      if (match) return match;
+    }
+    if (activeVariation) {
+      const match = variationGroups.find(g => g.variation.id === activeVariation.id);
+      if (match) return match;
+    }
+    return variationGroups[0] ?? null;
+  }, [selectedColor, activeVariation, variationGroups]);
 
-  const [activeImageIndex, setActiveImageIndex] = useState(initialImageIndex);
+  // Multiple photos belonging ONLY to the currently active variation/color
+  const activePhotos = useMemo(() => {
+    if (activeGroup?.images && activeGroup.images.length > 0) {
+      return activeGroup.images;
+    }
+    if (product.image_url) return [product.image_url];
+    return [];
+  }, [activeGroup, product.image_url]);
+
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleNavigateImage = useCallback((newIndex: number) => {
-    setActiveImageIndex(newIndex);
-    const targetColor = images[newIndex]?.color;
-    if (targetColor) {
-      setSelectedColor(targetColor);
+  const handleGroupSelect = useCallback((group: typeof variationGroups[0]) => {
+    if (group.color) {
+      setSelectedColor(group.color);
     }
-  }, [images]);
+    if (group.variation?.id) {
+      setActiveVariation(group.variation);
+    }
+    setActivePhotoIndex(0);
+  }, []);
 
-  const handlePrevImage = useCallback((e?: React.MouseEvent) => {
+  const handlePrevPhoto = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (images.length <= 1) return;
-    const prevIdx = (activeImageIndex - 1 + images.length) % images.length;
-    handleNavigateImage(prevIdx);
-  }, [activeImageIndex, images.length, handleNavigateImage]);
+    if (activePhotos.length <= 1) return;
+    setActivePhotoIndex((prev) => (prev - 1 + activePhotos.length) % activePhotos.length);
+  }, [activePhotos.length]);
 
-  const handleNextImage = useCallback((e?: React.MouseEvent) => {
+  const handleNextPhoto = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (images.length <= 1) return;
-    const nextIdx = (activeImageIndex + 1) % images.length;
-    handleNavigateImage(nextIdx);
-  }, [activeImageIndex, images.length, handleNavigateImage]);
+    if (activePhotos.length <= 1) return;
+    setActivePhotoIndex((prev) => (prev + 1) % activePhotos.length);
+  }, [activePhotos.length]);
 
   const handleColorChange = useCallback((color: string | null) => {
     setSelectedColor((prev) => (prev === color ? prev : color));
-    if (!color) return;
-
-    const matchingImageIndex = images.findIndex((img) => img.color === color);
-    if (matchingImageIndex !== -1) {
-      setActiveImageIndex((prevIdx) => (prevIdx === matchingImageIndex ? prevIdx : matchingImageIndex));
-    }
-  }, [images]);
+    setActivePhotoIndex(0);
+  }, []);
 
   const handleVariantChange = useCallback((variant: ProductVariation | null) => {
     setActiveVariation((prev) => (prev === variant ? prev : variant));
     if (variant?.color) {
       setSelectedColor((prev) => (prev === variant.color ? prev : variant.color));
-      const matchingImageIndex = images.findIndex((img) => img.color === variant.color);
-      if (matchingImageIndex !== -1) {
-        setActiveImageIndex((prevIdx) => (prevIdx === matchingImageIndex ? prevIdx : matchingImageIndex));
-      }
     }
-  }, [images]);
-
-  function handleThumbnailClick(index: number) {
-    handleNavigateImage(index);
-  }
+    setActivePhotoIndex(0);
+  }, []);
 
   // --- Share Logic ---
   const handleShare = async () => {
@@ -130,7 +171,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
   };
 
   const hasNoVariations = variations.length === 0;
-  const currentImage = images[activeImageIndex]?.src || product.image_url;
+  const currentBigImage = activePhotos[activePhotoIndex] || activeGroup?.primaryImage || product.image_url;
 
   return (
     <div className="w-full space-y-12">
@@ -162,27 +203,53 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
           <div className="flex flex-col-reverse sm:flex-row gap-4 items-start">
 
-            {/* Small Thumbnails Column */}
-            {images.length > 1 && (
+            {/* Left-Side Thumbnails Column (Only Distinct Variations / Colors, NO multi-photos) */}
+            {variationGroups.length > 1 && (
               <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] max-w-full pb-2 sm:pb-0 scrollbar-thin">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleThumbnailClick(idx)}
-                    className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-300 cursor-pointer ${
-                      activeImageIndex === idx
-                        ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/50 shadow-md scale-[1.02]"
-                        : "border-[#D4AF37]/25 opacity-65 hover:opacity-100 hover:border-[#D4AF37]/60"
-                    }`}
-                  >
-                    <Image
-                      src={img.src}
-                      alt={`${product.name} thumbnail ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+                {variationGroups.map((group, idx) => {
+                  const isSelected = activeGroup?.key === group.key;
+                  return (
+                    <button
+                      key={group.key}
+                      type="button"
+                      onClick={() => handleGroupSelect(group)}
+                      className={`relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-300 cursor-pointer group/thumb ${
+                        isSelected
+                          ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/60 shadow-md scale-[1.02]"
+                          : "border-[#D4AF37]/25 opacity-65 hover:opacity-100 hover:border-[#D4AF37]/60"
+                      }`}
+                      aria-label={`Select variation ${group.color || idx + 1}`}
+                    >
+                      {group.primaryImage ? (
+                        <Image
+                          src={group.primaryImage}
+                          alt={group.color ? `${product.name} in ${group.color}` : `${product.name} option ${idx + 1}`}
+                          fill
+                          sizes="(max-width: 640px) 64px, 80px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-stone-100 text-[10px] text-stone-400">
+                          No photo
+                        </div>
+                      )}
+
+                      {/* Color label pill */}
+                      {group.color && (
+                        <div className="absolute bottom-1.5 left-1 right-1 z-10 px-1 py-0.5 rounded bg-black/80 backdrop-blur-xs border border-[#D4AF37]/30 text-[8px] sm:text-[9px] uppercase tracking-wider text-[#F5E6C8] truncate text-center font-outfit">
+                          {group.color}
+                        </div>
+                      )}
+
+                      {/* Multi-photo indicator count if this variation has multiple photos */}
+                      {group.images.length > 1 && (
+                        <div className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-full bg-black/85 border border-[#D4AF37]/50 text-[8.5px] font-bold text-[#D4AF37] shadow">
+                          {group.images.length}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -203,11 +270,11 @@ export default function ProductDetailClient({ product, initialColor }: { product
               </div>
 
               {/* Navigation Arrow LEFT (<) on Main Image */}
-              {images.length > 1 && (
+              {activePhotos.length > 1 && (
                 <button
                   type="button"
-                  onClick={handlePrevImage}
-                  aria-label="Previous image"
+                  onClick={handlePrevPhoto}
+                  aria-label="Previous photo"
                   className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-[#D4AF37] border border-[#D4AF37]/40 text-[#F5E6C8] hover:text-black opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-xl backdrop-blur-sm hover:scale-110 active:scale-95 cursor-pointer focus:outline-none"
                 >
                   <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -215,30 +282,76 @@ export default function ProductDetailClient({ product, initialColor }: { product
               )}
 
               {/* Navigation Arrow RIGHT (>) on Main Image */}
-              {images.length > 1 && (
+              {activePhotos.length > 1 && (
                 <button
                   type="button"
-                  onClick={handleNextImage}
-                  aria-label="Next image"
+                  onClick={handleNextPhoto}
+                  aria-label="Next photo"
                   className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-[#D4AF37] border border-[#D4AF37]/40 text-[#F5E6C8] hover:text-black opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-xl backdrop-blur-sm hover:scale-110 active:scale-95 cursor-pointer focus:outline-none"
                 >
                   <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               )}
 
-              {currentImage ? (
+              {currentBigImage ? (
                 <>
                   <Image
-                    src={currentImage}
+                    src={currentBigImage}
                     alt={product.name}
                     fill
                     priority
+                    loading="eager"
                     sizes="(max-width: 1024px) 100vw, 55vw"
-                    className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.03]"
+                    className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.02]"
                   />
-                  {/* Subtle expand cue at bottom */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-sm border border-[#D4AF37]/35 text-white/90 text-[9.5px] tracking-[0.2em] uppercase font-outfit shadow-md">
+                  
+                  {/* Inside Big Photo: Down Right Corner Multi-Photo Gallery Strip */}
+                  {activePhotos.length > 1 && (
+                    <div 
+                      onClick={(e) => e.stopPropagation()} 
+                      className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 max-w-[calc(100%-24px)]"
+                    >
+                      <div className="bg-black/80 backdrop-blur-md border border-[#D4AF37]/50 px-2.5 py-2 rounded-2xl shadow-2xl flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between gap-3 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-outfit text-white/70">
+                          <span className="flex items-center gap-1.5 text-[#F5E6C8] font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                            Photos ({activePhotoIndex + 1}/{activePhotos.length})
+                          </span>
+                          <span className="text-[8.5px] text-[#D4AF37]/80 hidden sm:inline">Select View</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5 max-w-[260px] sm:max-w-[320px]">
+                          {activePhotos.map((photoUrl, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActivePhotoIndex(pIdx);
+                              }}
+                              aria-label={`View photo ${pIdx + 1}`}
+                              className={`relative w-11 h-14 sm:w-13 sm:h-16 flex-shrink-0 rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer ${
+                                activePhotoIndex === pIdx
+                                  ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/80 shadow-lg scale-105"
+                                  : "border-white/20 opacity-60 hover:opacity-100 hover:border-white/60"
+                              }`}
+                            >
+                              <Image
+                                src={photoUrl}
+                                alt={`${product.name} angle ${pIdx + 1}`}
+                                fill
+                                sizes="(max-width: 640px) 44px, 52px"
+                                className="object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subtle expand cue at bottom left when multi-photo dock is on the right */}
+                  <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden sm:block">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-sm border border-[#D4AF37]/35 text-white/90 text-[9px] tracking-[0.2em] uppercase font-outfit shadow-md">
                       <span>Click to Pop &amp; Zoom</span>
                     </div>
                   </div>
@@ -358,9 +471,12 @@ export default function ProductDetailClient({ product, initialColor }: { product
       <ProductImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        images={images}
-        activeIndex={activeImageIndex}
-        onNavigate={handleNavigateImage}
+        images={activePhotos.map((url) => ({
+          src: url,
+          color: activeGroup?.color || null,
+        }))}
+        activeIndex={activePhotoIndex}
+        onNavigate={setActivePhotoIndex}
         productName={product.name}
         productSku={(activeVariation as any)?.sku || product.sku}
       />

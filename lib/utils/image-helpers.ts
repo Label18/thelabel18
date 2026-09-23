@@ -6,6 +6,7 @@ export async function processImageFile(file: File): Promise<File> {
 
   try {
     // Dynamically import heic2any so it doesn't break SSR
+    // @ts-ignore
     const heic2any = (await import("heic2any")).default;
 
     const convertedBlob = await heic2any({

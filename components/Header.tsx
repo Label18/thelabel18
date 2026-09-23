@@ -137,6 +137,7 @@ export default function Header() {
                   alt="The Label 18"
                   fill
                   priority
+                  sizes="(max-width: 640px) 36px, 44px"
                   className="object-contain p-0.5"
                 />
               </div>
@@ -318,7 +319,7 @@ export default function Header() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#141414]">
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="inline-flex items-center gap-2">
             <div className="relative w-8 h-8 rounded border border-[#d4af37]/40 bg-black overflow-hidden">
-              <Image src="/logo.jpg" alt="The Label 18" fill className="object-contain p-0.5" />
+              <Image src="/logo.jpg" alt="The Label 18" fill sizes="32px" className="object-contain p-0.5" />
             </div>
             <span className="font-outfit text-sm tracking-[0.2em] uppercase font-light text-white">
               THE LABEL <span className="font-semibold text-[#d4af37]">18</span>

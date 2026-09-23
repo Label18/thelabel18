@@ -327,51 +327,69 @@ function MultiImagePicker({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        {existingUrls.map((url, i) => (
-          <div key={`existing-${i}`} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt={`${label} existing ${i}`} className="h-full w-full object-cover" />
-            <button
-              type="button"
-              onClick={() => handleRemoveExisting(i)}
-              className="absolute top-1 right-1 rounded-full bg-white/80 p-0.5 text-stone-600 hover:text-rose-500 backdrop-blur"
-              aria-label="Remove image"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        ))}
-        {previews.map((preview, i) => (
-          <div key={`new-${i}`} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt={`${label} new ${i}`} className="h-full w-full object-cover" />
-            <button
-              type="button"
-              onClick={() => handleRemoveFile(i)}
-              className="absolute top-1 right-1 rounded-full bg-white/80 p-0.5 text-stone-600 hover:text-rose-500 backdrop-blur"
-              aria-label="Remove image"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        ))}
+        {existingUrls.map((url, i) => {
+          const isCover = i === 0;
+          return (
+            <div key={`existing-${i}`} className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-white ${isCover ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-stone-200'}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`${label} existing ${i}`} className="h-full w-full object-cover" />
+              <span className={`absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white backdrop-blur-xs ${isCover ? 'bg-amber-600' : 'bg-black/75'}`}>
+                {isCover ? 'Cover #1' : `Angle #${i + 1}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemoveExisting(i)}
+                className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-stone-600 hover:text-rose-500 shadow-sm backdrop-blur"
+                aria-label="Remove image"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          );
+        })}
+        {previews.map((preview, i) => {
+          const globalIdx = existingUrls.length + i;
+          const isCover = globalIdx === 0;
+          return (
+            <div key={`new-${i}`} className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-white ${isCover ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-stone-200'}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={preview} alt={`${label} new ${i}`} className="h-full w-full object-cover" />
+              <span className={`absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white backdrop-blur-xs ${isCover ? 'bg-amber-600' : `Angle #${globalIdx + 1}`}`}>
+                {isCover ? 'Cover #1' : `Angle #${globalIdx + 1}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemoveFile(i)}
+                className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-stone-600 hover:text-rose-500 shadow-sm backdrop-blur"
+                aria-label="Remove image"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          );
+        })}
         {existingUrls.length === 0 && files.length === 0 && (
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">
-            <ImageOff size={18} />
+          <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-stone-300 bg-stone-50 text-stone-400">
+            <ImageOff size={20} />
           </div>
         )}
       </div>
-      <div>
-        <label className="inline-block cursor-pointer rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-stone-700 transition-colors hover:border-black hover:text-black">
-          Add images
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleAdd}
-          />
-        </label>
+      <div className="flex flex-col gap-1.5">
+        <div>
+          <label className="inline-block cursor-pointer rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-stone-700 transition-colors hover:border-black hover:text-black">
+            + Add images
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleAdd}
+            />
+          </label>
+        </div>
+        <p className="text-[11px] text-stone-500 leading-relaxed">
+          <strong className="text-stone-700">Cover #1</strong> is shown on the left-side thumbnail. Additional angles appear in the bottom-right gallery inside the big photo on the product page.
+        </p>
       </div>
     </div>
   )

@@ -135,6 +135,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         src={item.image_url}
                         alt={item.name}
                         fill
+                        sizes="56px"
                         className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
                     </div>

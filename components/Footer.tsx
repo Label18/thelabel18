@@ -84,6 +84,7 @@ export default async function Footer() {
                     src="/logo.jpg"
                     alt="The Label 18 Logo"
                     fill
+                    sizes="44px"
                     className="object-contain p-1"
                   />
                 </div>

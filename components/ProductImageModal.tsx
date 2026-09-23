@@ -389,6 +389,7 @@ export default function ProductImageModal({
                   src={img.src}
                   alt={`Thumbnail ${idx + 1}`}
                   fill
+                  sizes="(max-width: 640px) 48px, 56px"
                   className="object-cover"
                 />
               </button>
