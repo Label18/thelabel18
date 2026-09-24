@@ -15,7 +15,7 @@ import {
   Check
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { createProduct, updateProduct } from './actions'
+import { createProduct, updateProduct, uploadSingleImageAction } from './actions'
 import { handleFileSelection } from '@/lib/utils/image-helpers'
 
 type Category = { id: string; name: string }
@@ -390,6 +390,9 @@ function MultiImagePicker({
         <p className="text-[11px] text-stone-500 leading-relaxed">
           <strong className="text-stone-700">Cover #1</strong> is shown on the left-side thumbnail. Additional angles appear in the bottom-right gallery inside the big photo on the product page.
         </p>
+        <p className="text-[11px] text-amber-600 leading-relaxed">
+          ⚠️ Max <strong>4MB per image</strong>. Large photos are auto-compressed, but very high-res files may be rejected.
+        </p>
       </div>
     </div>
   )
@@ -586,8 +589,8 @@ export default function ProductForm({
         price: String(v.price),
         compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
         images: [],
-        existing_image_urls: v.image_urls && v.image_urls.length > 0 
-          ? v.image_urls 
+        existing_image_urls: v.image_urls && v.image_urls.length > 0
+          ? v.image_urls
           : v.image_url ? [v.image_url] : [],
       }))
       : [emptyVariation()]
@@ -635,8 +638,8 @@ export default function ProductForm({
             price: String(v.price),
             compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
             images: [],
-            existing_image_urls: v.image_urls && v.image_urls.length > 0 
-              ? v.image_urls 
+            existing_image_urls: v.image_urls && v.image_urls.length > 0
+              ? v.image_urls
               : v.image_url ? [v.image_url] : [],
           }))
           : [emptyVariation()]
@@ -667,27 +670,7 @@ export default function ProductForm({
       return
     }
 
-    // Calculate total image size to prevent server payload errors
-    const MAX_PAYLOAD_MB = 45;
-    const MAX_PAYLOAD_BYTES = MAX_PAYLOAD_MB * 1024 * 1024;
-    let totalSize = 0;
-    
-    if (mainImage) totalSize += mainImage.size;
-    variations.forEach(v => {
-      v.images.forEach(img => {
-        totalSize += img.size;
-      });
-    });
-
-    if (totalSize > MAX_PAYLOAD_BYTES) {
-      const currentMB = (totalSize / (1024 * 1024)).toFixed(1);
-      const msg = `Total image size (${currentMB}MB) exceeds the ${MAX_PAYLOAD_MB}MB limit. Please remove some images.`;
-      setError(msg);
-      toast.error(msg);
-      return;
-    }
-
-    if (mainImage) formData.set('image', mainImage)
+    // Build the text-only fields into formData right away
     if (isEdit && product) {
       formData.set('existing_image_url', product.image_url || '')
     } else {
@@ -703,22 +686,68 @@ export default function ProductForm({
       formData.set(`variations[${i}][stock]`, v.stock)
       formData.set(`variations[${i}][price]`, v.price)
       formData.set(`variations[${i}][compare_at_price]`, v.compare_at_price)
-      
+
+      // Keep any existing image URLs that are already on the server
       if (isEdit) {
-        v.existing_image_urls.forEach((url, imgIndex) => {
+        v.existing_image_urls.forEach((url) => {
           formData.append(`variations[${i}][existing_image_urls][]`, url)
         })
       }
-      
-      v.images.forEach((img, imgIndex) => {
-        formData.append(`variations[${i}][images][]`, img)
-      })
+      // NOTE: We do NOT append v.images (raw files) into formData anymore.
+      // Instead we upload them one-by-one below and pass their URLs.
     })
 
     startTransition(async () => {
       try {
+        // Count how many images need uploading
+        const totalImages =
+          (mainImage ? 1 : 0) +
+          variations.reduce((sum, v) => sum + v.images.length, 0)
+        let uploaded = 0
+        let toastId: string | undefined
+
+        if (totalImages > 0) {
+          toastId = toast.loading(`Uploading images (0/${totalImages})…`)
+        }
+
+        // --- Helper: upload one file, update progress toast ----------------
+        async function uploadOne(file: File): Promise<string> {
+          const fd = new FormData()
+          fd.set('file', file)
+          const res = await uploadSingleImageAction(fd)
+          if (!res.success || !res.url) {
+            throw new Error(res.error || 'Image upload failed')
+          }
+          uploaded++
+          if (toastId) {
+            toast.loading(`Uploading images (${uploaded}/${totalImages})…`, { id: toastId })
+          }
+          return res.url
+        }
+
+        // 1️⃣  Upload main product image (if any)
+        if (mainImage) {
+          const url = await uploadOne(mainImage)
+          formData.set('main_image_url', url)
+        }
+
+        // 2️⃣  Upload each variation's images one-by-one
+        for (let i = 0; i < variations.length; i++) {
+          for (const img of variations[i].images) {
+            const url = await uploadOne(img)
+            // Pass the uploaded URL as an "existing" URL so the server
+            // action doesn't need to receive any File blobs at all.
+            formData.append(`variations[${i}][existing_image_urls][]`, url)
+          }
+        }
+
+        // 3️⃣  Now save the product — formData contains ONLY text & URLs,
+        //      so it's just a few KB and will never hit any size limit.
+        if (toastId) toast.loading('Saving product…', { id: toastId })
+
         if (isEdit && product) {
           const res = await updateProduct(product.id, formData)
+          if (toastId) toast.dismiss(toastId)
           if (res && !res.success) {
             setError(res.error || 'Failed to update product')
             toast.error(res.error || 'Failed to update product')
@@ -729,6 +758,7 @@ export default function ProductForm({
           window.location.href = '/admin/products/list'
         } else {
           const res = await createProduct(formData)
+          if (toastId) toast.dismiss(toastId)
           if (res && !res.success) {
             setError(res.error || 'Failed to create product')
             toast.error(res.error || 'Failed to create product')
@@ -748,7 +778,7 @@ export default function ProductForm({
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong')
-        toast.error('Failed to save product')
+        toast.error(err instanceof Error ? err.message : 'Failed to save product')
       }
     })
   }

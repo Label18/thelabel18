@@ -104,6 +104,11 @@ export async function processImageFile(file: File): Promise<File> {
   return await resizeAndCompressImage(workingFile);
 }
 
+// Maximum allowed size per image (after compression) — matches Vercel's
+// server-action payload cap with headroom for FormData overhead.
+export const MAX_IMAGE_SIZE_MB = 4;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
 export async function handleFileSelection(
   files: File[],
   onSuccess: (processedFiles: File[]) => void
@@ -121,6 +126,23 @@ export async function handleFileSelection(
 
   try {
     const processedFiles = await Promise.all(files.map(processImageFile));
+
+    // Warn (but don't block) if any image is still too large after compression
+    const oversized = processedFiles.filter((f) => f.size > MAX_IMAGE_SIZE_BYTES);
+    if (oversized.length > 0) {
+      const names = oversized.map((f) => f.name).join(", ");
+      const sizeMB = (oversized[0].size / (1024 * 1024)).toFixed(1);
+      toast.error(
+        `⚠️ "${names}" is ${sizeMB}MB — limit is ${MAX_IMAGE_SIZE_MB}MB per image. Please use a smaller or lower-resolution photo.`,
+        { duration: 6000 }
+      );
+      // Filter out oversized files so they don't get attached
+      const validFiles = processedFiles.filter((f) => f.size <= MAX_IMAGE_SIZE_BYTES);
+      if (toastId) toast.dismiss(toastId);
+      if (validFiles.length > 0) onSuccess(validFiles);
+      return;
+    }
+
     if (toastId) {
       toast.success("Ready!", { id: toastId });
     }

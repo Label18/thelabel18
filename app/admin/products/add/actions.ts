@@ -23,6 +23,22 @@ async function uploadImage(file: File | null): Promise<string | null> {
   return data.publicUrl
 }
 
+// Upload a single image file — called from the client one image at a time
+// so every request stays well under Vercel's 4.5 MB payload cap.
+export async function uploadSingleImageAction(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    const file = formData.get('file') as File | null
+    if (!file || file.size === 0) return { success: false, error: 'No file provided' }
+    const url = await uploadImage(file)
+    return { success: true, url: url || undefined }
+  } catch (err: any) {
+    console.error('uploadSingleImageAction error:', err)
+    return { success: false, error: err?.message || 'Image upload failed' }
+  }
+}
+
 function slug(value: string) {
   return value
     .trim()
@@ -40,13 +56,12 @@ export async function createProduct(formData: FormData) {
     const sub_category_id = String(formData.get('sub_category_id') || '') || null
     const sub_sub_category_id = String(formData.get('sub_sub_category_id') || '') || null
     const description = String(formData.get('description') || '').trim()
-    const mainImageFile = formData.get('image') as File | null
+    // Images are pre-uploaded one-by-one from the client; grab the URL.
+    const image_url = String(formData.get('main_image_url') || '') || null
 
     if (!sku) return { success: false, error: 'SKU is required' }
     if (!name) return { success: false, error: 'Product name is required' }
     if (!category_id) return { success: false, error: 'Category is required' }
-
-    const image_url = await uploadImage(mainImageFile)
 
     // 1. Create the product itself
     const { data: product, error } = await supabase
@@ -78,9 +93,8 @@ export async function createProduct(formData: FormData) {
       const price = Number(formData.get(`variations[${i}][price]`) || 0)
       const compareRaw = formData.get(`variations[${i}][compare_at_price]`)
       const compare_at_price = compareRaw && String(compareRaw).trim() !== '' ? Number(compareRaw) : null
-      const variationImageFiles = formData.getAll(`variations[${i}][images][]`) as File[]
-      const uploadedUrls = await Promise.all(variationImageFiles.map(f => uploadImage(f)))
-      const validVariationImageUrls = uploadedUrls.filter(Boolean) as string[]
+      // All images are pre-uploaded; their URLs arrive as existing_image_urls
+      const validVariationImageUrls = formData.getAll(`variations[${i}][existing_image_urls][]`) as string[]
 
       const suffix = [slug(color || ''), slug(size || '')].filter(Boolean).join('-')
       const variationSku = suffix ? `${sku}-${suffix}` : `${sku}-${i + 1}`
@@ -120,16 +134,15 @@ export async function updateProduct(productId: string, formData: FormData) {
     const sub_category_id = String(formData.get('sub_category_id') || '') || null
     const sub_sub_category_id = String(formData.get('sub_sub_category_id') || '') || null
     const description = String(formData.get('description') || '').trim()
-    const mainImageFile = formData.get('image') as File | null
+    // Images are pre-uploaded; grab the URL if a new one was uploaded.
+    const preUploadedUrl = String(formData.get('main_image_url') || '') || null
     const existingImageUrl = String(formData.get('existing_image_url') || '') || null
 
     if (!sku) return { success: false, error: 'SKU is required' }
     if (!name) return { success: false, error: 'Product name is required' }
     if (!category_id) return { success: false, error: 'Category is required' }
 
-    // only replace the main image if a new file was actually chosen
-    const newImageUrl = await uploadImage(mainImageFile)
-    const image_url = newImageUrl ?? existingImageUrl
+    const image_url = preUploadedUrl ?? existingImageUrl
 
     const { error } = await supabase
       .from('products')
@@ -157,7 +170,7 @@ export async function updateProduct(productId: string, formData: FormData) {
 
       const uploadedUrls = await Promise.all(variationImageFiles.map(f => uploadImage(f)))
       const validUploadedUrls = uploadedUrls.filter(Boolean) as string[]
-      
+
       const variationImageUrls = [...existingVariationImages, ...validUploadedUrls]
 
       const suffix = [slug(color || ''), slug(size || '')].filter(Boolean).join('-')
@@ -187,4 +200,4 @@ export async function updateProduct(productId: string, formData: FormData) {
     console.error('updateProduct error:', err)
     return { success: false, error: err?.message || 'Failed to update product' }
   }
-}
+}
