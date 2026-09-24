@@ -24,7 +24,8 @@ export default function Home() {
           createClient()
             .from("products")
             .select("*, product_variations(*)")
-            .eq("is_visible", true),
+            .eq("is_visible", true)
+            .order("created_at", { ascending: false }),
         ]);
 
         setCategories(catTree);
@@ -76,13 +77,14 @@ export default function Home() {
         c.name.toLowerCase().includes("accessor")
     ) || categories[1];
 
+  // Limit to 10 products (2 rows on desktop) and latest first
   const clothingProducts = clothingCat
-    ? products.filter((p) => p.category_id === clothingCat.id)
-    : products;
+    ? products.filter((p) => p.category_id === clothingCat.id).slice(0, 10)
+    : products.slice(0, 10);
 
   const jewelleryProducts = jewelleryCat
-    ? products.filter((p) => p.category_id === jewelleryCat.id)
-    : products;
+    ? products.filter((p) => p.category_id === jewelleryCat.id).slice(0, 10)
+    : products.slice(0, 10);
 
   return (
     <main className="bg-black min-h-screen text-white selection:bg-[#d4af37]/30 selection:text-white">

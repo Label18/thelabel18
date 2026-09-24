@@ -118,10 +118,16 @@ export async function getProducts(filters: ProductFilters) {
   }
 
   const total = items.length;
-  const start = (page - 1) * pageSize;
-  const paged = items.slice(start, start + pageSize);
 
-  return { items: paged, total, page, pageSize };
+  // If page is provided, do server-side pagination (used by other pages)
+  if (filters.page) {
+    const start = (filters.page - 1) * pageSize;
+    const paged = items.slice(start, start + pageSize);
+    return { items: paged, total, page: filters.page, pageSize };
+  }
+
+  // Otherwise return all items (shop page uses client-side "View More")
+  return { items, total, page: 1, pageSize: total };
 }
 
 export async function getProductById(id: string) {
