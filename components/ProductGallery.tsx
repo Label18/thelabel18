@@ -76,7 +76,7 @@ export default function ProductGallery({
         onClick={openLightbox}
         className="relative aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/10 cursor-zoom-in group"
       >
-        <Image src={active.src} alt={productName} fill priority className="object-cover" />
+        <Image src={active.src} alt={productName} fill priority loading="eager" className="object-cover" sizes="100vw" />
 
         {/* Magnifier lens (desktop hover only) */}
         {showLens && (
@@ -111,7 +111,7 @@ export default function ProductGallery({
                   : "border-white/10 hover:border-white/30"
               }`}
             >
-              <Image src={img.src} alt={`${productName} ${i + 1}`} fill className="object-cover" />
+              <Image src={img.src} alt={`${productName} ${i + 1}`} fill className="object-cover" sizes="100vw" />
             </button>
           ))}
         </div>
@@ -148,7 +148,7 @@ export default function ProductGallery({
               className="relative w-full h-full transition-transform duration-150 ease-out"
               style={{ transform: `scale(${zoomLevel})` }}
             >
-              <Image src={active.src} alt={productName} fill className="object-contain" />
+              <Image src={active.src} alt={productName} fill className="object-contain" sizes="100vw" />
             </div>
           </div>
         </div>

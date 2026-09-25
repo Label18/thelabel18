@@ -263,6 +263,7 @@ function EditSubCategoryModal({
                                         src={previewUrl}
                                         alt="Sub-category preview"
                                         fill
+                                        sizes="80px"
                                         className="object-cover"
                                         unoptimized={previewUrl.startsWith('blob:')}
                                     />
@@ -434,6 +435,7 @@ function AddSubCategoryModal({
                                             src={previewUrl}
                                             alt="Sub-category preview"
                                             fill
+                                            sizes="80px"
                                             className="object-cover"
                                             unoptimized
                                         />
@@ -616,7 +618,7 @@ export default function SubCategoriesClient({
                                     <td className="px-6 py-3.5">
                                         {sub.image_url ? (
                                             <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
-                                                <Image src={sub.image_url} alt={sub.name} fill className="object-cover" />
+                                                <Image src={sub.image_url} alt={sub.name} fill sizes="48px" className="object-cover" />
                                             </div>
                                         ) : (
                                             <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">
@@ -692,7 +694,7 @@ export default function SubCategoriesClient({
                         <div className="flex items-start gap-4">
                             {sub.image_url ? (
                                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
-                                    <Image src={sub.image_url} alt={sub.name} fill className="object-cover" />
+                                    <Image src={sub.image_url} alt={sub.name} fill sizes="64px" className="object-cover" />
                                 </div>
                             ) : (
                                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">

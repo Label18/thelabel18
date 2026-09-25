@@ -97,7 +97,7 @@ function LoginFormInner() {
                 fill
                 className="object-cover"
                 priority
-              />
+              sizes="100vw" />
             </div>
             <h1 className="text-2xl font-normal tracking-wide text-white">
               The Label 18
@@ -124,7 +124,7 @@ function LoginFormInner() {
                 fill
                 className="object-cover"
                 priority
-              />
+              sizes="100vw" />
             </div>
             <h1 className="text-2xl font-normal tracking-wide text-white">
               The Label 18

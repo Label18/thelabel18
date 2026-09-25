@@ -182,9 +182,8 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                   quality={100}
                   unoptimized={true}
                   sizes="100vw"
-                  className={`object-cover ${s.desktopPosition} transition-transform duration-[7000ms] ${
-                    isActive ? "scale-100" : "scale-105"
-                  }`}
+                  className={`object-cover ${s.desktopPosition} transition-transform duration-[7000ms] ${isActive ? "scale-100" : "scale-105"
+                    }`}
                 />
               </div>
 
@@ -198,9 +197,8 @@ export default function HeroBanner({ clothingCategory, jewelleryCategory }: Hero
                   quality={100}
                   unoptimized={true}
                   sizes="100vw"
-                  className={`object-cover ${s.mobilePosition} transition-transform duration-[7000ms] ${
-                    isActive ? "scale-100" : "scale-105"
-                  }`}
+                  className={`object-cover ${s.mobilePosition} transition-transform duration-[7000ms] ${isActive ? "scale-100" : "scale-105"
+                    }`}
                 />
               </div>
 

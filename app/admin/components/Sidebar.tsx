@@ -160,7 +160,7 @@ export default function Sidebar() {
             <Menu size={22} strokeWidth={1.75} />
           </button>
           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
-            <Image src="/logo.jpg" alt="The Label 18 Logo" fill className="object-cover" priority />
+            <Image src="/logo.jpg" alt="The Label 18 Logo" fill sizes="36px" className="object-cover" priority />
           </div>
           <span className="font-outfit text-[16px] font-medium tracking-[0.04em] text-[#F5F2EB]">
             The Label 18
@@ -190,7 +190,7 @@ export default function Sidebar() {
           <div className="flex items-center justify-between px-6 py-6">
             <div className="flex items-center gap-3.5">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#D4AF37]/30 bg-[#141414] shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
-                <Image src="/logo.jpg" alt="The Label 18 Logo" fill className="object-cover" priority />
+                <Image src="/logo.jpg" alt="The Label 18 Logo" fill sizes="64px" className="object-cover" priority />
               </div>
               <div className="min-w-0">
                 <h1 className="truncate text-[15px] font-medium tracking-[0.04em] text-[#F5F2EB]">

@@ -17,49 +17,10 @@ interface JewelleryShowcaseProps {
   products?: ProductWithPrice[];
 }
 
-const sampleJewelleryProducts: any[] = [
-  {
-    id: "sample-j1",
-    name: "Kundan Bridal Choker",
-    description: "Heavy kundan choker set with matching earrings.",
-    image_url: "/images/jellwerys.jpg",
-    minPrice: 45000,
-    inStock: true,
-    product_variations: [],
-  },
-  {
-    id: "sample-j2",
-    name: "Temple Gold Haram",
-    description: "Traditional 22K gold temple design long necklace.",
-    image_url: "/aboutus.jpg",
-    minPrice: 120000,
-    inStock: true,
-    product_variations: [],
-  },
-  {
-    id: "sample-j3",
-    name: "Polki Diamond Studs",
-    description: "Classic uncut diamond earrings.",
-    image_url: "/images/jellwerys.jpg",
-    minPrice: 32000,
-    inStock: true,
-    product_variations: [],
-  },
-  {
-    id: "sample-j4",
-    name: "Navaratna Gold Bangle",
-    description: "Traditional nine-gemstone bangle.",
-    image_url: "/aboutus.jpg",
-    minPrice: 28500,
-    inStock: false,
-    product_variations: [],
-  },
-];
-
 export default function JewelleryShowcase({ category, products }: JewelleryShowcaseProps) {
   const subCategories = category?.sub_categories || [];
 
-  const displayProducts = products && products.length > 0 ? products : sampleJewelleryProducts;
+  const displayProducts = products || [];
 
   return (
     <section className="bg-white text-[#1A1A1A] py-4 sm:py-6 border-b border-neutral-200 relative">
@@ -125,11 +86,17 @@ export default function JewelleryShowcase({ category, products }: JewelleryShowc
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-5">
-            {displayProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {displayProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-5">
+              {displayProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 sm:py-14 text-center">
+              <p className="text-sm text-neutral-500 font-medium tracking-wide">No products available at the moment.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

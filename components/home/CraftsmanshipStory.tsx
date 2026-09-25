@@ -31,6 +31,7 @@ export default function CraftsmanshipStory() {
                 alt="Haute Couture by The Label 18"
                 fill
                 className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               
@@ -82,6 +83,7 @@ export default function CraftsmanshipStory() {
                 alt="Fine Temple Jewellery by The Label 18"
                 fill
                 className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

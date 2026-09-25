@@ -372,7 +372,7 @@ export default function CheckoutPage() {
                         className="flex items-center gap-4 bg-[#F8F6F0]/50 border border-neutral-100 rounded-xl p-3"
                       >
                         <div className="relative w-14 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-white border border-neutral-200">
-                          {image && <Image src={image} alt={product?.name ?? ""} fill className="object-cover" />}
+                          {image && <Image src={image} alt={product?.name ?? ""} fill className="object-cover" sizes="100vw" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs sm:text-[13px] font-outfit font-semibold uppercase tracking-wide text-[#1A1A1A] truncate">

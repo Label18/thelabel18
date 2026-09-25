@@ -213,7 +213,7 @@ function VariationsPanel({ variations }: { variations: Variation[] }) {
               <td className="px-6 py-2.5">
                 {v.image_url ? (
                   <div className="relative h-9 w-9 overflow-hidden rounded-md border border-stone-200 bg-white">
-                    <Image src={v.image_url} alt={v.color || v.sku || ''} fill className="object-cover" />
+                    <Image src={v.image_url} alt={v.color || v.sku || ''} fill sizes="36px" className="object-cover" />
                   </div>
                 ) : (
                   <div className="flex h-9 w-9 items-center justify-center rounded-md border border-stone-200 bg-white text-stone-300">
@@ -531,7 +531,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
                     <td className="px-6 py-3.5">
                       {p.image_url ? (
                         <div className="relative h-11 w-11 overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
-                          <Image src={p.image_url} alt={p.name} fill className="object-cover" />
+                          <Image src={p.image_url} alt={p.name} fill sizes="44px" className="object-cover" />
                         </div>
                       ) : (
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">
@@ -634,7 +634,7 @@ export default function ProductsListClient({ products }: { products: ProductRow[
               <div className="flex items-start gap-4">
                 {p.image_url ? (
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
-                    <Image src={p.image_url} alt={p.name} fill className="object-cover" />
+                    <Image src={p.image_url} alt={p.name} fill sizes="80px" className="object-cover" />
                   </div>
                 ) : (
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-300">

@@ -268,7 +268,7 @@ export default function RegisterClient({ initialProducts }: { initialProducts: S
                     >
                       {item.imageUrl ? (
                         <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-stone-200">
-                          <Image src={item.imageUrl} alt={item.productName} fill className="object-cover" />
+                          <Image src={item.imageUrl} alt={item.productName} fill className="object-cover" sizes="100vw" />
                         </div>
                       ) : (
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">

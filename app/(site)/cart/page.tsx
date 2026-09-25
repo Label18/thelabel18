@@ -357,7 +357,7 @@ export default function CartPage() {
                   >
                     <div className="relative w-20 h-24 sm:w-24 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-[#F8F6F0] border border-neutral-100">
                       {item.image ? (
-                        <Image src={item.image} alt={item.name} fill className="object-cover" />
+                        <Image src={item.image} alt={item.name} fill className="object-cover" sizes="100vw" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[9px] uppercase tracking-widest text-neutral-400">
                           No Image

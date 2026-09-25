@@ -36,35 +36,41 @@ export default function AboutUs() {
   return (
     <main className="w-full min-h-screen bg-[#F8F6F0] text-[#1A1A1A] flex flex-col items-center selection:bg-[#D4AF37]/30 selection:text-[#1A1A1A] pt-20 sm:pt-24">
       {/* 1. DUAL COMPOSITION: Luxury Dark Hero Section */}
-      <section className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] py-14 sm:py-20 text-white">
-        {/* Subtle Ambient Glow */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[650px] max-h-[650px] rounded-full blur-[150px] bg-[#D4AF37]/12" />
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, #D4AF37 1px, transparent 0)`,
-              backgroundSize: "28px 28px",
-            }}
-          />
+      <section className="relative w-full overflow-hidden border-b border-[#222] bg-[#0A0A0A] text-white min-h-[60vh] flex items-center justify-center">
+        {/* Background Images Split */}
+        <div className="absolute inset-0 grid grid-cols-1 md:grid-cols-2">
+          <div className="relative w-full h-full opacity-60">
+            <Image src="/aboutus1.jpg" alt="About Us" fill className="object-cover object-center" priority sizes="100vw" />
+          </div>
+          <div className="relative w-full h-full opacity-60 hidden md:block">
+            <Image src="/aboutus2.jpg" alt="About Us" fill className="object-cover object-[center_20%]" priority sizes="100vw" />
+          </div>
         </div>
 
-        <div className="relative z-10 text-center flex flex-col items-center px-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-3 shadow-md">
-            
+        {/* Gradient Overlays for Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-[#0A0A0A]/20 z-10" />
+        <div className="absolute inset-0 bg-black/40 z-10" />
+
+        {/* Subtle Ambient Glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[650px] max-h-[650px] rounded-full blur-[150px] bg-[#D4AF37]/25" />
+        </div>
+
+        <div className="relative z-30 text-center flex flex-col items-center px-4 max-w-3xl mx-auto py-24 sm:py-32">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium mb-4 shadow-lg">
             <span>The Heritage • The Story</span>
           </div>
 
-          <h1 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light tracking-[0.08em] uppercase text-white leading-none">
+          <h1 className="font-outfit text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-[0.08em] uppercase text-white leading-none mb-2">
             The Story Of <br className="sm:hidden" />
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FBF5E8] via-[#E6C35C] to-[#C59B27] drop-shadow-[0_2px_20px_rgba(212,175,55,0.4)]">
               The Label 18
             </span>
           </h1>
 
-          <div className="w-12 h-[1.5px] bg-[#D4AF37]/60 my-3.5" />
+          <div className="w-16 h-[1.5px] bg-[#D4AF37]/60 my-5" />
 
-          <p className="font-outfit font-light text-xs sm:text-sm tracking-[0.18em] uppercase text-white/75 max-w-lg mx-auto">
+          <p className="font-outfit font-light text-xs sm:text-sm tracking-[0.18em] uppercase text-white/90 max-w-lg mx-auto">
             Growth • Positivity • Abundance • Timeless Craftsmanship
           </p>
         </div>
@@ -103,7 +109,7 @@ export default function AboutUs() {
               <div className="absolute top-6 right-0 w-[52%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-6 z-10 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
-                    src="/aboutus.jpg"
+                    src="/aboutus5.jpg"
                     alt="The Label 18 Philosophy"
                     fill
                     sizes="(max-width: 1024px) 52vw, 26vw"
@@ -116,7 +122,7 @@ export default function AboutUs() {
               <div className="absolute top-[30%] left-0 w-[56%] aspect-[4/3] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-6 z-20 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
-                    src="/aboutus.jpg"
+                    src="/aboutus4.jpg"
                     alt="The Label 18 Philosophy"
                     fill
                     sizes="(max-width: 1024px) 56vw, 28vw"
@@ -130,7 +136,7 @@ export default function AboutUs() {
               <div className="absolute bottom-20 left-2 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] -rotate-3 z-30 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
-                    src="/aboutus.jpg"
+                    src="/aboutus2.jpg"
                     alt="The Label 18 Philosophy"
                     fill
                     sizes="(max-width: 1024px) 40vw, 20vw"
@@ -144,7 +150,7 @@ export default function AboutUs() {
               <div className="absolute bottom-24 right-4 w-[40%] aspect-[3/4] bg-white p-2 pb-6 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.35)] rotate-4 z-40 border border-neutral-200">
                 <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
                   <Image
-                    src="/aboutus.jpg"
+                    src="/aboutus3.jpg"
                     alt="The Label 18 Philosophy"
                     fill
                     sizes="(max-width: 1024px) 40vw, 20vw"

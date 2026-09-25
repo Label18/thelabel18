@@ -189,7 +189,7 @@ export default function ReelsFeed({ reels }: Props) {
                 alt="The Label 18 Logo"
                 fill
                 className="object-cover"
-              />
+              sizes="100vw" />
             </div>
             <div>
               <h1 className="font-outfit font-medium text-lg tracking-wide text-white">
