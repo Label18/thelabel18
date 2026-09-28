@@ -23,7 +23,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
   const [categories, related] = await Promise.all([
     getCategoriesTree(),
-    getRelatedProducts(product),
+    getRelatedProducts(product, 15),
   ]);
 
   const category = categories.find((c) => c.id === product.category_id);
@@ -84,7 +84,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

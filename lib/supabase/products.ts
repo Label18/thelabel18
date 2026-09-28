@@ -169,30 +169,8 @@ export async function getProductById(id: string) {
 
   return product;
 }
-export async function getRelatedProducts(product: Product, limit = 4) {
+export async function getRelatedProducts(product: Product, limit = 15) {
   const supabase = await createClient();
-
-  let query = supabase
-    .from("products")
-    .select(`
-      *, 
-      product_variations(*),
-      category:categories(is_visible),
-      sub_category:sub_categories(is_visible),
-      sub_sub_category:sub_sub_categories(is_visible)
-    `)
-    .eq("is_visible", true)
-    .neq("id", product.id)
-    .limit(limit * 3); // Fetch more initially in case some are filtered out
-
-  if (product.sub_category_id) {
-    query = query.eq("sub_category_id", product.sub_category_id);
-  } else {
-    query = query.eq("category_id", product.category_id);
-  }
-
-  const { data, error } = await query;
-  if (error || !data) return [];
 
   const isVis = (cat: any, id: string | null) => {
     if (id && !cat) return false;
@@ -201,14 +179,7 @@ export async function getRelatedProducts(product: Product, limit = 4) {
     return cat.is_visible !== false;
   };
 
-  const validData = (data as any[]).filter((p) => {
-    if (!isVis(p.category || p.categories, p.category_id)) return false;
-    if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
-    if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
-    return true;
-  }).slice(0, limit);
-
-  return validData.map((p) => {
+  const toProductWithPrice = (p: any) => {
     const visible = (p.product_variations || []).filter((v: any) => v.is_visible);
     const prices = visible.map((v: any) => Number(v.price));
     return {
@@ -217,5 +188,60 @@ export async function getRelatedProducts(product: Product, limit = 4) {
       maxPrice: prices.length ? Math.max(...prices) : null,
       inStock: visible.some((v: any) => v.stock_quantity > 0),
     };
-  });
+  };
+
+  const filterVisible = (rows: any[]) =>
+    rows.filter((p) => {
+      if (!isVis(p.category || p.categories, p.category_id)) return false;
+      if (!isVis(p.sub_category || p.sub_categories, p.sub_category_id)) return false;
+      if (!isVis(p.sub_sub_category || p.sub_sub_categories, p.sub_sub_category_id)) return false;
+      return true;
+    });
+
+  const selectFields = `
+    *,
+    product_variations(*),
+    category:categories(is_visible),
+    sub_category:sub_categories(is_visible),
+    sub_sub_category:sub_sub_categories(is_visible)
+  `;
+
+  // ── Step 1: fetch from same subcategory (if product has one) ──
+  let primaryResults: any[] = [];
+  if (product.sub_category_id) {
+    const { data } = await supabase
+      .from("products")
+      .select(selectFields)
+      .eq("is_visible", true)
+      .neq("id", product.id)
+      .eq("sub_category_id", product.sub_category_id)
+      .limit(limit * 3);
+
+    primaryResults = filterVisible(data ?? []).slice(0, limit);
+  }
+
+  // ── Step 2: if still under limit, top up from other subcategories in same category ──
+  const needed = limit - primaryResults.length;
+  let fallbackResults: any[] = [];
+
+  if (needed > 0) {
+    const excludeIds = [product.id, ...primaryResults.map((p) => p.id)];
+
+    let fallbackQuery = supabase
+      .from("products")
+      .select(selectFields)
+      .eq("is_visible", true)
+      .eq("category_id", product.category_id)
+      .limit((needed + excludeIds.length) * 3);
+
+    // Exclude already-fetched IDs
+    for (const id of excludeIds) {
+      fallbackQuery = fallbackQuery.neq("id", id);
+    }
+
+    const { data: fallbackData } = await fallbackQuery;
+    fallbackResults = filterVisible(fallbackData ?? []).slice(0, needed);
+  }
+
+  return [...primaryResults, ...fallbackResults].map(toProductWithPrice);
 }

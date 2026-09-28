@@ -46,9 +46,9 @@ export default function JewelleryShowcase({ category, products }: JewelleryShowc
             variant="light"
           />
 
-          {/* Luxury Sub-Categories Chips (Scrollable on mobile) */}
+          {/* Luxury Sub-Categories Chips (Scrollable on all devices) */}
           {subCategories.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 w-full justify-start sm:justify-center mt-3 sm:mt-5 px-1">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 w-full justify-start mt-3 sm:mt-5 px-1">
               <Link
                 href={category?.id ? `/categories/${category.id}` : "/shop?category=jewellery"}
                 className="shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full border border-[#9c7d23]/40 bg-[#9c7d23]/5 text-[#9c7d23] hover:bg-[#9c7d23] hover:text-white transition-colors text-[9px] sm:text-[10px] uppercase tracking-widest font-semibold"

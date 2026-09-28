@@ -8,7 +8,7 @@ import { ProductWithPrice } from "@/lib/supabase/products";
 import { CategoryTree } from "@/lib/categories";
 import { ChevronDown } from "lucide-react";
 
-const ITEMS_PER_LOAD = 35; // 5 columns × 7 rows
+const ITEMS_PER_LOAD = 40; // 8 rows × 5 columns
 
 type Crumb = { label: string; href?: string };
 
@@ -176,6 +176,7 @@ export default function ShopClient({
             </div>
           ) : (
             <>
+              {/* All products mixed together in one flat grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {visibleProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />

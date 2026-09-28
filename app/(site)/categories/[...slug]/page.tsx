@@ -35,6 +35,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     : undefined;
   if (subSubCategoryId && !subSubCategory) notFound();
 
+  const PAGE_SIZE = 40; // 8 rows × 5 columns
   const page = sp.page ? parseInt(sp.page) : 1;
   const { items, total, pageSize } = await getProducts({
     categoryId: category.id,
@@ -45,6 +46,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     maxPrice: sp.max ? Number(sp.max) : undefined,
     sort: (sp.sort as any) ?? "newest",
     page,
+    pageSize: PAGE_SIZE,
   });
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -215,27 +217,78 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-12 sm:mt-16">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                const qp = new URLSearchParams({ ...sp, page: String(p) } as any);
-                const isActive = p === page;
-                return (
+          {totalPages > 1 && (() => {
+            // Build visible page numbers with ellipsis
+            const delta = 2;
+            const pages: (number | "...")[] = [];
+            for (let i = 1; i <= totalPages; i++) {
+              if (i === 1 || i === totalPages || (i >= page - delta && i <= page + delta)) {
+                pages.push(i);
+              } else if (pages[pages.length - 1] !== "...") {
+                pages.push("...");
+              }
+            }
+            const prevQp = new URLSearchParams({ ...sp, page: String(page - 1) } as any);
+            const nextQp = new URLSearchParams({ ...sp, page: String(page + 1) } as any);
+            return (
+              <div className="flex items-center justify-center gap-1.5 mt-14 sm:mt-16 flex-wrap">
+                {/* Prev */}
+                {page > 1 ? (
                   <Link
-                    key={p}
-                    href={`/categories/${slug.join("/")}?${qp.toString()}`}
-                    className={`text-xs font-outfit font-medium w-9 h-9 flex items-center justify-center rounded-full transition-all ${
-                      isActive
-                        ? "bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-bold shadow-[0_2px_10px_rgba(212,175,55,0.4)]"
-                        : "text-[#1A1A1A]/70 hover:text-black border border-[#D4AF37]/30 bg-white hover:border-[#D4AF37]"
-                    }`}
+                    href={`/categories/${slug.join("/")}?${prevQp.toString()}`}
+                    className="flex items-center gap-1 px-4 py-2 rounded-full border border-[#D4AF37]/30 bg-white text-[#1A1A1A]/70 hover:border-[#D4AF37] hover:text-black text-xs font-outfit tracking-wider transition-all"
                   >
-                    {p}
+                    ← Prev
                   </Link>
-                );
-              })}
-            </div>
-          )}
+                ) : (
+                  <span className="flex items-center gap-1 px-4 py-2 rounded-full border border-[#D4AF37]/10 bg-white/50 text-[#1A1A1A]/25 text-xs font-outfit tracking-wider cursor-not-allowed select-none">
+                    ← Prev
+                  </span>
+                )}
+
+                {/* Page numbers */}
+                {pages.map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`ellipsis-${idx}`} className="w-9 h-9 flex items-center justify-center text-[#1A1A1A]/40 text-xs">
+                      …
+                    </span>
+                  ) : (
+                    (() => {
+                      const qp = new URLSearchParams({ ...sp, page: String(p) } as any);
+                      const isActive = p === page;
+                      return (
+                        <Link
+                          key={p}
+                          href={`/categories/${slug.join("/")}?${qp.toString()}`}
+                          className={`text-xs font-outfit font-medium w-9 h-9 flex items-center justify-center rounded-full transition-all ${
+                            isActive
+                              ? "bg-gradient-to-r from-[#F5E6C8] to-[#D4AF37] text-black font-bold shadow-[0_2px_10px_rgba(212,175,55,0.4)]"
+                              : "text-[#1A1A1A]/70 hover:text-black border border-[#D4AF37]/30 bg-white hover:border-[#D4AF37]"
+                          }`}
+                        >
+                          {p}
+                        </Link>
+                      );
+                    })()
+                  )
+                )}
+
+                {/* Next */}
+                {page < totalPages ? (
+                  <Link
+                    href={`/categories/${slug.join("/")}?${nextQp.toString()}`}
+                    className="flex items-center gap-1 px-4 py-2 rounded-full border border-[#D4AF37]/30 bg-white text-[#1A1A1A]/70 hover:border-[#D4AF37] hover:text-black text-xs font-outfit tracking-wider transition-all"
+                  >
+                    Next →
+                  </Link>
+                ) : (
+                  <span className="flex items-center gap-1 px-4 py-2 rounded-full border border-[#D4AF37]/10 bg-white/50 text-[#1A1A1A]/25 text-xs font-outfit tracking-wider cursor-not-allowed select-none">
+                    Next →
+                  </span>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </main>
