@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true, // Bypass Vercel image optimization (free plan quota exceeded — HTTP 402)
     qualities: [75, 100],
     remotePatterns: [
       {
