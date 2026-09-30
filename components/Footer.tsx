@@ -22,12 +22,6 @@ function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-const trustBadges = [
-  { icon: Award, title: "Curated Master Weavers", sub: "Authentic Pure Silks" },
-  { icon: Gem, title: "Certified Purity", sub: "Hallmarked Ornaments" },
-  { icon: ShieldCheck, title: "Bespoke Bridal Tailoring", sub: "Personalized Fitting" },
-  { icon: Truck, title: "Worldwide Express", sub: "Insured Global Delivery" },
-];
 
 export default async function Footer() {
   const categories = await getCategoriesTree();
@@ -45,31 +39,7 @@ export default async function Footer() {
       {/* Background Decorative Gold Radial Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4af37]/5 blur-[120px] pointer-events-none rounded-full" />
 
-      {/* 1. Trust Badges Strip */}
-      <div className="border-b border-white/10 bg-black/40 backdrop-blur-sm">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-5 sm:py-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {trustBadges.map((badge, idx) => {
-              const Icon = badge.icon;
-              return (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] sm:text-xs uppercase tracking-wider font-semibold text-white">
-                      {badge.title}
-                    </h4>
-                    <p className="text-[10px] text-white/50 font-light">
-                      {badge.sub}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+
 
       {/* 2. Main Luxury Footer Content */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 pt-10 sm:pt-14 pb-8 sm:pb-10 relative z-10">
@@ -102,12 +72,6 @@ export default async function Footer() {
                 Rooted in the auspicious symbolism of 18, representing manifestation, radiance, and royalty.
                 We weave timeless Indian silk silhouettes and forge hallmarked heritage jewellery for the modern muse.
               </p>
-
-              {/* Tagline */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#e5c158] text-[10px] tracking-[0.2em] uppercase font-medium">
-                
-                Wear Your Energy • Express Your Essence
-              </div>
             </div>
 
             {/* Social Channels */}

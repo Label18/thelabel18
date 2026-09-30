@@ -57,11 +57,11 @@ export default function CraftsmanshipStory() {
               <ul className="space-y-1.5 mb-4 text-[10px] sm:text-xs text-white/80 font-light">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Pure Mulberry and Kanjivaram zari brocades</span>
+                  <span>Perfect for intimate gatherings, grand weddings, and festive celebrations.</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Fluid, lightweight drapery tailored for day-long festive comfort</span>
+                  <span>Comes with specialized care instructions to preserve the luster of delicate threads.</span>
                 </li>
               </ul>
 

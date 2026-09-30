@@ -258,10 +258,6 @@ export default function ProductDetailClient({ product, initialColor }: { product
               onClick={() => setIsModalOpen(true)}
               className="relative flex-1 aspect-[3/4] max-h-[640px] w-full rounded-2xl overflow-hidden bg-white border border-[#D4AF37]/35 shadow-[0_8px_30px_rgba(212,175,55,0.08)] group cursor-zoom-in select-none"
             >
-              {/* Luxury Hallmark Overlay Badge */}
-              <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[9px] uppercase tracking-[0.2em] font-medium shadow-md pointer-events-none">
-                <span>Pure Mulberry Silk</span>
-              </div>
 
               {/* Pop & Zoom Button Badge (Top Right) */}
               <div className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5E6C8] text-[10px] uppercase tracking-[0.15em] font-outfit shadow-md transition-all group-hover:scale-105 group-hover:border-[#D4AF37] pointer-events-none">
@@ -437,14 +433,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
               </h3>
             </div>
             <ul className="space-y-3 text-xs font-outfit text-[#1A1A1A]/80">
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
-                <span>100% Pure Mulberry Silk Mark</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
-                <span>Authentic Handloom Gold Zari Checks</span>
-              </li>
+
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
                 <span>Handcrafted by Master Artisans</span>
