@@ -23,12 +23,12 @@ export default function CraftsmanshipStory() {
 
         {/* Dual Split Editorial */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-center">
-          {/* Card 1: Haute Couture */}
+          {/* Card 1: Jewellery & Clothing */}
           <div className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-[#1A1A1A] shadow-md border border-white/10 hover:border-[#9c7d23]/50 transition-all duration-500 flex flex-col">
             <div className="relative h-[180px] sm:h-[220px] lg:h-[260px] w-full overflow-hidden bg-neutral-900">
               <Image
                 src="/aboutusphoto.jpg"
-                alt="Haute Couture by The Label 18"
+                alt="Jewellery & Clothing by The Label 18"
                 fill
                 className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 sizes="100vw"
@@ -57,11 +57,27 @@ export default function CraftsmanshipStory() {
               <ul className="space-y-1.5 mb-4 text-[10px] sm:text-xs text-white/80 font-light">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Perfect for intimate gatherings, grand weddings, and festive celebrations.</span>
+                  <span>Premium-quality fabrics – Soft, comfortable and carefully selected.</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Comes with specialized care instructions to preserve the luster of delicate threads.</span>
+                  <span>Elegant designs – Thoughtfully designed for a timeless, stylish look.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Fine detailing – Beautiful craftsmanship with attention to every detail.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Comfort-first fit – Designed to feel as good as it looks.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Skin-friendly & breathable – Gentle fabrics for all-day comfort.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Perfect finishing – Neat stitching and premium finishing throughout.</span>
                 </li>
               </ul>
 
@@ -99,7 +115,7 @@ export default function CraftsmanshipStory() {
                 Temple Gold & Polki Diamonds
               </span>
               <h3 className="font-outfit text-base sm:text-lg lg:text-xl font-light text-white mb-2">
-                Heirloom Chokers & Coin Necklaces
+                Chokers & Coin Necklaces
               </h3>
               <p className="text-white/70 text-[11px] sm:text-xs font-light leading-relaxed mb-3">
                 Inspired by ancient temple motifs and royal dynasties, our jewellery brings sacred coin 
@@ -109,11 +125,19 @@ export default function CraftsmanshipStory() {
               <ul className="space-y-1.5 mb-4 text-[10px] sm:text-xs text-white/80 font-light">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Authentic 22K gold plating and hallmarked finishes</span>
+                  <span>Elegant gold-tone imitation jewellery with a rich, traditional look.</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
-                  <span>Precision-prong set uncut stones and freshwater pearl drops</span>
+                  <span>Intricate detailing adds charm to every piece.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Beautifully complements sarees, lehengas and ethnic outfits.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#9c7d23] shrink-0" />
+                  <span>Enjoy the timeless appeal of gold at an affordable price.</span>
                 </li>
               </ul>
 

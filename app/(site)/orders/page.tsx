@@ -179,7 +179,7 @@ export default function OrdersPage() {
               No Orders Found Yet
             </h2>
             <p className="text-xs text-[#1A1A1A]/70 font-outfit mb-6">
-              You have not placed any orders yet. Discover our artisanal sarees and heirloom jewellery collections.
+              You have not placed any orders yet. Discover our artisanal sarees and fine jewellery collections.
             </p>
             <Link
               href="/shop"

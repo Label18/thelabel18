@@ -63,7 +63,7 @@ export default async function Footer() {
                     THE LABEL <span className="font-bold text-[#d4af37]">18</span>
                   </span>
                   <span className="text-[9px] uppercase tracking-[0.3em] text-[#d4af37]/80 block font-medium">
-                    Haute Couture & Heirlooms
+                    Jewellery & Clothing
                   </span>
                 </div>
               </Link>

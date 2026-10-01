@@ -27,13 +27,8 @@ export default function ClothingShowcase({ category, products }: ClothingShowcas
       <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col items-center text-center mb-4 sm:mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/5 border border-black/10 text-[#1A1A1A] text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-medium mb-1.5">
-            
-            Haute Couture Collection
-          </div>
-
           <h2 className="font-outfit text-2xl sm:text-3xl lg:text-4xl font-light tracking-tight text-[#9c7d23] mb-1.5">
-            <span className="font-semibold">CLOTHING</span> & SILKS
+            <span className="font-semibold">CLOTHING</span>
           </h2>
 
           <div className="w-8 sm:w-12 h-[1px] bg-[#1A1A1A]/30 mx-auto my-1.5" />

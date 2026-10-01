@@ -22,6 +22,7 @@ import {
   LogOut,
   Menu,
   X,
+  Megaphone,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -60,6 +61,7 @@ const NAV: NavGroup[] = [
   {
     items: [
       { href: '/admin/coupons', label: 'Coupons', icon: <Ticket size={17} strokeWidth={1.75} /> },
+      { href: '/admin/announcements', label: 'Announcements', icon: <Megaphone size={17} strokeWidth={1.75} /> },
       { href: '/admin/orders', label: 'Orders', icon: <Package size={17} strokeWidth={1.75} /> },
     ],
   },

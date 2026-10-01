@@ -94,16 +94,16 @@ export default function Home() {
         jewelleryCategory={jewelleryCat}
       />
 
-      {/* 2. Haute Couture & Artisanal Silks Showcase */}
+      {/* 2.  Clothing Showcase */}
       <ClothingShowcase category={clothingCat} products={clothingProducts} />
 
       {/* 3. Behind The Brand: Artisanal Heritage & Real Craftsmanship */}
       <CraftsmanshipStory />
 
-      {/* 4. Fine Jewellery & Heirloom Ornaments Showcase */}
+      {/* 4. Fine Jewellery Showcase */}
       <JewelleryShowcase category={jewelleryCat} products={jewelleryProducts} />
 
-      {/* 5. Brand Identity & 4 Pillars (Handcrafted Luxury, Hallmarked Purity, Bespoke Fitting, Express Shipping) - Completely at the bottom */}
+      {/* 5. Brand Identity & 4 Pillars (Handcrafted Luxury, Bespoke Fitting, Express Shipping) - Completely at the bottom */}
       <BrandPhilosophy />
 
       {/* 6. VIP Circle & Social Highlights */}

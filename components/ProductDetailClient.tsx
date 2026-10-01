@@ -363,97 +363,120 @@ export default function ProductDetailClient({ product, initialColor }: { product
 
         </div>
 
-        {/* Right Column: Title & Selector Card */}
-        <div className="lg:col-span-5 bg-white border border-[#D4AF37]/35 p-6 sm:p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgba(212,175,55,0.12)] transition-all">
-          
-          {/* Desktop Title & SKU (Hidden on mobile/tablet) */}
-          <div className="hidden lg:block mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold">
-                
-                <span>SKU: {product.sku}</span>
+        {/* Right Column: Product Info Card */}
+        <div className="lg:col-span-5 flex flex-col rounded-2xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_8px_40px_rgba(0,0,0,0.07)]">
+
+          {/* Dark Header: Title + SKU + Share */}
+          <div className="bg-[#2C1810] px-6 sm:px-8 py-6 sm:py-7 relative overflow-hidden">
+            {/* Subtle gold glow */}
+            <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#D4AF37]/8 blur-[60px] pointer-events-none" />
+
+            {/* Desktop only */}
+            <div className="hidden lg:block relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[#F5E6C8] text-[9px] tracking-[0.3em] uppercase font-outfit font-medium">
+                  SKU: {product.sku}
+                </div>
+                <button
+                  onClick={handleShare}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-white/70 text-[10px] font-outfit uppercase tracking-wider hover:bg-white/10 hover:text-white hover:border-white/30 transition-all active:scale-95"
+                >
+                  <Share2 className="w-3 h-3" />
+                  <span>Share</span>
+                </button>
               </div>
-              <button 
-                onClick={handleShare}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D4AF37]/30 text-[#9c7d23] text-xs font-medium uppercase tracking-wider hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all shadow-sm active:scale-95"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Share</span>
-              </button>
+              <h1 className="font-serif text-2xl md:text-3xl tracking-wide uppercase text-white font-normal leading-snug">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-2.5 mt-3">
+                <div className="w-6 h-[1px] bg-gradient-to-r from-[#D4AF37]/60 to-transparent" />
+                <span className="text-[9px] text-[#D4AF37]/50 tracking-[0.3em] uppercase font-serif">The Label 18</span>
+              </div>
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl tracking-wide uppercase text-[#1A1A1A] font-normal leading-tight">
-              {product.name}
-            </h1>
+
+            {/* Mobile only */}
+            <div className="block lg:hidden relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[#F5E6C8] text-[9px] tracking-[0.3em] uppercase font-outfit font-medium">
+                  SKU: {product.sku}
+                </div>
+                <button
+                  onClick={handleShare}
+                  className="p-2 rounded-full bg-white/[0.06] border border-white/15 text-white/70 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                  aria-label="Share product"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              </div>
+              <h1 className="font-serif text-xl sm:text-2xl tracking-wide uppercase text-white font-normal leading-snug">
+                {product.name}
+              </h1>
+            </div>
           </div>
 
-          {hasNoVariations ? (
-            <p className="text-xs tracking-[0.2em] uppercase font-outfit font-light text-[#1A1A1A]/50 py-4">
-              This product has no purchasable options currently.
-            </p>
-          ) : (
-            <ProductVariantSelector
-              productId={product.id}
-              productName={product.name}
-              productImage={product.image_url}
-              variations={variations}
-              selectedColorProp={selectedColor}
-              onColorChange={handleColorChange}
-              onVariantChange={handleVariantChange}
-              onRequireLogin={openLoginModal}
-            />
-          )}
+          {/* Cream Body: Variant Selector */}
+          <div className="bg-[#FDFBF7] px-6 sm:px-8 py-6 sm:py-7 flex-1">
+            {hasNoVariations ? (
+              <p className="text-xs tracking-[0.2em] uppercase font-outfit font-light text-[#1A1A1A]/50 py-4">
+                This product has no purchasable options currently.
+              </p>
+            ) : (
+              <ProductVariantSelector
+                productId={product.id}
+                productName={product.name}
+                productImage={product.image_url}
+                variations={variations}
+                selectedColorProp={selectedColor}
+                onColorChange={handleColorChange}
+                onVariantChange={handleVariantChange}
+                onRequireLogin={openLoginModal}
+              />
+            )}
+          </div>
         </div>
 
       </div>
 
-      {/* Bottom Section: Description & Craftsmanship Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Description Box */}
+      {/* Bottom Section: Description & SKU */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        {/* Description */}
         {product.description && (
-          <div className="lg:col-span-8 bg-white border border-[#D4AF37]/35 p-6 sm:p-8 md:p-10 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#D4AF37]/25">
-              
-              <h2 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
-                Atelier Narrative &amp; Craftsmanship
+          <div className="lg:col-span-8 rounded-2xl overflow-hidden border border-[#D4AF37]/25 shadow-sm">
+            <div className="bg-[#2C1810] px-6 py-4 flex items-center gap-3">
+              <div className="w-1 h-5 bg-gradient-to-b from-[#F5E6C8] to-[#C59B27] rounded-full" />
+              <h2 className="text-[10px] uppercase tracking-[0.3em] font-outfit font-semibold text-[#F5E6C8]">
+                Atelier Narrative & Craftsmanship
               </h2>
             </div>
-            <p className="text-[#1A1A1A]/85 font-outfit font-light text-sm sm:text-[15px] leading-[2.1] tracking-wide whitespace-pre-line">
-              {product.description}
-            </p>
+            <div className="bg-white px-6 sm:px-8 py-6 sm:py-7">
+              <p className="text-[#1A1A1A]/80 font-outfit font-light text-sm sm:text-[15px] leading-[2.1] tracking-wide whitespace-pre-line">
+                {product.description}
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Heritage Specs & Reference Box */}
-        <div className={`space-y-6 ${product.description ? "lg:col-span-4" : "lg:col-span-12"}`}>
-          <div className="bg-white border border-[#D4AF37]/35 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-[#D4AF37]/25">
-              <Award className="w-4 h-4 text-[#9c7d23]" />
-              <h3 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
-                Heritage Assurance
-              </h3>
+        {/* SKU Reference */}
+        <div className={`space-y-4 ${product.description ? "lg:col-span-4" : "lg:col-span-12"}`}>
+          <div className="rounded-2xl overflow-hidden border border-[#D4AF37]/25 shadow-sm">
+            <div className="bg-[#2C1810] px-5 py-3.5 flex items-center gap-2">
+              <div className="w-1 h-4 bg-gradient-to-b from-[#F5E6C8] to-[#C59B27] rounded-full" />
+              <span className="text-[9px] uppercase tracking-[0.3em] font-outfit font-semibold text-[#F5E6C8]/70">
+                Atelier Reference
+              </span>
             </div>
-            <ul className="space-y-3 text-xs font-outfit text-[#1A1A1A]/80">
-
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
-                <span>Handcrafted by Master Artisans</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#9c7d23] flex-shrink-0" />
-                <span>Care: Professional Dry Clean Only</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-white border border-[#D4AF37]/35 p-5 sm:p-6 rounded-2xl shadow-sm flex items-center justify-between">
-            <span className="text-[10.5px] tracking-[0.25em] uppercase font-outfit font-medium text-[#1A1A1A]/60">
-              Atelier Ref SKU
-            </span>
-            <span className="text-xs tracking-[0.2em] uppercase font-outfit font-bold text-[#9c7d23]">
-              {(activeVariation as any)?.sku || product.sku}
-            </span>
+            <div className="bg-white px-5 py-4 flex items-center justify-between">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-outfit font-medium text-[#1A1A1A]/50">
+                SKU
+              </span>
+              <span className="text-xs tracking-[0.2em] uppercase font-outfit font-bold text-[#9c7d23]">
+                {(activeVariation as any)?.sku || product.sku}
+              </span>
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Lightbox Pop-up Zoom & Fullscreen Viewer Modal */}

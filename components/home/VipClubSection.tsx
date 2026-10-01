@@ -32,8 +32,7 @@ export default function VipClubSection() {
               </h2>
 
               <p className="text-white/70 text-xs sm:text-sm font-light leading-relaxed mb-6 max-w-lg">
-                Gain privileged access to unreleased couture drops, private bridal appointments, 
-                and bespoke styling consultations directly with our lead designers.
+Rooted in the auspicious symbolism of 18, representing manifestation, radiance, and royalty. We weave timeless Indian silk silhouettes and forge hallmarked heritage jewellery for the modern muse.
               </p>
 
               {/* VIP Benefits */}
@@ -77,9 +76,6 @@ export default function VipClubSection() {
             {/* Right Column: Direct Assistance Card */}
             <div className="p-6 sm:p-8 rounded-2xl bg-black/60 border border-[#d4af37]/30 backdrop-blur-xl flex flex-col justify-between">
               <div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-[#d4af37] font-medium block mb-1">
-                  Bespoke Assistance
-                </span>
                 <h3 className="font-outfit text-xl font-light text-white mb-2">
                   Personal Service
                 </h3>

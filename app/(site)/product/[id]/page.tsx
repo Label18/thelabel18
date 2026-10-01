@@ -69,7 +69,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
         {/* Related Products Section ("You May Also Like") */}
         {related.length > 0 && (
-          <div className="mt-20 pt-16 border-t border-[#D4AF37]/25">
+          <div className="mt-10 pt-8 border-t border-[#D4AF37]/25">
             <div className="flex flex-col items-center text-center mb-12">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-3">
                 
@@ -80,7 +80,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </h2>
               <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-3" />
               <p className="text-xs tracking-[0.2em] uppercase font-outfit text-[#1A1A1A]/60">
-                Curated royal couture &amp; handcrafted heirlooms to accompany this piece
+                Curated royal couture to accompany this piece
               </p>
             </div>
 

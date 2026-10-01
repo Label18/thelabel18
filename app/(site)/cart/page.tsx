@@ -469,18 +469,7 @@ export default function CartPage() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
 
-                {/* Trust Badges */}
-                <div className="pt-4 border-t border-neutral-100 grid grid-cols-2 gap-2 text-[10px] text-[#1A1A1A]/60 font-outfit">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>Hallmarked Purity</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>Insured Delivery</span>
-                  </div>
-                </div>
-              </div>
+             </div>
             </div>
           </div>
         )}

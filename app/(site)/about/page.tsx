@@ -199,7 +199,7 @@ export default function AboutUs() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 md:divide-x divide-[#D4AF37]/25">
               {[
                 { num: "01", title: "Clothing", desc: "A curated collection ranging from timeless traditional pit-loom sarees to stylish contemporary silhouettes, selected for uncompromising quality and elegance." },
-                { num: "02", title: "Jewellery", desc: "Statement heirloom ornaments designed to transform an ensemble. From 22K hallmarked gold sets to polki diamonds crafted for unforgettable celebrations." },
+                { num: "02", title: "Jewellery", desc: "Crafted with intricate detailing, each piece adds a touch of luxury and sophistication.Adorn yourself with the timeless elegance of gold-tone imitation jewellery." },
                 { num: "03", title: "Accessories", desc: "The definitive finishing touches. Carefully handcrafted elements that add profound personality, sophistication, and individuality to your signature style." }
               ].map((item, i) => (
                 <div key={i} className="px-4 sm:px-6 md:px-8 py-4 text-center group">

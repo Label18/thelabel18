@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCartWishlist } from "@/contexts/GuestCartWishlistContext";
 import LoginModal from "@/components/LoginModal";
 import SearchModal from "@/components/SearchModal";
+import AnnouncementTicker from "@/components/AnnouncementTicker";
 import {
   Phone,
   Search,
@@ -93,29 +94,27 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 font-outfit">
-      {/* 1. Top Luxury Announcement Strip */}
-      <div className="bg-[#12100c] text-white/80 border-b border-[#d4af37]/20 py-1.5 px-4 text-[10px] sm:text-[11px] font-light tracking-wider">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <div className="hidden sm:flex items-center gap-2">
-            
-            <span>Complimentary Insured Express Shipping & Bespoke Bridal Tailoring</span>
+      {/* 1. Top Luxury Announcement Strip — dynamic ticker */}
+      <div className="bg-[#12100c] text-white/80 border-b border-[#d4af37]/20 py-1.5 text-[10px] sm:text-[11px] font-light tracking-wider overflow-hidden">
+        <div className="flex items-center">
+          {/* Scrolling Ticker — full width */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <AnnouncementTicker />
           </div>
 
-          <div className="w-full sm:w-auto text-center sm:text-left flex items-center justify-center sm:justify-end gap-4 text-white/90">
-            <span className="sm:hidden font-medium text-[#d4af37] tracking-[0.18em] uppercase text-[9px]">
-              ✦ THE LABEL 18 • HAUTE COUTURE & HEIRLOOMS ✦
-            </span>
+          {/* Right: WhatsApp + Boutique — always visible on md+ */}
+          <div className="hidden md:flex items-center gap-4 text-white/90 px-4 shrink-0 border-l border-[#d4af37]/15 ml-2">
             <a
               href="https://wa.me/919886823456?text=Hello%20The%20Label%2018%2C%20I%20would%20like%20to%20inquire%20about%20your%20couture%20and%20jewellery%20collections."
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-1.5 text-[#25D366] hover:text-white transition-colors font-medium"
+              className="inline-flex items-center gap-1.5 text-[#25D366] hover:text-white transition-colors font-medium whitespace-nowrap"
             >
               <MessageCircle className="w-3 h-3" />
               <span>WhatsApp: +91 98868 23456</span>
             </a>
-            <span className="hidden lg:inline text-white/30">•</span>
-            <span className="hidden lg:inline text-white/60">Boutique: Jayanagar, Bengaluru</span>
+            <span className="text-white/30">•</span>
+            <span className="text-white/60 whitespace-nowrap">Jayanagar, Bengaluru</span>
           </div>
         </div>
       </div>
@@ -146,7 +145,7 @@ export default function Header() {
                   THE LABEL <span className="font-semibold text-[#d4af37]">18</span>
                 </span>
                 <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-[#d4af37]/90 font-medium">
-                  Couture & Jewels
+                  Jewellery & Clothing
                 </span>
               </div>
             </Link>

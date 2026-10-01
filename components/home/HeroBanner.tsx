@@ -45,7 +45,7 @@ export const heroSlides = [
     line1: "ARTISANAL LILAC",
     line2: "PALACE SAREE",
     subtitle:
-      "Handcrafted Lilac Embroidered Silks & Palatial Twilight Elegance paired with heirloom ornaments.",
+      "Handcrafted Lilac Embroidered Silks & Palatial Twilight Elegance.",
     ctaPrimary: "EXPLORE CLOTHING",
     ctaSecondary: "+ FINE JEWELLERY",
     editionLabel: "+ ROYAL COUTURE EDITION",
@@ -60,7 +60,7 @@ export const heroSlides = [
     line1: "AZURE ELEGANCE",
     line2: "PALACE SAREE",
     subtitle:
-      "Handcrafted Blue Embroidered Silks & Palatial Elegance paired with heirloom ornaments.",
+      "Handcrafted Blue Embroidered Silks & Palatial Elegance.",
     ctaPrimary: "EXPLORE CLOTHING",
     ctaSecondary: "+ FINE JEWELLERY",
     editionLabel: "+ ROYAL COUTURE EDITION",

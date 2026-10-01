@@ -138,7 +138,7 @@ export default function ShopClient({
           <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
 
           <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto leading-relaxed">
-            Handwoven Silks • Heirloom Ornaments • Bespoke Bridal Couture
+            Handwoven Silks • Fine Jewellery • Bespoke Bridal Couture
           </p>
 
           <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/70 text-[10px] font-mono tracking-widest">
