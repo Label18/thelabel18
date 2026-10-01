@@ -174,7 +174,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
   const currentBigImage = activePhotos[activePhotoIndex] || activeGroup?.primaryImage || product.image_url;
 
   return (
-    <div className="w-full space-y-12">
+    <div className="w-full space-y-6">
       {/* Top Section: Gallery & Variant Selector Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
@@ -449,7 +449,7 @@ export default function ProductDetailClient({ product, initialColor }: { product
                 Atelier Narrative & Craftsmanship
               </h2>
             </div>
-            <div className="bg-white px-6 sm:px-8 py-6 sm:py-7">
+            <div className="bg-white px-6 sm:px-8 py-4 sm:py-5">
               <p className="text-[#1A1A1A]/80 font-outfit font-light text-sm sm:text-[15px] leading-[2.1] tracking-wide whitespace-pre-line">
                 {product.description}
               </p>
