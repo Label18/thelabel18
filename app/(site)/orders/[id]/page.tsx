@@ -26,6 +26,9 @@ type Order = {
   total: number;
   coupon_code: string | null;
   created_at: string;
+  payment_method?: string | null;
+  payment_status?: string | null;
+  razorpay_payment_id?: string | null;
   ship_full_name: string;
   ship_phone: string;
   ship_line1: string;
@@ -409,9 +412,30 @@ export default function OrderDetailPage() {
                   <span className="text-emerald-700 font-medium">COMPLIMENTARY</span>
                 </div>
 
+                {order.payment_status === "paid" && (
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Payment</span>
+                    <span className="text-emerald-700 font-medium text-right">
+                      PAID{order.payment_method === "razorpay" ? " · RAZORPAY" : ""}
+                      {order.razorpay_payment_id && (
+                        <span className="block font-mono text-[10px] text-[#1A1A1A]/50 font-normal">
+                          {order.razorpay_payment_id}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
+                {(order.payment_status === "pending" || order.payment_status === "failed") && (
+                  <div className="flex justify-between text-[#1A1A1A]/70">
+                    <span>Payment</span>
+                    <span className="text-rose-700 font-medium">NOT COMPLETED</span>
+                  </div>
+                )}
+
                 <div className="pt-4 border-t border-[#D4AF37]/25 flex justify-between items-baseline">
                   <span className="font-outfit font-semibold text-xs tracking-wider uppercase text-[#1A1A1A]">
-                    Total Paid
+                    {order.payment_status === "pending" || order.payment_status === "failed" ? "Total" : "Total Paid"}
                   </span>
                   <span className="font-serif text-2xl sm:text-3xl text-[#9c7d23] font-normal">
                     ₹{orderTotal.toLocaleString()}

@@ -74,6 +74,8 @@ export default function OrdersPage() {
         .from("orders")
         .select("id, status, total, created_at, order_items(id)")
         .eq("user_id", user.id)
+        // Hide checkout attempts that were never paid (NULL = placed before online payments)
+        .or("payment_status.is.null,payment_status.eq.paid")
         .order("created_at", { ascending: false });
 
       if (ordersErr) {

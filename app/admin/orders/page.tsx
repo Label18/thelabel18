@@ -16,6 +16,7 @@ export default async function AdminOrdersPage() {
     .select(
       `
       id, status, subtotal, discount_amount, total, coupon_code, created_at,
+      payment_method, payment_status, razorpay_payment_id,
       ship_full_name, ship_phone, ship_line1, ship_line2, ship_city, ship_state, ship_postal_code, ship_country,
       items:order_items (
         id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total,
@@ -23,6 +24,8 @@ export default async function AdminOrdersPage() {
       )
     `
     )
+    // Hide checkout attempts that were never paid (NULL = placed before online payments)
+    .or('payment_status.is.null,payment_status.eq.paid')
     .order('created_at', { ascending: false })
     .limit(200)
 

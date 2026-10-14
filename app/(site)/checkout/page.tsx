@@ -7,9 +7,52 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import { Address, getAddresses, addAddress, AddressInput } from "@/lib/supabase/addresses";
 import AddressForm from "@/components/AddressForm";
-import { placeOrderAction } from "@/app/(site)/checkout/actions";
+import {
+  startCheckoutAction,
+  verifyPaymentAction,
+  markPaymentAbandonedAction,
+} from "@/app/(site)/checkout/actions";
 import toast from "react-hot-toast";
 import { Sparkles, ShieldCheck, Lock, CheckCircle2, ArrowRight } from "lucide-react";
+
+type RazorpaySuccessResponse = {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: "payment.failed", cb: (res: { error?: { description?: string } }) => void) => void;
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
+  }
+}
+
+const RAZORPAY_CHECKOUT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
+function loadRazorpayCheckout(): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (window.Razorpay) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_CHECKOUT_SRC}"]`);
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve(!!window.Razorpay));
+    script.addEventListener("error", () => {
+      script.remove();
+      resolve(false);
+    });
+    if (!existing) {
+      script.src = RAZORPAY_CHECKOUT_SRC;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  });
+}
 
 type CartRow = {
   id: string;
@@ -46,7 +89,13 @@ export default function CheckoutPage() {
   const [couponChecking, setCouponChecking] = useState(false);
 
   const [placing, setPlacing] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
+
+  // Warm up the Razorpay script so the payment window opens instantly
+  useEffect(() => {
+    loadRazorpayCheckout();
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!user) {
@@ -156,19 +205,41 @@ export default function CheckoutPage() {
     setCouponError(null);
   }
 
+  function showPlaceError(message: string) {
+    setPlaceError(message);
+    toast.error(message);
+  }
+
+  async function handlePaymentSuccess(orderId: string, response: RazorpaySuccessResponse) {
+    setVerifying(true);
+    try {
+      const result = await verifyPaymentAction({
+        orderId,
+        razorpayOrderId: response.razorpay_order_id,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+      });
+      if (!result.ok) {
+        showPlaceError(result.error);
+        setVerifying(false);
+        setPlacing(false);
+        return;
+      }
+      toast.success("Payment successful — order confirmed");
+      router.push(`/orders/${orderId}`);
+    } catch {
+      showPlaceError("Could not verify payment. If money was debited, please contact support.");
+      setVerifying(false);
+      setPlacing(false);
+    }
+  }
+
   async function handlePlaceOrder() {
     if (!user || !selectedAddressId) return;
     setPlacing(true);
     setPlaceError(null);
 
     try {
-      const address = addresses.find((a) => a.id === selectedAddressId);
-      if (!address) throw new Error("Please select a shipping address.");
-
-      if (items.length === 0) {
-        throw new Error("Your cart is empty.");
-      }
-
       for (const item of items) {
         const stock = item.product_variations?.stock_quantity ?? 0;
         if (stock < item.quantity) {
@@ -178,43 +249,55 @@ export default function CheckoutPage() {
         }
       }
 
-      const orderPayload = {
-        userId: user.id,
-        addressId: selectedAddressId,
-        appliedCoupon,
-        items: items.map((item) => ({
-          productId: item.product_id,
-          variationId: item.variation_id,
-          quantity: item.quantity,
-          productName: item.products?.name ?? "Product",
-          color: item.product_variations?.color ?? null,
-          size: item.product_variations?.size ?? null,
-          price: Number(item.product_variations?.price ?? 0),
-        })),
-        shippingAddress: {
-          fullName: address.full_name,
-          phone: address.phone,
-          line1: address.line1,
-          line2: address.line2 || null,
-          city: address.city,
-          state: address.state,
-          postalCode: address.postal_code,
-          country: address.country,
-        },
-      };
+      const [checkout, scriptLoaded] = await Promise.all([
+        startCheckoutAction({ addressId: selectedAddressId, appliedCoupon }),
+        loadRazorpayCheckout(),
+      ]);
 
-      const result = await placeOrderAction(orderPayload);
-      if (!result?.success || !result?.orderId) {
-        throw new Error("Could not complete order. Please try again.");
+      if (!checkout.ok) throw new Error(checkout.error);
+
+      if (checkout.kind === "paid") {
+        toast.success("Order placed successfully");
+        router.push(`/orders/${checkout.orderId}`);
+        return;
       }
 
-      toast.success("Order placed successfully");
-      router.push(`/orders/${result.orderId}`);
+      if (!scriptLoaded || !window.Razorpay) {
+        markPaymentAbandonedAction(checkout.orderId);
+        throw new Error("Could not load the payment gateway. Please check your connection and try again.");
+      }
+
+      const razorpay = new window.Razorpay({
+        key: checkout.keyId,
+        amount: checkout.amount,
+        currency: checkout.currency,
+        order_id: checkout.razorpayOrderId,
+        name: "The Label 18",
+        description: `Order #${checkout.orderId.slice(0, 8).toUpperCase()}`,
+        image: `${window.location.origin}/logo.jpg`,
+        prefill: checkout.prefill,
+        notes: { order_id: checkout.orderId },
+        theme: { color: "#D4AF37" },
+        handler: (response: RazorpaySuccessResponse) => handlePaymentSuccess(checkout.orderId, response),
+        modal: {
+          confirm_close: true,
+          ondismiss: () => {
+            markPaymentAbandonedAction(checkout.orderId);
+            setPlacing(false);
+            toast("Payment cancelled. Your cart is still saved.");
+          },
+        },
+      });
+
+      // Fires per failed attempt; Razorpay keeps the window open so the
+      // customer can retry with another method.
+      razorpay.on("payment.failed", (res) => {
+        toast.error(res.error?.description ?? "Payment failed. Please try again.");
+      });
+
+      razorpay.open();
     } catch (err: any) {
-      const message = err?.message ?? "Failed to place order.";
-      setPlaceError(message);
-      toast.error(message);
-    } finally {
+      showPlaceError(err?.message ?? "Failed to place order.");
       setPlacing(false);
     }
   }
@@ -459,14 +542,33 @@ export default function CheckoutPage() {
                   disabled={placing || !selectedAddressId}
                   className="w-full py-4 rounded-full bg-gradient-to-r from-[#F5E6C8] via-[#E6C35C] to-[#D4AF37] text-black font-bold text-xs tracking-[0.18em] uppercase shadow-[0_4px_20px_rgba(212,175,55,0.4)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.6)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <span>{placing ? "Securing Order..." : "Place Order & Pay"}</span>
+                  <span>{placing ? "Securing Order..." : `Pay ₹${total.toLocaleString()} Securely`}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
+
+                <div className="flex items-center justify-center gap-1.5 text-[10px] tracking-widest uppercase font-outfit text-[#1A1A1A]/50">
+                  <Lock className="w-3 h-3" />
+                  <span>UPI · Cards · Netbanking · Wallets via Razorpay</span>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {verifying && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="bg-white border border-[#D4AF37]/40 rounded-2xl p-8 text-center max-w-sm w-full shadow-xl">
+            <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-xs uppercase tracking-[0.2em] font-outfit font-semibold text-[#1A1A1A]">
+              Confirming Your Payment
+            </p>
+            <p className="text-[11px] text-[#1A1A1A]/60 font-outfit mt-2">
+              Please don&apos;t close or refresh this page.
+            </p>
+          </div>
+        </div>
+      )}
 
       <AddressForm
         isOpen={isAddressFormOpen}

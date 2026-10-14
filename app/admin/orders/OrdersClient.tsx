@@ -43,6 +43,9 @@ export type StoreOrder = {
     total: number
     coupon_code: string | null
     created_at: string
+    payment_method: string | null
+    payment_status: string | null
+    razorpay_payment_id: string | null
     ship_full_name: string
     ship_phone: string
     ship_line1: string
@@ -62,6 +65,22 @@ const STATUS_LABEL: Record<string, string> = {
     shipped: 'Shipped',
     delivered: 'Delivered',
     cancelled: 'Cancelled',
+}
+
+function variationText(item: OrderItem) {
+    return (
+        item.variation_label ||
+        [item.product_variations?.size, item.product_variations?.color].filter(Boolean).join(' · ') ||
+        item.product_variations?.sku ||
+        '—'
+    )
+}
+
+function paymentLabel(o: StoreOrder) {
+    if (o.payment_status !== 'paid') return 'Not recorded'
+    if (o.payment_method === 'razorpay') return 'Paid · Razorpay'
+    if (o.payment_method === 'coupon') return 'Paid · Coupon (₹0)'
+    return 'Paid'
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -307,18 +326,18 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
                                     {isOpen && (
                                         <tr>
-                                            <td colSpan={7} className="bg-stone-50/60 px-0 py-0">
-                                                <div className="grid grid-cols-2 gap-6 px-6 py-5 lg:grid-cols-[1.6fr_1fr]">
+                                            <td colSpan={7} className="bg-stone-50/60 px-0 py-0 whitespace-normal">
+                                                <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-5 px-6 py-4">
                                                     {/* Items + variations */}
-                                                    <div>
-                                                        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                                                    <div className="min-w-0">
+                                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                                                             Items & Variations
                                                         </p>
                                                         <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
                                                             {o.items.map((item) => (
-                                                                <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                                                                <div key={item.id} className="flex items-center gap-3 px-3 py-2">
                                                                     {item.product_variations?.image_url ? (
-                                                                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-stone-200">
+                                                                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-stone-200">
                                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                             <img
                                                                                 src={item.product_variations.image_url}
@@ -327,28 +346,19 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                                             />
                                                                         </div>
                                                                     ) : (
-                                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">
+                                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">
                                                                             <ImageOff size={14} />
                                                                         </div>
                                                                     )}
                                                                     <div className="min-w-0 flex-1">
-                                                                        <p className="truncate text-sm font-medium text-black">
+                                                                        <p className="truncate text-sm font-medium text-black" title={item.product_name}>
                                                                             {item.product_name}
                                                                         </p>
-                                                                        <p className="text-xs text-stone-500">
-                                                                            {item.variation_label ||
-                                                                                [
-                                                                                    item.product_variations?.size,
-                                                                                    item.product_variations?.color,
-                                                                                ]
-                                                                                    .filter(Boolean)
-                                                                                    .join(' · ') ||
-                                                                                item.product_variations?.sku ||
-                                                                                '—'}
-                                                                            {' · '}Qty {item.quantity}
+                                                                        <p className="truncate text-[11px] text-stone-500" title={variationText(item)}>
+                                                                            {variationText(item)} · Qty {item.quantity}
                                                                         </p>
                                                                     </div>
-                                                                    <div className="text-right">
+                                                                    <div className="shrink-0 text-right">
                                                                         <p className="text-xs text-stone-400">
                                                                             ₹{Number(item.unit_price).toLocaleString()} each
                                                                         </p>
@@ -361,29 +371,35 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                         </div>
 
                                                         {/* Shipping address */}
-                                                        <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                                                        <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                                                             Shipping Address
                                                         </p>
-                                                        <div className="flex items-start gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3">
-                                                            <MapPin size={14} className="mt-0.5 shrink-0 text-stone-400" />
-                                                            <div className="text-sm text-stone-600">
-                                                                <p className="font-medium text-black">{o.ship_full_name}</p>
+                                                        <div className="flex items-start gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2.5">
+                                                            <MapPin size={13} className="mt-0.5 shrink-0 text-stone-400" />
+                                                            <div className="min-w-0 text-xs leading-relaxed text-stone-600 break-words">
+                                                                <p className="font-medium text-black">
+                                                                    {o.ship_full_name}
+                                                                    <span className="ml-2 font-normal text-stone-400">{o.ship_phone}</span>
+                                                                </p>
                                                                 <p>
                                                                     {o.ship_line1}
-                                                                    {o.ship_line2 ? `, ${o.ship_line2}` : ''}, {o.ship_city},{' '}
-                                                                    {o.ship_state} {o.ship_postal_code}, {o.ship_country}
+                                                                    {o.ship_line2 ? `, ${o.ship_line2}` : ''}
                                                                 </p>
-                                                                <p className="text-stone-400">{o.ship_phone}</p>
+                                                                <p>
+                                                                    {[o.ship_city, o.ship_state, o.ship_postal_code, o.ship_country]
+                                                                        .filter(Boolean)
+                                                                        .join(', ')}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Payment summary + status control */}
-                                                    <div>
-                                                        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                                                    <div className="min-w-0">
+                                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                                                             Payment Summary
                                                         </p>
-                                                        <div className="space-y-2 rounded-xl border border-stone-200 bg-white px-4 py-4 text-sm">
+                                                        <div className="space-y-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm">
                                                             <div className="flex justify-between text-stone-600">
                                                                 <span>Subtotal</span>
                                                                 <span>₹{Number(o.subtotal).toLocaleString()}</span>
@@ -400,9 +416,20 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                                 <span>Amount Paid</span>
                                                                 <span>₹{Number(o.total).toLocaleString()}</span>
                                                             </div>
+                                                            <div className="flex justify-between gap-3 text-xs text-stone-500">
+                                                                <span>Payment</span>
+                                                                <span className="text-right">
+                                                                    {paymentLabel(o)}
+                                                                    {o.razorpay_payment_id && (
+                                                                        <span className="block break-all font-mono text-[11px] text-stone-400">
+                                                                            {o.razorpay_payment_id}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
                                                         </div>
 
-                                                        <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                                                        <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                                                             Update Status
                                                         </p>
                                                         <select
@@ -541,17 +568,8 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                         <p className="text-xs font-semibold text-[#141414] leading-tight">
                                                             {item.product_name}
                                                         </p>
-                                                        <p className="text-[10px] text-[#8b8478] mt-0.5">
-                                                            {item.variation_label ||
-                                                                [
-                                                                    item.product_variations?.size,
-                                                                    item.product_variations?.color,
-                                                                ]
-                                                                    .filter(Boolean)
-                                                                    .join(' · ') ||
-                                                                item.product_variations?.sku ||
-                                                                '—'}
-                                                            {' · '}Qty {item.quantity}
+                                                        <p className="truncate text-[10px] text-[#8b8478] mt-0.5" title={variationText(item)}>
+                                                            {variationText(item)} · Qty {item.quantity}
                                                         </p>
                                                         <div className="mt-1.5 flex items-center justify-between">
                                                             <p className="text-[10px] text-[#8b8478]">
@@ -574,7 +592,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                         </p>
                                         <div className="flex items-start gap-2 rounded-xl border border-[#9c7d23]/10 bg-white p-3">
                                             <MapPin size={14} className="mt-0.5 shrink-0 text-[#8b8478]" />
-                                            <div className="text-xs text-stone-600">
+                                            <div className="min-w-0 text-xs text-stone-600 break-words">
                                                 <p className="font-semibold text-[#141414]">{o.ship_full_name}</p>
                                                 <p className="mt-0.5 leading-relaxed text-[#8b8478]">
                                                     {o.ship_line1}
@@ -622,6 +640,17 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                             <div className="flex justify-between border-t border-[#9c7d23]/10 pt-2 text-sm font-bold text-[#141414]">
                                                 <span>Total</span>
                                                 <span>₹{Number(o.total).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between gap-3 text-stone-500">
+                                                <span>Payment</span>
+                                                <span className="text-right">
+                                                    {paymentLabel(o)}
+                                                    {o.razorpay_payment_id && (
+                                                        <span className="block font-mono text-[10px] text-stone-400">
+                                                            {o.razorpay_payment_id}
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>

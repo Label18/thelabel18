@@ -85,6 +85,7 @@ async function getDashboardData(): Promise<DashboardData> {
       supabase
         .from('orders')
         .select('id, total, status, ship_full_name, created_at, order_items(id)')
+        .or('payment_status.is.null,payment_status.eq.paid')
         .order('created_at', { ascending: false })
         .limit(100),
       supabase

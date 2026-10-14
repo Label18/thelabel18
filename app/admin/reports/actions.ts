@@ -51,6 +51,7 @@ export async function getComprehensiveReport(
       .gte('created_at', startISO)
       .lte('created_at', endISO)
       .neq('status', 'cancelled')
+      .or('payment_status.is.null,payment_status.eq.paid')
 
     const onlineOrderIds = (onlineOrders ?? []).map((o) => o.id)
 
