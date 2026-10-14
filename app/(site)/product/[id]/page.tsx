@@ -69,8 +69,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
         {/* Related Products Section ("You May Also Like") */}
         {related.length > 0 && (
-          <div className="mt-10 pt-8 border-t border-[#D4AF37]/25">
-            <div className="flex flex-col items-center text-center mb-12">
+          <div className="mt-6 pt-4 border-t border-[#D4AF37]/25">
+            <div className="flex flex-col items-center text-center mb-6">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#9c7d23] text-[9.5px] tracking-[0.25em] uppercase font-outfit font-semibold mb-3">
                 
                 <span>The Label 18 • Complete The Ensemble</span>

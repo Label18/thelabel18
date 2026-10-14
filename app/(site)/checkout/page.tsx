@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import { Address, getAddresses, addAddress, AddressInput } from "@/lib/supabase/addresses";
 import AddressForm from "@/components/AddressForm";
-import { decreaseStockForOrder } from "@/app/(site)/checkout/actions";
+import { placeOrderAction } from "@/app/(site)/checkout/actions";
 import toast from "react-hot-toast";
 import { Sparkles, ShieldCheck, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
@@ -111,19 +111,20 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (data.starts_at && new Date(data.starts_at) > new Date()) {
+      const now = new Date();
+      if (data.valid_from && new Date(data.valid_from) > now) {
         setCouponError("This coupon is not yet active.");
         return;
       }
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      if (data.valid_until && new Date(data.valid_until) < now) {
         setCouponError("This coupon has expired.");
         return;
       }
-      if (data.min_order_amount && subtotal < Number(data.min_order_amount)) {
-        setCouponError(`Minimum order amount is ₹${Number(data.min_order_amount).toLocaleString()}`);
+      if (data.min_order_value && subtotal < Number(data.min_order_value)) {
+        setCouponError(`Minimum order amount is ₹${Number(data.min_order_value).toLocaleString()}`);
         return;
       }
-      if (data.max_uses != null && (data.uses_count ?? 0) >= data.max_uses) {
+      if (data.usage_limit != null && (data.used_count ?? 0) >= data.usage_limit) {
         setCouponError("This coupon has reached its maximum uses.");
         return;
       }
@@ -164,6 +165,10 @@ export default function CheckoutPage() {
       const address = addresses.find((a) => a.id === selectedAddressId);
       if (!address) throw new Error("Please select a shipping address.");
 
+      if (items.length === 0) {
+        throw new Error("Your cart is empty.");
+      }
+
       for (const item of items) {
         const stock = item.product_variations?.stock_quantity ?? 0;
         if (stock < item.quantity) {
@@ -173,58 +178,42 @@ export default function CheckoutPage() {
         }
       }
 
-      const { data: order, error: orderErr } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          total: total,
-          subtotal,
-          discount_amount: discount,
-          coupon_code: appliedCoupon,
-          ship_full_name: address.full_name,
-          ship_phone: address.phone,
-          ship_line1: address.line1,
-          ship_line2: address.line2 || null,
-          ship_city: address.city,
-          ship_state: address.state,
-          ship_postal_code: address.postal_code,
-          ship_country: address.country,
-          status: "pending",
-        })
-        .select("id")
-        .single();
+      const orderPayload = {
+        userId: user.id,
+        addressId: selectedAddressId,
+        appliedCoupon,
+        items: items.map((item) => ({
+          productId: item.product_id,
+          variationId: item.variation_id,
+          quantity: item.quantity,
+          productName: item.products?.name ?? "Product",
+          color: item.product_variations?.color ?? null,
+          size: item.product_variations?.size ?? null,
+          price: Number(item.product_variations?.price ?? 0),
+        })),
+        shippingAddress: {
+          fullName: address.full_name,
+          phone: address.phone,
+          line1: address.line1,
+          line2: address.line2 || null,
+          city: address.city,
+          state: address.state,
+          postalCode: address.postal_code,
+          country: address.country,
+        },
+      };
 
-      if (orderErr) throw orderErr;
-
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        variation_id: item.variation_id,
-        quantity: item.quantity,
-        price_at_purchase: Number(item.product_variations?.price ?? 0),
-        product_name: item.products?.name ?? "Product",
-        color: item.product_variations?.color ?? null,
-        size: item.product_variations?.size ?? null,
-      }));
-
-      const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
-      if (itemsErr) throw itemsErr;
-
-      await decreaseStockForOrder(
-        items.map((i) => ({ variation_id: i.variation_id, quantity: i.quantity }))
-      );
-
-      await supabase.from("cart_items").delete().eq("user_id", user.id);
-
-      if (appliedCoupon) {
-        await supabase.rpc("increment_coupon_uses", { coupon_code: appliedCoupon });
+      const result = await placeOrderAction(orderPayload);
+      if (!result?.success || !result?.orderId) {
+        throw new Error("Could not complete order. Please try again.");
       }
 
       toast.success("Order placed successfully");
-      router.push(`/orders/${order.id}`);
+      router.push(`/orders/${result.orderId}`);
     } catch (err: any) {
-      setPlaceError(err?.message ?? "Failed to place order.");
-      toast.error(err?.message ?? "Failed to place order.");
+      const message = err?.message ?? "Failed to place order.";
+      setPlaceError(message);
+      toast.error(message);
     } finally {
       setPlacing(false);
     }
