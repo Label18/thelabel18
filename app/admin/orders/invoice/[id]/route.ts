@@ -32,7 +32,7 @@ const COMPANY = {
   email: 'contact@thelabel18.com',
 }
 
-type RouteParams = { id: string } | Promise<{ id: string }>
+type RouteParams = Promise<{ id: string }>
 async function resolveParams(params: RouteParams): Promise<{ id: string }> {
   return await params
 }

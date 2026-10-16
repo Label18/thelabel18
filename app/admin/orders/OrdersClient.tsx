@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { updateOrderStatus } from './actions'
 import toast from 'react-hot-toast'
+import ShiprocketOrderDialog from './ShiprocketOrderDialog'
 
 type OrderItem = {
     id: string
@@ -54,6 +55,11 @@ export type StoreOrder = {
     ship_state: string
     ship_postal_code: string
     ship_country: string
+    shiprocket_order_id?: string | null
+    tracking_number?: string | null
+    courier_name?: string | null
+    shipping_booking_state?: string | null
+    shipping_package?: { length: number; breadth: number; height: number; weight: number; pickup_location: string; email: string } | null
     items: OrderItem[]
 }
 
@@ -92,7 +98,10 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 export default function OrdersClient({ orders: initialOrders }: { orders: StoreOrder[] }) {
-    const [orders, setOrders] = useState(initialOrders)
+    const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>({})
+    const orders = useMemo(() => initialOrders.map(order => statusUpdates[order.id] ? { ...order, status: statusUpdates[order.id] } : order), [initialOrders, statusUpdates])
+    const [shippingOrderId, setShippingOrderId] = useState<string | null>(null)
+    const shippingOrder = orders.find(order => order.id === shippingOrderId)
     const [expanded, setExpanded] = useState<string | null>(null)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -115,6 +124,8 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                 o.ship_full_name?.toLowerCase().includes(q) ||
                 o.ship_phone?.toLowerCase().includes(q) ||
                 o.coupon_code?.toLowerCase().includes(q) ||
+                o.tracking_number?.toLowerCase().includes(q) ||
+                o.shiprocket_order_id?.toLowerCase().includes(q) ||
                 o.items.some(
                     (item) =>
                         item.product_name.toLowerCase().includes(q) ||
@@ -127,14 +138,14 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
     async function handleStatusChange(orderId: string, newStatus: string) {
         setUpdatingId(orderId)
-        const prev = orders
-        setOrders((os) => os.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)))
+        const prevStatus = orders.find(order => order.id === orderId)?.status || 'pending'
+        setStatusUpdates(previous => ({ ...previous, [orderId]: newStatus }))
 
         try {
             await updateOrderStatus(orderId, newStatus)
             toast.success(`Order status updated to ${newStatus}`)
         } catch (err) {
-            setOrders(prev)
+            setStatusUpdates(previous => ({ ...previous, [orderId]: prevStatus }))
             console.error('Failed to update order status:', err)
             toast.error('Failed to update order status')
         } finally {
@@ -148,7 +159,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-black">Orders</h1>
                     <p className="mt-1 text-sm font-medium text-stone-600">
-                        {orders.length} order{orders.length === 1 ? '' : 's'} · expand a row to see items, variations and payment
+                        {orders.length} order{orders.length === 1 ? '' : 's'} · manage orders, book shipping and view shipment details
                     </p>
                 </div>
             </div>
@@ -311,6 +322,10 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                 {updatingId === o.id && (
                                                     <Loader2 size={14} className="animate-spin text-[#9c7d23]" />
                                                 )}
+<button type="button" onClick={() => setShippingOrderId(o.id)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#9c7d23]/30 bg-white px-3 py-2 text-xs font-semibold text-[#785e16] hover:bg-[#FAF7F1]">
+                                                    <Truck size={14} />{o.shiprocket_order_id ? 'Shipment' : 'Shipping'}
+                                                    {o.tracking_number && <span className="font-mono text-[10px]">{o.tracking_number}</span>}
+                                                </button>
                                                 <a
                                                     href={`/admin/orders/invoice/${o.id}`}
                                                     download
@@ -369,6 +384,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                                 </div>
                                                             ))}
                                                         </div>
+
 
                                                         {/* Shipping address */}
                                                         <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
@@ -522,7 +538,11 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 pt-1">
+                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                    <button type="button" onClick={() => setShippingOrderId(o.id)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#9c7d23]/30 bg-white px-3 py-2 text-xs font-semibold text-[#785e16] hover:bg-[#FAF7F1]">
+                                                    <Truck size={14} />{o.shiprocket_order_id ? 'Shipment' : 'Shipping'}
+                                                    {o.tracking_number && <span className="font-mono text-[10px]">{o.tracking_number}</span>}
+                                                </button>
                                     <button
                                         onClick={() => setExpanded(isOpen ? null : o.id)}
                                         className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white border border-[#9c7d23]/20 py-2 text-xs font-semibold text-[#8b8478] hover:border-[#9c7d23]/50 hover:text-[#141414]"
@@ -603,6 +623,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                         </div>
                                     </div>
 
+
                                     {/* Actions */}
                                     <div>
                                         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
@@ -666,6 +687,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                     </div>
                 )}
             </div>
+            {shippingOrder && <ShiprocketOrderDialog key={shippingOrder.id} order={shippingOrder} onClose={() => setShippingOrderId(null)} />}
         </div>
     )
 }

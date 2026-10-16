@@ -16,6 +16,9 @@ import {
   ArrowRight,
   ShieldCheck,
   Lock,
+  Package,
+  RefreshCw,
+  ExternalLink,
 } from "lucide-react";
 
 type Order = {
@@ -37,6 +40,10 @@ type Order = {
   ship_state: string;
   ship_postal_code: string;
   ship_country: string;
+  tracking_number?: string | null;
+  courier_name?: string | null;
+  tracking_url?: string | null;
+  shiprocket_order_id?: string | null;
   shipping_address?: {
     full_name?: string;
     phone?: string;
@@ -47,6 +54,24 @@ type Order = {
     postal_code?: string;
     country?: string;
   } | null;
+};
+
+type TrackingActivity = {
+  date: string;
+  activity: string;
+  location: string;
+  "sr-status"?: string;
+};
+
+type TrackingData = {
+  tracked: boolean;
+  status: string;
+  tracking_number: string | null;
+  courier_name: string | null;
+  tracking_url: string | null;
+  etd: string | null;
+  activities: TrackingActivity[];
+  error?: string;
 };
 
 type OrderItem = {
@@ -110,6 +135,22 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [tracking, setTracking] = useState<TrackingData | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+
+  async function fetchTracking(id: string) {
+    setTrackingLoading(true);
+    try {
+      const res = await fetch(`/api/tracking?orderId=${id}`);
+      const data = await res.json();
+      setTracking(data);
+    } catch {
+      // silently ignore; tracking is optional
+    } finally {
+      setTrackingLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (authLoading || !user || !orderId) {
       if (!authLoading && !user) setLoading(false);
@@ -140,6 +181,12 @@ export default function OrderDetailPage() {
       setOrder(orderData as Order);
       setItems((itemsData ?? []) as unknown as OrderItem[]);
       setLoading(false);
+
+      // Auto-fetch tracking for shipped/delivered orders
+      const status = (orderData as Order).status?.toLowerCase();
+      if (status === "shipped" || status === "delivered" || status === "out_for_delivery") {
+        fetchTracking(orderId);
+      }
     })();
   }, [authLoading, user, orderId, supabase]);
 
@@ -332,6 +379,130 @@ export default function OrderDetailPage() {
                 })}
               </div>
             </div>
+
+            {/* Shiprocket Live Tracking Card */}
+            {(order.tracking_number || order.status === "shipped" || order.status === "delivered") && (
+              <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-6 sm:p-7 shadow-sm">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#D4AF37]/25">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-[#9c7d23]" />
+                    <h2 className="text-xs uppercase tracking-[0.25em] font-outfit font-semibold text-[#9c7d23]">
+                      Shipment Tracking
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => fetchTracking(orderId)}
+                    disabled={trackingLoading}
+                    className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#9c7d23] hover:text-[#D4AF37] transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${trackingLoading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {trackingLoading && !tracking && (
+                  <div className="py-6 text-center">
+                    <div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/50 font-outfit">
+                      Fetching live tracking…
+                    </p>
+                  </div>
+                )}
+
+                {!trackingLoading && !tracking && (
+                  <div className="text-center py-4">
+                    <button
+                      onClick={() => fetchTracking(orderId)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#D4AF37]/50 text-[#9c7d23] text-[11px] uppercase tracking-wider font-semibold hover:bg-[#D4AF37]/10 transition-all"
+                    >
+                      <Package className="w-3.5 h-3.5" />
+                      Load Live Tracking
+                    </button>
+                  </div>
+                )}
+
+                {tracking && (
+                  <div className="space-y-4">
+                    {/* Header info */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {tracking.tracking_number && (
+                        <div className="bg-[#F8F6F0] rounded-xl p-3">
+                          <p className="text-[9px] uppercase tracking-widest text-[#1A1A1A]/50 font-outfit mb-1">AWB / Tracking No</p>
+                          <p className="text-xs font-mono font-semibold text-[#1A1A1A] break-all">{tracking.tracking_number}</p>
+                        </div>
+                      )}
+                      {tracking.courier_name && (
+                        <div className="bg-[#F8F6F0] rounded-xl p-3">
+                          <p className="text-[9px] uppercase tracking-widest text-[#1A1A1A]/50 font-outfit mb-1">Courier Partner</p>
+                          <p className="text-xs font-semibold text-[#1A1A1A]">{tracking.courier_name}</p>
+                        </div>
+                      )}
+                      {tracking.etd && (
+                        <div className="bg-[#F8F6F0] rounded-xl p-3">
+                          <p className="text-[9px] uppercase tracking-widest text-[#1A1A1A]/50 font-outfit mb-1">Estimated Delivery</p>
+                          <p className="text-xs font-semibold text-[#9c7d23]">
+                            {new Date(tracking.etd).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                      )}
+                      {tracking.tracking_url && (
+                        <div className="bg-[#F8F6F0] rounded-xl p-3 flex items-center">
+                          <a
+                            href={tracking.tracking_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#9c7d23] hover:text-[#D4AF37] transition-colors uppercase tracking-wider"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Track on Courier Site
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Activity timeline */}
+                    {tracking.activities.length > 0 && (
+                      <div>
+                        <p className="text-[9px] uppercase tracking-widest text-[#1A1A1A]/50 font-outfit mb-3">Shipment Events</p>
+                        <div className="space-y-0 relative">
+                          {tracking.activities.map((act, idx) => (
+                            <div key={idx} className="flex gap-3 relative">
+                              {/* Timeline line */}
+                              {idx < tracking.activities.length - 1 && (
+                                <div className="absolute left-[7px] top-4 bottom-0 w-px bg-[#D4AF37]/25" />
+                              )}
+                              <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full border-2 border-[#D4AF37] bg-white mt-1 z-10" />
+                              <div className="flex-1 pb-4">
+                                <p className="text-[11px] font-outfit font-semibold text-[#1A1A1A]">{act.activity}</p>
+                                {act.location && (
+                                  <p className="text-[10px] text-[#1A1A1A]/60 font-outfit flex items-center gap-1 mt-0.5">
+                                    <MapPin className="w-2.5 h-2.5" />
+                                    {act.location}
+                                  </p>
+                                )}
+                                <p className="text-[10px] text-[#1A1A1A]/40 font-mono mt-0.5">{act.date}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {tracking.activities.length === 0 && tracking.tracked && (
+                      <p className="text-[11px] text-[#1A1A1A]/60 font-outfit text-center py-2">
+                        Tracking events will appear once the courier scans your package.
+                      </p>
+                    )}
+
+                    {!tracking.tracked && tracking.tracking_number && (
+                      <p className="text-[11px] text-amber-700 font-outfit text-center py-2 bg-amber-50 rounded-lg">
+                        Could not fetch live status. AWB: {tracking.tracking_number}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Shipping Address Card */}
             <div className="bg-white border border-[#D4AF37]/35 rounded-2xl p-6 sm:p-7 shadow-sm">
