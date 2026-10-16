@@ -2,8 +2,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { GuestCartWishlistProvider } from "@/contexts/GuestCartWishlistContext";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
@@ -25,7 +23,7 @@ export default function RootLayout({
         className={`${outfit.variable} antialiased overflow-x-hidden`}
         suppressHydrationWarning
       >
-        <AuthProvider>  <GuestCartWishlistProvider>
+
           {children}
           <Toaster 
             position="bottom-center"
@@ -44,8 +42,7 @@ export default function RootLayout({
                 },
               },
             }}
-          />    </GuestCartWishlistProvider>
-        </AuthProvider>
+          />
     
       </body>
     </html>

@@ -8,8 +8,9 @@ const PRIMARY_ADMIN_EMAIL = 'admin@thelabel18.com'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const email = String(formData.get('email') || '').trim()
+    const password = String(formData.get('password') || '')
+    if (!email || !password) redirect('/login?error=Email and password are required')
 
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -28,7 +29,7 @@ export async function login(formData: FormData) {
     const { data: subAdmin } = await supabase
         .from('sub_admins')
         .select('role, permissions')
-        .eq('id', data.user.id)
+        .eq('email', data.user.email)
         .maybeSingle()
 
     // Full admin role → dashboard
@@ -36,7 +37,9 @@ export async function login(formData: FormData) {
         redirect('/admin/dashboard')
     }
 
-    const permissions: string[] = subAdmin?.permissions || []
+    const permissions: string[] = Array.isArray(subAdmin?.permissions)
+        ? subAdmin.permissions.filter((path: unknown): path is string => typeof path === 'string' && path.startsWith('/admin/') && !path.includes('..') && !path.includes('\\'))
+        : []
 
     // Send them to the first page they're actually allowed to see.
     // If they have no permissions at all, send them back to login with an error.
