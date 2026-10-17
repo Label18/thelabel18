@@ -578,10 +578,12 @@ export default function OrderDetailPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between text-[#1A1A1A]/70">
-                  <span>Insured Express Shipping</span>
-                  <span className="text-emerald-700 font-medium">COMPLIMENTARY</span>
-                </div>
+<div className="flex justify-between items-center text-[#1A1A1A]/70 text-xs">
+  <span>Shipping Charges</span>
+  <span className="text-[#9c7d23] font-medium uppercase tracking-wider text-[11px]">
+    Extra
+  </span>
+</div>
 
                 {order.payment_status === "paid" && (
                   <div className="flex justify-between text-[#1A1A1A]/70">

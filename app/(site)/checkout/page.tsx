@@ -522,10 +522,12 @@ export default function CheckoutPage() {
                       <span>−₹{discount.toLocaleString()}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-[#1A1A1A]/70">
-                    <span>Express Delivery</span>
-                    <span className="text-[#9c7d23] font-semibold uppercase tracking-wider text-[11px]">Complimentary</span>
-                  </div>
+<div className="flex justify-between items-center text-[#1A1A1A]/70 text-xs">
+  <span>Shipping Charges</span>
+  <span className="text-[#9c7d23] font-medium uppercase tracking-wider text-[11px]">
+    Extra
+  </span>
+</div>
                 </div>
 
                 <div className="pt-3 border-t border-neutral-100 flex justify-between items-baseline font-outfit">

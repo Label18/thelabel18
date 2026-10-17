@@ -103,7 +103,7 @@ export default function Home() {
       {/* 4. Fine Jewellery Showcase */}
       <JewelleryShowcase category={jewelleryCat} products={jewelleryProducts} />
 
-      {/* 5. Brand Identity & 4 Pillars (Handcrafted Luxury, Bespoke Fitting, Express Shipping) - Completely at the bottom */}
+      {/* 5. Brand Identity & 4 Pillars (Handcrafted Luxury, Bespoke Fitting) - Completely at the bottom */}
       <BrandPhilosophy />
 
       {/* 6. VIP Circle & Social Highlights */}

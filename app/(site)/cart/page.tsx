@@ -304,9 +304,9 @@ export default function CartPage() {
 
           <div className="w-10 h-[1.5px] bg-[#D4AF37]/60 my-2.5" />
 
-          <p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
-            Complimentary Express Delivery on All Exclusive Orders
-          </p>
+<p className="font-outfit font-light text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase text-white/75 max-w-lg mx-auto">
+  Shipping Charges Are Extra On All Exclusive Orders
+</p>
 
           <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/70 text-[10px] font-mono tracking-widest">
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
@@ -437,10 +437,12 @@ export default function CartPage() {
                     <span>Subtotal</span>
                     <span className="font-semibold text-[#1A1A1A]">₹{subtotal.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-[#1A1A1A]/70">
-                    <span>Express Shipping</span>
-                    <span className="text-[#9c7d23] font-medium uppercase tracking-wider text-[11px]">Complimentary</span>
-                  </div>
+<div className="flex justify-between items-center text-[#1A1A1A]/70 text-xs">
+  <span>Shipping Charges</span>
+  <span className="text-[#9c7d23] font-medium uppercase tracking-wider text-[11px]">
+    Extra
+  </span>
+</div>
                 </div>
 
                 <div className="pt-3 border-t border-neutral-100 flex justify-between items-baseline font-outfit">
