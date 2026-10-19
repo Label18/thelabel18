@@ -3,7 +3,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import {
     ChevronDown,
-    ImageOff,
     Search,
     Layers,
     CheckCircle2,
@@ -14,12 +13,15 @@ import {
     MapPin,
     Loader2,
     Download,
+    Pencil,
+    X,
 } from 'lucide-react'
-import { updateOrderStatus } from './actions'
+import { updateOrderStatus, updateOrderAddress, type UpdateOrderAddressInput } from './actions'
 import toast from 'react-hot-toast'
+import OrderItemPhoto, { type OrderPhotoSource } from '@/components/OrderItemPhoto'
 import ShiprocketOrderDialog from './ShiprocketOrderDialog'
 
-type OrderItem = {
+type OrderItem = OrderPhotoSource & {
     id: string
     product_id: string
     variation_id: string | null
@@ -30,6 +32,7 @@ type OrderItem = {
     line_total: number
     product_variations: {
         image_url: string | null
+        image_urls?: string[] | null
         size: string | null
         color: string | null
         sku: string | null
@@ -97,9 +100,220 @@ const STATUS_STYLES: Record<string, string> = {
     cancelled: 'bg-rose-50 text-rose-600',
 }
 
+function EditOrderAddressModal({
+    order,
+    onClose,
+    onSave,
+}: {
+    order: StoreOrder
+    onClose: () => void
+    onSave: (orderId: string, updated: UpdateOrderAddressInput) => void
+}) {
+    const [pending, setPending] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [form, setForm] = useState<UpdateOrderAddressInput>({
+        ship_full_name: order.ship_full_name || '',
+        ship_phone: order.ship_phone || '',
+        ship_line1: order.ship_line1 || '',
+        ship_line2: order.ship_line2 || '',
+        ship_city: order.ship_city || '',
+        ship_state: order.ship_state || '',
+        ship_postal_code: order.ship_postal_code || '',
+        ship_country: order.ship_country || 'India',
+    })
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        setError(null)
+        setPending(true)
+        try {
+            await updateOrderAddress(order.id, form)
+            onSave(order.id, form)
+            toast.success('Order address and phone updated successfully')
+            onClose()
+        } catch (err: any) {
+            setError(err?.message || 'Failed to update address')
+            toast.error(err?.message || 'Failed to update address')
+        } finally {
+            setPending(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+            <div className="w-full max-w-lg rounded-2xl border border-[#9c7d23]/30 bg-[#FFFEFB] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.18)] my-auto">
+                <div className="mb-5 flex items-center justify-between border-b border-[#9c7d23]/15 pb-4">
+                    <div>
+                        <h2 className="text-base font-bold text-[#141414]">Edit Customer Contact & Address</h2>
+                        <p className="text-xs text-[#8b8478] mt-0.5">Order #{order.id.slice(0, 8).toUpperCase()}</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="rounded-lg p-1.5 text-[#8b8478] hover:bg-[#FAF7F1] hover:text-[#141414] transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                Recipient Name <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.ship_full_name}
+                                onChange={(e) => setForm(f => ({ ...f, ship_full_name: e.target.value }))}
+                                placeholder="Full Name"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                Phone Number <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.ship_phone}
+                                onChange={(e) => setForm(f => ({ ...f, ship_phone: e.target.value }))}
+                                placeholder="+91 9876543210"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                            Street Address (Line 1) <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                            required
+                            value={form.ship_line1}
+                            onChange={(e) => setForm(f => ({ ...f, ship_line1: e.target.value }))}
+                            placeholder="House / Flat / Block No, Building, Street"
+                            className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                        />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                            Address Line 2 (Optional)
+                        </label>
+                        <input
+                            value={form.ship_line2 || ''}
+                            onChange={(e) => setForm(f => ({ ...f, ship_line2: e.target.value }))}
+                            placeholder="Apartment, Landmark, Area"
+                            className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                City <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.ship_city}
+                                onChange={(e) => setForm(f => ({ ...f, ship_city: e.target.value }))}
+                                placeholder="City"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                State <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.ship_state}
+                                onChange={(e) => setForm(f => ({ ...f, ship_state: e.target.value }))}
+                                placeholder="State"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                Postal / PIN Code <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.ship_postal_code}
+                                onChange={(e) => setForm(f => ({ ...f, ship_postal_code: e.target.value }))}
+                                placeholder="560001"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                Country
+                            </label>
+                            <input
+                                value={form.ship_country}
+                                onChange={(e) => setForm(f => ({ ...f, ship_country: e.target.value }))}
+                                placeholder="India"
+                                className="w-full rounded-xl border border-[#9c7d23]/25 bg-[#FAF7F1] px-3.5 py-2.5 text-xs text-[#141414] outline-none focus:border-[#9c7d23] focus:bg-white"
+                            />
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-600">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#9c7d23]/15">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={pending}
+                            className="rounded-xl border border-[#9c7d23]/25 px-4 py-2.5 text-xs font-semibold text-[#8b8478] hover:bg-[#FAF7F1] hover:text-[#141414] transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={pending}
+                            className="flex items-center gap-2 rounded-xl bg-[#141414] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#F5F1E8] hover:bg-black transition-colors disabled:opacity-50"
+                        >
+                            {pending ? (
+                                <>
+                                    <Loader2 size={13} className="animate-spin" />
+                                    Saving…
+                                </>
+                            ) : (
+                                'Save Address'
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
 export default function OrdersClient({ orders: initialOrders }: { orders: StoreOrder[] }) {
     const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>({})
-    const orders = useMemo(() => initialOrders.map(order => statusUpdates[order.id] ? { ...order, status: statusUpdates[order.id] } : order), [initialOrders, statusUpdates])
+    const [addressUpdates, setAddressUpdates] = useState<Record<string, Partial<StoreOrder>>>({})
+    const [editingAddressOrder, setEditingAddressOrder] = useState<StoreOrder | null>(null)
+    const orders = useMemo(() => initialOrders.map(order => {
+        let updated = order
+        if (statusUpdates[order.id]) {
+            updated = { ...updated, status: statusUpdates[order.id] }
+        }
+        if (addressUpdates[order.id]) {
+            updated = { ...updated, ...addressUpdates[order.id] }
+        }
+        return updated
+    }), [initialOrders, statusUpdates, addressUpdates])
     const [shippingOrderId, setShippingOrderId] = useState<string | null>(null)
     const shippingOrder = orders.find(order => order.id === shippingOrderId)
     const [expanded, setExpanded] = useState<string | null>(null)
@@ -302,8 +516,23 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                             <span className="font-semibold text-[#141414]">#{o.id.slice(0, 8).toUpperCase()}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="font-semibold text-[#141414]">{o.ship_full_name}</p>
-                                            <p className="text-xs text-[#8b8478]">{o.ship_phone}</p>
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <p className="font-semibold text-[#141414]">{o.ship_full_name}</p>
+                                                    <p className="text-xs text-[#8b8478]">{o.ship_phone}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setEditingAddressOrder(o)
+                                                    }}
+                                                    title="Edit phone & delivery address"
+                                                    className="p-1 rounded-lg text-[#8b8478] hover:text-[#9c7d23] hover:bg-white transition-colors"
+                                                >
+                                                    <Pencil size={13} />
+                                                </button>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-[#8b8478]">{orderDate}</td>
                                         <td className="px-6 py-4 text-[#8b8478]">{itemCount} items</td>
@@ -351,20 +580,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                                         <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
                                                             {o.items.map((item) => (
                                                                 <div key={item.id} className="flex items-center gap-3 px-3 py-2">
-                                                                    {item.product_variations?.image_url ? (
-                                                                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-stone-200">
-                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                            <img
-                                                                                src={item.product_variations.image_url}
-                                                                                alt={item.product_name}
-                                                                                className="h-full w-full object-cover"
-                                                                            />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-300">
-                                                                            <ImageOff size={14} />
-                                                                        </div>
-                                                                    )}
+                                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-stone-200"><OrderItemPhoto item={item} name={item.product_name} /></div>
                                                                     <div className="min-w-0 flex-1">
                                                                         <p className="truncate text-sm font-medium text-black" title={item.product_name}>
                                                                             {item.product_name}
@@ -387,9 +603,19 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
 
                                                         {/* Shipping address */}
-                                                        <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-                                                            Shipping Address
-                                                        </p>
+                                                        <div className="mb-2 mt-4 flex items-center justify-between">
+                                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                                                                Shipping Address
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditingAddressOrder(o)}
+                                                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9c7d23] hover:text-[#785e16] transition-colors"
+                                                            >
+                                                                <Pencil size={12} />
+                                                                Edit Address & Phone
+                                                            </button>
+                                                        </div>
                                                         <div className="flex items-start gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2.5">
                                                             <MapPin size={13} className="mt-0.5 shrink-0 text-stone-400" />
                                                             <div className="min-w-0 text-xs leading-relaxed text-stone-600 break-words">
@@ -529,7 +755,17 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                             <div className="p-4 flex flex-col gap-4">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="font-semibold text-[#141414] text-sm">{o.ship_full_name}</p>
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="font-semibold text-[#141414] text-sm">{o.ship_full_name}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingAddressOrder(o)}
+                                                className="p-1 text-[#8b8478] hover:text-[#9c7d23]"
+                                                title="Edit Contact & Address"
+                                            >
+                                                <Pencil size={12} />
+                                            </button>
+                                        </div>
                                         <p className="text-xs text-[#8b8478]">{o.ship_phone}</p>
                                     </div>
                                     <div className="text-right">
@@ -570,20 +806,7 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                                         <div className="divide-y divide-[#9c7d23]/10 rounded-xl border border-[#9c7d23]/10 bg-white">
                                             {o.items.map((item) => (
                                                 <div key={item.id} className="flex gap-3 p-3">
-                                                    {item.product_variations?.image_url ? (
-                                                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-[#9c7d23]/10">
-                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                            <img
-                                                                src={item.product_variations.image_url}
-                                                                alt={item.product_name}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[#9c7d23]/10 bg-stone-50 text-stone-300">
-                                                            <ImageOff size={14} />
-                                                        </div>
-                                                    )}
+                                                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-stone-200"><OrderItemPhoto item={item} name={item.product_name} /></div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-xs font-semibold text-[#141414] leading-tight">
                                                             {item.product_name}
@@ -607,9 +830,19 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
 
                                     {/* Shipping */}
                                     <div>
-                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
-                                            Shipping Address
-                                        </p>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8b8478]">
+                                                Shipping Address
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingAddressOrder(o)}
+                                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#9c7d23] hover:text-[#785e16]"
+                                            >
+                                                <Pencil size={11} />
+                                                Edit
+                                            </button>
+                                        </div>
                                         <div className="flex items-start gap-2 rounded-xl border border-[#9c7d23]/10 bg-white p-3">
                                             <MapPin size={14} className="mt-0.5 shrink-0 text-[#8b8478]" />
                                             <div className="min-w-0 text-xs text-stone-600 break-words">
@@ -688,6 +921,14 @@ export default function OrdersClient({ orders: initialOrders }: { orders: StoreO
                 )}
             </div>
             {shippingOrder && <ShiprocketOrderDialog key={shippingOrder.id} order={shippingOrder} onClose={() => setShippingOrderId(null)} />}
+            {editingAddressOrder && (
+                <EditOrderAddressModal
+                    key={editingAddressOrder.id}
+                    order={editingAddressOrder}
+                    onClose={() => setEditingAddressOrder(null)}
+                    onSave={(orderId, updated) => setAddressUpdates(prev => ({ ...prev, [orderId]: updated }))}
+                />
+            )}
         </div>
     )
 }

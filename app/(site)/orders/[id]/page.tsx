@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import OrderItemPhoto, { type OrderPhotoSource } from "@/components/OrderItemPhoto";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -83,6 +83,7 @@ type OrderItem = {
   unit_price: number;
   quantity: number;
   line_total: number;
+  products?: OrderPhotoSource["products"];
   product_variations?: { image_url: string | null; image_urls: string[] | null; color?: string; size?: string } | null;
 };
 
@@ -165,7 +166,7 @@ export default function OrderDetailPage() {
         supabase.from("orders").select("*").eq("id", orderId).single(),
         supabase
           .from("order_items")
-          .select("id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total, product_variations(image_url, image_urls, color, size)")
+          .select("id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total, product_variations(image_url, image_urls, color, size), products(image_url, product_variations(image_url, image_urls))")
           .eq("order_id", orderId),
       ]);
 
@@ -327,7 +328,6 @@ export default function OrderDetailPage() {
 
               <div className="divide-y divide-[#D4AF37]/15">
                 {items.map((item) => {
-                  const itemImg = (item.product_variations?.image_urls && item.product_variations.image_urls.length > 0) ? item.product_variations.image_urls[0] : item.product_variations?.image_url;
                   const itemPrice = Number(item.line_total ?? (Number(item.unit_price ?? 0) * item.quantity));
                   const variantInfo = [
                     item.product_variations?.color,
@@ -338,18 +338,7 @@ export default function OrderDetailPage() {
                   return (
                     <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex gap-4 items-center">
                       <div className="relative w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white border border-[#D4AF37]/30 shadow-sm">
-                        {itemImg ? (
-                          <Image
-                            src={itemImg}
-                            alt={item.product_name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[9px] uppercase tracking-widest text-[#1A1A1A]/30">
-                            Piece
-                          </div>
-                        )}
+                        <OrderItemPhoto item={item} name={item.product_name} />
                       </div>
 
                       <div className="flex-1 min-w-0">

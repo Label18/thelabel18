@@ -28,6 +28,7 @@ const AVAILABLE_TABS = [
     { label: 'Add Product', path: '/admin/products/add' },
     { label: 'Product List', path: '/admin/products/list' },
     { label: 'Coupons', path: '/admin/coupons' },
+    { label: 'Announcements', path: '/admin/announcements' },
     { label: 'Orders', path: '/admin/orders' },
     { label: 'Live Register (POS)', path: '/admin/pos/register' },
     { label: 'POS History', path: '/admin/pos/history' },

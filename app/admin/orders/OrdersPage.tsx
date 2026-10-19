@@ -20,7 +20,8 @@ export default async function OrdersPage() {
       ship_full_name, ship_phone, ship_line1, ship_line2, ship_city, ship_state, ship_postal_code, ship_country,
       items:order_items (
         id, product_id, variation_id, product_name, variation_label, unit_price, quantity, line_total,
-        product_variations ( image_url, size, color, sku )
+        product_variations ( image_url, image_urls, size, color, sku ),
+        products ( image_url, product_variations ( image_url, image_urls ) )
       )
     `
     )

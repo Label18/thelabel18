@@ -27,3 +27,47 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
   return { success: true }
 }
+
+export type UpdateOrderAddressInput = {
+  ship_full_name: string
+  ship_phone: string
+  ship_line1: string
+  ship_line2?: string | null
+  ship_city: string
+  ship_state: string
+  ship_postal_code: string
+  ship_country: string
+}
+
+export async function updateOrderAddress(orderId: string, data: UpdateOrderAddressInput) {
+  if (!orderId) throw new Error('Order ID is required')
+  if (!data.ship_full_name?.trim()) throw new Error('Customer full name is required')
+  if (!data.ship_phone?.trim()) throw new Error('Phone number is required')
+  if (!data.ship_line1?.trim()) throw new Error('Street address (Line 1) is required')
+  if (!data.ship_city?.trim()) throw new Error('City is required')
+  if (!data.ship_state?.trim()) throw new Error('State is required')
+  if (!data.ship_postal_code?.trim()) throw new Error('Postal / PIN code is required')
+
+  const updatePayload = {
+    ship_full_name: data.ship_full_name.trim(),
+    ship_phone: data.ship_phone.trim(),
+    ship_line1: data.ship_line1.trim(),
+    ship_line2: data.ship_line2 ? data.ship_line2.trim() : null,
+    ship_city: data.ship_city.trim(),
+    ship_state: data.ship_state.trim(),
+    ship_postal_code: data.ship_postal_code.trim(),
+    ship_country: data.ship_country?.trim() || 'India',
+  }
+
+  const { error } = await supabase
+    .from('orders')
+    .update(updatePayload)
+    .eq('id', orderId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/orders')
+  revalidatePath('/admin/pre-orders')
+
+  return { success: true, updated: updatePayload }
+}
