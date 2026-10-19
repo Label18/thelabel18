@@ -6,7 +6,7 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "The Label 18",
+  title: "The Label 18.",
   description: "Wear your energy. Express your essence.",
 };
 
