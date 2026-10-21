@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Truck, X } from 'lucide-react'
+import { Truck, X, ExternalLink } from 'lucide-react'
 import type { StoreOrder } from './OrdersClient'
+import { shippingAddress, SHIPPING_ADDRESS_LIMIT } from '@/lib/shipping-address'
 import ShippingForm from './ShippingForm'
 
 export default function ShiprocketOrderDialog({ order, onClose }: { order: StoreOrder; onClose: () => void }) {
@@ -35,6 +36,8 @@ export default function ShiprocketOrderDialog({ order, onClose }: { order: Store
       <p className="mt-2 text-xs">{order.items.reduce((sum, item) => sum + item.quantity, 0)} items · ₹{Number(order.total).toLocaleString('en-IN')} · {order.payment_method === 'cod' ? 'Cash on delivery' : order.payment_status === 'paid' ? 'Paid' : 'Payment not recorded'}</p>
       {order.shiprocket_order_id && <p className="mt-2 break-all text-xs">Shiprocket order: {order.shiprocket_order_id}</p>}
     </div>
+    {order.shiprocket_order_id && <a href="https://app.shiprocket.in/" target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white"><ExternalLink size={16} />Open Shiprocket</a>}
+    {shippingAddress(order.ship_line1, order.ship_line2).length > SHIPPING_ADDRESS_LIMIT && !order.shiprocket_order_id && <p role="alert" className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">Address lines 1 + 2: {shippingAddress(order.ship_line1, order.ship_line2).length}/{SHIPPING_ADDRESS_LIMIT} characters. Close this dialog and use Edit Address &amp; Phone to shorten the address before booking.</p>}
     {!order.items.length && <p role="alert" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">This order has no product items. A demo row in the orders table does not include products. Add the purchased items to order_items or place a complete order through checkout before booking shipping.</p>}
     <ShippingForm orderId={order.id} shipment={order} disabled={!order.items.length || ['cancelled', 'delivered'].includes(order.status)} />
   </dialog>

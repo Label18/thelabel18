@@ -39,7 +39,7 @@ export default function ShippingForm({ orderId, disabled, shipment }: { orderId:
     <h3 className="text-sm font-semibold">Ship with Shiprocket</h3>
     <p className="text-xs text-stone-500">Enter packed parcel measurements. Booking assigns a courier and requests pickup using your Shiprocket wallet.</p>
     {shipment.tracking_number && <p className="text-xs">AWB: {shipment.tracking_number} · {shipment.courier_name}</p>}
-    {booked && <p className="text-xs text-emerald-700">Pickup requested. Mark shipped after courier handover.</p>}
+    {booked && <p className="text-xs text-emerald-700">Pickup requested. Order marked as shipped.</p>}
     {locked && <p className="text-xs text-amber-700">Booking in progress or awaiting reconciliation. Check Shiprocket before creating another shipment.</p>}
     <fieldset disabled={busy || disabled || booked || locked || !options || !options.locations.length} className="space-y-3 disabled:opacity-50">
       <div className="grid grid-cols-2 gap-3">

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAdminSupabase } from '@/lib/supabase/admin'
 import { shiprocketRequest, getShiprocketToken, getPickupLocations, ShiprocketRequestError } from '@/lib/shiprocket'
+import { validateShippingAddress } from '@/lib/shipping-address'
 import { normalizeShippingPhone } from '@/lib/shipping-phone'
 import { revalidatePath } from 'next/cache'
 
@@ -27,7 +28,14 @@ export async function bookOrderShipment(orderId: string, form: FormData) {
     if (error || !order) throw new Error('Cannot load order. Run the shipping database migration first.')
     if (['cancelled', 'delivered'].includes(order.status)) throw new Error('This order cannot be shipped.')
     if (order.payment_status !== 'paid' && order.payment_method !== 'cod') throw new Error('Record payment before booking a prepaid shipment.')
-    if (order.shipping_booking_state === 'pickup_requested') return { success: true, message: 'Pickup already requested.' }
+    if (order.shipping_booking_state === 'pickup_requested') {
+      const { error: statusError } = await db.from('orders').update({ status: 'shipped' }).eq('id', orderId).in('status', ['pending', 'confirmed'])
+      if (statusError) throw new Error('Pickup is already booked, but updating the order status failed. Please retry.')
+      revalidatePath('/admin/orders')
+      revalidatePath('/orders')
+      revalidatePath(`/orders/${orderId}`)
+      return { success: true, message: 'Shipment already booked. Order marked as shipped.' }
+    }
     const { data: customer, error: customerError } = await db.auth.admin.getUserById(order.user_id)
     const email = order.shipping_package?.email || customer?.user?.email
     if (customerError && !email) throw new Error('Unable to fetch the customer email for this order.')
@@ -43,6 +51,7 @@ export async function bookOrderShipment(orderId: string, form: FormData) {
       ['ship_line1', 'street address'], ['ship_city', 'city'], ['ship_state', 'state'], ['ship_country', 'country'],
     ].filter(([field]) => !String(order[field] || '').trim()).map(([, label]) => label)
     if (missingAddressFields.length) throw new Error(`Delivery address is missing: ${missingAddressFields.join(', ')}. Update this order before shipping.`)
+    const address = validateShippingAddress(order.ship_line1, order.ship_line2)
     const phone = normalizeShippingPhone(order.shiprocket_order_id ? order.ship_phone : form.get('phone') || order.ship_phone)
     const postalCode = String(order.ship_postal_code || '').trim()
     if (!/^\d{6}$/.test(postalCode)) throw new Error('Delivery PIN code must contain exactly 6 digits. Update ship_postal_code on this order.')
@@ -69,7 +78,7 @@ export async function bookOrderShipment(orderId: string, form: FormData) {
       const result = await shiprocketRequest('/orders/create/adhoc', {
         order_id: order.id, order_date: new Date(order.created_at).toISOString().slice(0, 19).replace('T', ' '),
         pickup_location: pkg.pickup_location, billing_customer_name: order.ship_full_name, billing_last_name: '',
-        billing_address: order.ship_line1, billing_address_2: order.ship_line2 || '', billing_city: order.ship_city,
+        billing_address: address.line1, billing_address_2: address.line2, billing_city: order.ship_city,
         billing_pincode: postalCode, billing_state: order.ship_state, billing_country: order.ship_country === 'IN' ? 'India' : order.ship_country,
         billing_email: pkg.email, billing_phone: phone, shipping_is_billing: true,
         order_items: order.items.map((item: { product_name: string; variation_id: string; product_id: string; quantity: number; unit_price: number }) => ({ name: item.product_name, sku: item.variation_id || item.product_id, units: item.quantity, selling_price: Number(item.unit_price) })),
@@ -96,10 +105,11 @@ export async function bookOrderShipment(orderId: string, form: FormData) {
       await save({ shipping_booking_state: 'awb_assigned' })
       throw new Error('AWB saved; pickup was not confirmed. Check Shiprocket, then continue booking.')
     }
-    await save({ shipping_booking_state: 'pickup_requested' })
+    await save({ shipping_booking_state: 'pickup_requested', status: 'shipped' })
     revalidatePath('/admin/orders')
+    revalidatePath('/orders')
     revalidatePath(`/orders/${orderId}`)
-    return { success: true, message: 'Shipment booked and pickup requested. Mark shipped after courier handover.' }
+    return { success: true, message: 'Shipment booked, pickup requested and order marked as shipped.' }
   } catch (error) {
     // Only explicit validation rejections can release a lock. Network failures,
     // timeouts and ambiguous server errors still require reconciliation.

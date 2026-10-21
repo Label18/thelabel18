@@ -17,6 +17,7 @@ import {
     X,
 } from 'lucide-react'
 import { updateOrderStatus, updateOrderAddress, type UpdateOrderAddressInput } from './actions'
+import { shippingAddress, SHIPPING_ADDRESS_LIMIT } from '@/lib/shipping-address'
 import toast from 'react-hot-toast'
 import OrderItemPhoto, { type OrderPhotoSource } from '@/components/OrderItemPhoto'
 import ShiprocketOrderDialog from './ShiprocketOrderDialog'
@@ -209,6 +210,9 @@ function EditOrderAddressModal({
                         />
                     </div>
 
+                    <p className={`text-xs ${shippingAddress(form.ship_line1, form.ship_line2).length > SHIPPING_ADDRESS_LIMIT ? 'text-rose-600' : 'text-stone-500'}`}>
+                        Address lines 1 + 2: {shippingAddress(form.ship_line1, form.ship_line2).length}/{SHIPPING_ADDRESS_LIMIT} characters. Keep the house number and street; shorten repeated landmarks if needed.
+                    </p>
                     <div className="grid grid-cols-2 gap-3.5">
                         <div className="space-y-1">
                             <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#8b8478]">
@@ -302,6 +306,12 @@ function EditOrderAddressModal({
 
 export default function OrdersClient({ orders: initialOrders }: { orders: StoreOrder[] }) {
     const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>({})
+    const [previousOrders, setPreviousOrders] = useState(initialOrders)
+    // Server refreshes include shipping status changes; discard older optimistic overrides.
+    if (previousOrders !== initialOrders) {
+        setPreviousOrders(initialOrders)
+        setStatusUpdates({})
+    }
     const [addressUpdates, setAddressUpdates] = useState<Record<string, Partial<StoreOrder>>>({})
     const [editingAddressOrder, setEditingAddressOrder] = useState<StoreOrder | null>(null)
     const orders = useMemo(() => initialOrders.map(order => {

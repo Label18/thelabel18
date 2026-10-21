@@ -2,6 +2,7 @@
 'use server'
 
 import { createClient } from '@supabase/supabase-js'
+import { validateShippingAddress } from '@/lib/shipping-address'
 import { revalidatePath } from 'next/cache'
 
 const supabase = createClient(
@@ -48,11 +49,12 @@ export async function updateOrderAddress(orderId: string, data: UpdateOrderAddre
   if (!data.ship_state?.trim()) throw new Error('State is required')
   if (!data.ship_postal_code?.trim()) throw new Error('Postal / PIN code is required')
 
+  const address = validateShippingAddress(data.ship_line1, data.ship_line2)
   const updatePayload = {
     ship_full_name: data.ship_full_name.trim(),
     ship_phone: data.ship_phone.trim(),
-    ship_line1: data.ship_line1.trim(),
-    ship_line2: data.ship_line2 ? data.ship_line2.trim() : null,
+    ship_line1: address.line1,
+    ship_line2: address.line2 || null,
     ship_city: data.ship_city.trim(),
     ship_state: data.ship_state.trim(),
     ship_postal_code: data.ship_postal_code.trim(),
