@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo } from "react";
+import { Tag } from "lucide-react";
 import { ProductWithPrice } from "@/lib/supabase/products";
 import MiniWishlistButton from "./MiniWishlistButton";
 import MiniCartButton from "./MiniCartButton";
@@ -55,17 +56,31 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
     return defaultImage;
   }, [activeColor, colorVariations, defaultImage]);
 
-  // Determine current price based on selected color
-  const currentPrice = useMemo(() => {
-    if (!product.product_variations) return product.minPrice;
-    const matchingVars = activeColor
-      ? product.product_variations.filter(v => v.color === activeColor && v.price != null)
-      : product.product_variations.filter(v => v.price != null);
+  // Price, original price (MRP) and discount for the selected color.
+  // Uses `compare_at_price` (same column as the product detail page).
+  const { currentPrice, originalPrice, discountPercent } = useMemo(() => {
+    const vars = (product.product_variations ?? []).filter(
+      v => v.price != null && (!activeColor || v.color === activeColor)
+    );
 
-    if (matchingVars.length > 0) {
-      return Math.min(...matchingVars.map(v => Number(v.price)));
+    if (vars.length === 0) {
+      return { currentPrice: product.minPrice, originalPrice: null as number | null, discountPercent: 0 };
     }
-    return product.minPrice;
+
+    // Cheapest variation among the matches
+    const cheapest = vars.reduce((a, b) => (Number(a.price) <= Number(b.price) ? a : b));
+    const price = Number(cheapest.price);
+    const rawOriginal = cheapest.compare_at_price;
+    const original = rawOriginal != null ? Number(rawOriginal) : null;
+
+    const percent =
+      original && original > price ? Math.round((1 - price / original) * 100) : 0;
+
+    return {
+      currentPrice: price,
+      originalPrice: percent > 0 ? original : null,
+      discountPercent: percent,
+    };
   }, [activeColor, product.product_variations, product.minPrice]);
 
   // Active variation now includes stock info so the cart button knows availability
@@ -122,11 +137,27 @@ export default function ProductCard({ product }: { product: ProductWithPrice }) 
               {product.name}
             </h3>
           </Link>
-          <p className="font-outfit font-bold text-[11px] sm:text-sm text-[#9c7d23]">
-            {currentPrice != null
-              ? `₹${currentPrice.toLocaleString()}`
-              : "N/A"}
-          </p>
+
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <p className="font-outfit font-bold text-[11px] sm:text-sm text-[#9c7d23]">
+              {currentPrice != null
+                ? `₹${currentPrice.toLocaleString("en-IN")}`
+                : "N/A"}
+            </p>
+
+            {originalPrice && (
+              <p className="font-outfit font-light text-[9px] sm:text-xs text-[#1A1A1A]/35 line-through">
+                ₹{originalPrice.toLocaleString("en-IN")}
+              </p>
+            )}
+
+            {discountPercent > 0 && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[7px] sm:text-[8px] tracking-widest uppercase font-bold">
+                <Tag className="w-2 h-2" />
+                {discountPercent}% OFF
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Variations Swatches */}
